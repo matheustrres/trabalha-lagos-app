@@ -1,6 +1,6 @@
 const HomePage = () => (
-  <div className="bg-primary text-white p-4">
-    <h1>TrabalhaLagos</h1>
+  <div className="flex min-h-screen items-center justify-center">
+    <h1 className="font-display text-4xl font-bold text-primary">TrabalhaLagos</h1>
   </div>
 )
 
