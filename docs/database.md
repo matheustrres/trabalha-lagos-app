@@ -174,7 +174,7 @@ async findByRadius(lat: number, lng: number, radiusKm: number, filters: JobFilte
 3. Revisar a migration gerada em `src/database/migrations/`
 4. `npx drizzle-kit migrate` — aplicar
 5. Atualizar DTOs e types afetados
-6. `npm run test`
+6. `pnpm test`
 
 **Nota:** o drizzle-kit gera SQL puro nas migrations — fácil de revisar e versionar. Se precisar de SQL customizado (ex: `CREATE EXTENSION postgis`), criar migration manual na pasta.
 

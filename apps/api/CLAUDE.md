@@ -10,14 +10,14 @@ NestJS (TypeScript) · Drizzle ORM · PostgreSQL + PostGIS · Redis · BullMQ
 
 ```bash
 docker compose up -d                     # PostgreSQL (PostGIS) + Redis
-npm run start:dev                        # NestJS watch mode
+pnpm start:dev                        # NestJS watch mode
 npx drizzle-kit generate                 # Gerar migration a partir do schema
 npx drizzle-kit migrate                  # Aplicar migrations pendentes
 npx drizzle-kit studio                   # GUI do banco (Drizzle Studio)
-npm run db:seed                          # Seed (categorias, cidades)
-npm run test                             # Unit tests (Jest)
-npm run test:e2e                         # Integration tests (Supertest)
-npm run lint:fix                         # ESLint + autofix
+pnpm db:seed                          # Seed (categorias, cidades)
+pnpm test                             # Unit tests (Jest)
+pnpm test:e2e                         # Integration tests (Supertest)
+pnpm lint:fix                         # ESLint + autofix
 ```
 
 ## Arquitetura
@@ -76,7 +76,7 @@ Estas regras se aplicam a TODA tarefa, sem exceção:
 4. **IDs**: `cuid2` gerado via `@paralleldrive/cuid2` como default no schema Drizzle.
 5. **Schema centralizado**: todas as tabelas definidas em `src/database/schema/`. Não criar tabelas fora.
 6. **PostGIS queries**: usar `sql` template literals do Drizzle para operações geoespaciais — composíveis e safe contra SQL injection.
-7. **Testes**: rodar `npm run test` antes de considerar qualquer tarefa concluída.
+7. **Testes**: rodar `pnpm test` antes de considerar qualquer tarefa concluída.
 8. **Strict mode**: TypeScript strict ativado. Sem `any` implícito, sem `!` assertion sem justificativa.
 
 ## Convenções Rápidas
