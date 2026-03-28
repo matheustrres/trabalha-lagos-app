@@ -153,7 +153,6 @@ export type CreateInterestData = z.infer<typeof createInterestSchema>
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -166,7 +165,6 @@ interface InterestFormProps {
 }
 
 export const InterestForm = ({ jobId, companyName, onSuccess }: InterestFormProps) => {
-  const { t } = useTranslation()
   const [serverError, setServerError] = useState<string | null>(null)
 
   const {
@@ -187,25 +185,25 @@ export const InterestForm = ({ jobId, companyName, onSuccess }: InterestFormProp
       })
       onSuccess()
     } catch {
-      setServerError(t('interest.errors.generic'))
+      setServerError('Mensagem de erro genérica')
     }
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
       <p className="text-sm text-gray-500">
-        {t('interest.description', { company: companyName })}
+        {'Mensagem genérica de interesse por parte da empresa', { company: companyName }}
       </p>
 
       <Input
         id="interest-name"
-        label={t('common.fullName')}
+        label={'Nome completo'}
         error={errors.name?.message}
         {...register('name')}
       />
       <Input
         id="interest-phone"
-        label={t('common.whatsapp')}
+        label={'Whatsapp'}
         placeholder="(22) 99999-9999"
         error={errors.phone?.message}
         {...register('phone')}
@@ -218,7 +216,7 @@ export const InterestForm = ({ jobId, companyName, onSuccess }: InterestFormProp
       )}
 
       <Button type="submit" disabled={isSubmitting}>
-        {t('interest.submit')}
+        {'Interesse enviado com sucesso.'}
       </Button>
     </form>
   )
@@ -306,42 +304,3 @@ export const useGeolocation = () => {
   return { position, isLoading, error, requestBrowserLocation, setManualCity }
 }
 ```
-
----
-
-## i18n — Estrutura de Traduções
-
-```json
-{
-  "common": {
-    "fullName": "Nome completo",
-    "whatsapp": "WhatsApp",
-    "search": "Buscar",
-    "noResults": "Nenhum resultado encontrado",
-    "shareOnWhatsapp": "Compartilhar no WhatsApp",
-    "allCities": "Toda a Região dos Lagos"
-  },
-  "home": {
-    "hero": {
-      "title": "Encontre trabalho perto de você",
-      "subtitle": "Vagas na Região dos Lagos — de bico a CLT, tudo em um lugar só."
-    }
-  },
-  "jobs": {
-    "radius": "Raio",
-    "filters": "Filtros",
-    "found": "{{count}} vagas encontradas",
-    "featured": "Em destaque",
-    "urgent": "Contratação Imediata",
-    "salary": { "negotiable": "A combinar" }
-  },
-  "interest": {
-    "title": "Demonstrar interesse",
-    "description": "Seus dados serão enviados para {{company}}",
-    "submit": "Enviar interesse",
-    "sent": "Interesse enviado"
-  }
-}
-```
-
-Toda string visível DEVE usar `t('namespace.key')`.

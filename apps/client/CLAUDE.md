@@ -43,7 +43,6 @@ src/
 ├── hooks/                            # Hooks globais (use-geolocation, use-debounce)
 ├── types/                            # Tipos globais (job, company)
 ├── styles/globals.css                # Tailwind + @theme
-└── locales/pt/translation.json       # i18n PT-BR
 ```
 
 Componentes de feature são **colocated** com a rota: `app/vagas/components/`, `app/vaga/[slug]/hooks/`, etc.
@@ -55,7 +54,7 @@ Antes de implementar, leia os docs em `.claude/skills/frontend-standards/`:
 ```
 .claude/skills/frontend-standards/
 ├── SKILL.md                # Stack, convenções, estrutura, regras de código
-├── component-patterns.md   # Button, Input, Badge, Form, Skeleton, hooks, i18n
+├── component-patterns.md   # Button, Input, Badge, Form, Skeleton, hooks
 ├── routing-patterns.md     # App Router: layouts, SSG/ISR, metadata, sitemap, navegação
 └── tailwind-patterns.md    # Tema TrabalhaLagos, classes v4, responsividade, referência visual
 ```
@@ -66,7 +65,6 @@ Antes de implementar, leia os docs em `.claude/skills/frontend-standards/`:
 2. **SEO em toda página pública**: `generateMetadata` em cada `page.tsx`. JSON-LD `JobPosting` no detalhe de vaga.
 3. **SSG + ISR nas landing pages**: `generateStaticParams` + `revalidate = 600` em `/vagas/[cidade]`.
 4. **Formulários**: react-hook-form + Zod sempre. Schemas colocated em `app/<rota>/schemas/`.
-5. **i18n**: todo texto visível via `t('namespace.key')`. Nunca hardcode.
 6. **Nomenclatura**: `kebab-case` em todos os arquivos. `use-geolocation.hook.ts`, não `useGeolocation.ts`.
 7. **Primitivos UI**: usar `Button`, `Input`, `Card` de `components/ui/`. Nunca HTML bruto.
 8. **Nunca tocar no backend**: este CLAUDE.md cobre apenas `apps/client/`.

@@ -14,7 +14,6 @@ description: >
 - Tailwind CSS v4 (via `@tailwindcss/postcss`)
 - React Query / TanStack Query (estado de servidor — `useQuery`, `useMutation`)
 - react-hook-form + zod + @hookform/resolvers (formulários — obrigatório)
-- i18next + react-i18next (PT-BR em `src/locales/pt/translation.json`)
 - Lucide React (ícones)
 - Leaflet / react-leaflet (mapa de vagas)
 - next-pwa (PWA — service worker, offline)
@@ -210,7 +209,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 // 3. Libs externas
-import { useTranslation } from 'react-i18next'
 import { useForm } from 'react-hook-form'
 // 4. Componentes do projeto (globais)
 import { Button } from '@/components/ui/button'
@@ -230,7 +228,6 @@ Todo formulário com validação **obrigatoriamente** usa `react-hook-form` + `z
 Nunca `useState` para campos. Nunca validação manual.
 
 - Schema Zod **colocated** com a rota: `app/<rota>/schemas/<nome>.schema.ts`
-- Mensagens de erro como chaves i18n
 - Exporte tipos inferidos: `export type CreateInterestData = z.infer<typeof createInterestSchema>`
 - Componentes Input usam `forwardRef` (necessário para `register()`)
 - `disabled={isSubmitting}` no botão submit

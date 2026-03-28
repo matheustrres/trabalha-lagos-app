@@ -37,9 +37,8 @@ Antes de implementar:
 1. Execute pré-requisitos
 2. Analise código existente nos módulos impactados
 3. Implemente: Schema Zod → Types → Components → Route (App Router)
-4. Traduza todo texto visível via i18next em `src/locales/pt/translation.json`
-5. Rode `pnpm build` — zero erros TypeScript
-6. Rode `pnpm lint`
+4. Rode `pnpm build` — zero erros TypeScript
+5. Rode `pnpm lint`
 
 ## Padrões Canônicos
 
@@ -55,7 +54,6 @@ Antes de implementar:
 
 ## Regras
 
-- Todo texto visível via `t('namespace.key')` — nunca hardcode
 - Componentes UI reutilizáveis em `src/components/ui/`
 - Componentes de feature colocated com a rota em `src/app/**/components/`
 - Hooks colocated com a rota em `src/app/**/hooks/`

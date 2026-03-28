@@ -25,5 +25,5 @@
 1. **[2026-03-28] TypeScript strict mode is mandatory in both apps**
    Do instead: ensure `"strict": true` in tsconfig.json; no implicit `any`.
 
-2. **[2026-03-28] User-visible content must be in Portuguese (via i18n), code in English**
+2. **[2026-03-28] User-visible content must be in Portuguese, code in English**
    Do instead: write variable/function/type names in English; UI strings in pt-BR.

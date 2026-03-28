@@ -36,7 +36,7 @@ Estas regras se aplicam a QUALQUER tarefa em QUALQUER app:
 3. **Nomenclatura de arquivos**: `kebab-case` em todo o projeto, sem exceção.
 4. **Commits**: Conventional Commits — `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`.
 5. **Testes**: rodar testes da app afetada antes de considerar qualquer tarefa concluída.
-6. **Idioma do código**: inglês (variáveis, funções, tipos). Conteúdo visível ao usuário: português (via i18n).
+6. **Idioma do código**: inglês (variáveis, funções, tipos). Conteúdo visível ao usuário: português.
 
 ## Documentação Detalhada
 
