@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { DM_Sans, Playfair_Display } from 'next/font/google'
+import { QueryProvider } from '@/components/providers/query-provider'
 import '@/styles/globals.css'
 
 const dmSans = DM_Sans({
@@ -24,7 +25,9 @@ export const metadata: Metadata = {
 
 const RootLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => (
   <html lang="pt-BR" className={`${dmSans.variable} ${playfairDisplay.variable}`}>
-    <body className="font-sans bg-surface text-gray-900 antialiased">{children}</body>
+    <body className="font-sans bg-surface text-gray-900 antialiased">
+      <QueryProvider>{children}</QueryProvider>
+    </body>
   </html>
 )
 
