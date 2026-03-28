@@ -1,0 +1,9 @@
+{
+  "name": "trabalha-lagos",
+  "version": "1.0.0",
+  "description": "",
+  "author": "Matheus Torres <matheustrres.rj@gmail.com>",
+  "license": "MIT",
+  "private": "true",
+  "type": "commonjs"
+}
