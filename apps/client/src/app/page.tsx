@@ -1,7 +1,26 @@
-const HomePage = () => (
-  <div className="flex min-h-screen items-center justify-center">
-    <h1 className="font-display text-4xl font-bold text-primary">TrabalhaLagos</h1>
-  </div>
-)
+import type { Metadata } from "next";
+import { HeroSection } from "./components/hero-section";
+import { CategoriesSection } from "./components/categories-section";
+import { CitiesSection } from "./components/cities-section";
+import { FeaturedSection } from "./components/featured-section";
+import { EmployerCta } from "./components/employer-cta";
 
-export default HomePage
+export const metadata: Metadata = {
+  title: "TrabalhaLagos — Vagas de emprego na Região dos Lagos",
+  description:
+    "Encontre trabalho perto de você na Região dos Lagos. Vagas CLT, PJ, freelancer e temporário.",
+};
+
+const HomePage = () => (
+  <div>
+    <HeroSection />
+    <div className="space-y-6 px-4 py-6">
+      <CategoriesSection />
+      <CitiesSection />
+      <FeaturedSection />
+      <EmployerCta />
+    </div>
+  </div>
+);
+
+export default HomePage;
