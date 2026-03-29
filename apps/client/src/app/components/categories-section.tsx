@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/constants/categories.constants";
+import { MOCK_JOBS } from "@/lib/mocks/jobs.mock";
 
-const CATEGORY_JOB_COUNTS: Record<string, number> = {
-  "comercio-varejo": 3,
-  "turismo-hospitalidade": 4,
-  "construcao-manutencao": 2,
-  "servicos-gerais": 1,
-  alimentacao: 2,
-  "saude-beleza": 1,
-};
+const CATEGORY_JOB_COUNTS = MOCK_JOBS.reduce<Record<string, number>>(
+  (acc, job) => {
+    acc[job.category.slug] = (acc[job.category.slug] ?? 0) + 1;
+    return acc;
+  },
+  {},
+);
 
 export const CategoriesSection = () => {
   const topCategories = CATEGORIES.slice(0, 6);
@@ -26,7 +26,7 @@ export const CategoriesSection = () => {
         {topCategories.map((category) => (
           <Link
             key={category.slug}
-            href="/vagas"
+            href={`/vagas?category=${category.slug}`}
             className="rounded-xl border border-border bg-white p-3 text-center"
           >
             <p className="text-2xl" aria-hidden>

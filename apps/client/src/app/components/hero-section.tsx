@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { MOCK_JOBS } from "@/lib/mocks/jobs.mock";
+import { HeroSearchInput } from "./hero-search-input";
 
 export const HeroSection = () => (
   <div className="relative overflow-hidden bg-linear-to-br from-primary via-primary-dark to-primary-dark/90 px-6 pt-12 pb-10">
@@ -18,15 +18,7 @@ export const HeroSection = () => (
         Vagas na Região dos Lagos — de bico a CLT, tudo em um lugar só.
       </p>
 
-      <Link
-        href="/vagas"
-        className="mt-5 flex items-center gap-2 rounded-xl bg-white px-4 py-3 shadow-sm"
-      >
-        <span className="text-gray-400" aria-hidden>
-          🔍
-        </span>
-        <span className="text-sm text-gray-400">Buscar vagas, empresas...</span>
-      </Link>
+      <HeroSearchInput />
 
       <div className="mt-6 flex gap-6">
         <div>

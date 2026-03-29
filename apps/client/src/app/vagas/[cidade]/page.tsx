@@ -52,11 +52,19 @@ const CidadePage = async ({ params }: Props) => {
         ← Todas as cidades
       </Link>
 
-      <div className="mb-5">
-        <h1 className="font-display text-2xl font-bold text-gray-900">
-          {city.name}
-        </h1>
-        <p className="mt-0.5 text-sm text-gray-500">{jobs.length} vagas</p>
+      <div className="mb-5 flex items-start justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-gray-900">
+            {city.name}
+          </h1>
+          <p className="mt-0.5 text-sm text-gray-500">{jobs.length} vagas</p>
+        </div>
+        <Link
+          href={`/vagas?city=${cidade}`}
+          className="text-sm font-medium text-primary"
+        >
+          Buscar com filtros →
+        </Link>
       </div>
 
       {jobs.length === 0 ? (
