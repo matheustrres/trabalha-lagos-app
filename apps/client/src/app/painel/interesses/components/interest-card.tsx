@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { MessageCircle, Eye, X } from "lucide-react";
 import type { Interest } from "@/types/interest.types";
 
@@ -33,24 +34,33 @@ export const InterestCard = ({
   interest,
   onStatusChange,
 }: InterestCardProps) => {
+  const [flashing, setFlashing] = useState(false);
   const { label, className } = STATUS_CONFIG[interest.status];
   const initial = interest.candidateName.charAt(0).toUpperCase();
+
+  const flash = (cb: () => void) => {
+    setFlashing(true);
+    cb();
+    setTimeout(() => setFlashing(false), 300);
+  };
 
   const handleWhatsApp = () => {
     window.open(`https://wa.me/${interest.candidatePhone}`, "_blank");
     if (interest.status !== "CONTACTED") {
-      onStatusChange(interest.id, "CONTACTED");
+      flash(() => onStatusChange(interest.id, "CONTACTED"));
     }
   };
 
   const handleDiscard = () => {
     if (window.confirm("Tem certeza que deseja descartar este candidato?")) {
-      onStatusChange(interest.id, "REJECTED");
+      flash(() => onStatusChange(interest.id, "REJECTED"));
     }
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-border p-4">
+    <div
+      className={`bg-white rounded-2xl border border-border p-4 transition-opacity duration-150 ${flashing ? "opacity-50" : "opacity-100"}`}
+    >
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
           <span className="text-primary font-semibold text-sm">{initial}</span>
@@ -88,7 +98,7 @@ export const InterestCard = ({
 
         {interest.status === "SENT" && (
           <button
-            onClick={() => onStatusChange(interest.id, "VIEWED")}
+            onClick={() => flash(() => onStatusChange(interest.id, "VIEWED"))}
             className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-500"
           >
             <Eye size={13} aria-hidden />

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import type { ContractType } from "@/types/job.types";
 import { getJobBySlug } from "@/lib/mocks/jobs.mock";
+import { formatSalaryRange } from "@/lib/utils/format-salary.utils";
 import { JobDetailContent } from "./components/job-detail-content";
 import { JobActions } from "./components/job-actions";
 
@@ -28,9 +29,7 @@ export const generateMetadata = async ({
   const job = getJobBySlug(slug);
   if (!job) return {};
 
-  const salary = job.salaryMin
-    ? `R$ ${job.salaryMin.toLocaleString("pt-BR")} - R$ ${job.salaryMax?.toLocaleString("pt-BR")}`
-    : "A combinar";
+  const salary = formatSalaryRange(job.salaryMin, job.salaryMax);
 
   return {
     title: `${job.title} — ${job.company.name}`,

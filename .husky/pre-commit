@@ -1,8 +1,11 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-export NVM_DIR="$HOME/.nvm"
+#!/usr/bin/env sh                            
+. "$(dirname -- "$0")/_/husky.sh"      
+                                              
+export NVM_DIR="$HOME/.nvm"                                                                                                                                 
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-nvm use --silent
-
-cd apps/api && npx lint-staged
+nvm use --silent                                                                                                                                            
+                                            
+ROOT="$(git rev-parse --show-toplevel)"
+                                              
+cd "$ROOT/apps/client" && pnpm lint                                                                                                                         
+cd "$ROOT/apps/api" && npx lint-staged

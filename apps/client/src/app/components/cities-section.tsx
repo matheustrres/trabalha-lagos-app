@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { LAGOS_CITIES } from "@/lib/constants/cities.constants";
 import { getJobsCountByCity } from "@/lib/mocks/jobs.mock";
+import { pluralizeVagas } from "@/lib/utils/pluralize.utils";
 
 export const CitiesSection = () => (
   <section>
@@ -15,11 +16,11 @@ export const CitiesSection = () => (
           <Link
             key={city.slug}
             href={`/vagas/${city.slug}`}
-            className="shrink-0 rounded-xl border border-border bg-white px-4 py-3"
+            className="shrink-0 rounded-xl border border-border bg-white px-4 py-3 transition-all duration-150 hover:shadow-md active:scale-[0.98]"
           >
             <p className="text-sm font-semibold text-gray-900">{city.name}</p>
             <p className="mt-0.5 text-xs font-medium text-primary">
-              {count} vagas
+              {pluralizeVagas(count)}
             </p>
           </Link>
         );

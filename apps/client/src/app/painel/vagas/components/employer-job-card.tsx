@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Pause, Play, X } from "lucide-react";
 import type { EmployerJob } from "@/lib/mocks/employer-jobs.mock";
 import type { JobStatus } from "@/types/job.types";
@@ -37,16 +38,25 @@ export const EmployerJobCard = ({
   job,
   onStatusChange,
 }: EmployerJobCardProps) => {
+  const [flashing, setFlashing] = useState(false);
   const statusConfig = STATUS_CONFIG[job.status];
+
+  const flash = (cb: () => void) => {
+    setFlashing(true);
+    cb();
+    setTimeout(() => setFlashing(false), 300);
+  };
 
   const handleClose = () => {
     if (window.confirm("Tem certeza que deseja encerrar esta vaga?")) {
-      onStatusChange(job.id, "CLOSED");
+      flash(() => onStatusChange(job.id, "CLOSED"));
     }
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-border p-4">
+    <div
+      className={`bg-white rounded-2xl border border-border p-4 transition-opacity duration-150 ${flashing ? "opacity-50" : "opacity-100"}`}
+    >
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-semibold text-gray-900 leading-snug">
           {job.title}
@@ -73,7 +83,7 @@ export const EmployerJobCard = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onStatusChange(job.id, "PAUSED")}
+              onClick={() => flash(() => onStatusChange(job.id, "PAUSED"))}
               className="flex items-center gap-1 text-gray-500"
             >
               <Pause size={14} aria-hidden />
@@ -84,7 +94,7 @@ export const EmployerJobCard = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onStatusChange(job.id, "ACTIVE")}
+              onClick={() => flash(() => onStatusChange(job.id, "ACTIVE"))}
               className="flex items-center gap-1 text-success"
             >
               <Play size={14} aria-hidden />

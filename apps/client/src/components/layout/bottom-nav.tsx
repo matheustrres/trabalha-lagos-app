@@ -20,7 +20,7 @@ export const BottomNav = () => {
   if (pathname.startsWith("/painel")) return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 border-t border-border bg-white pb-[env(safe-area-inset-bottom,8px)]">
+    <nav aria-label="Navegação principal" className="fixed bottom-0 left-0 right-0 border-t border-border bg-white pb-[env(safe-area-inset-bottom,8px)]">
       <div className="max-w-lg mx-auto flex items-center">
         {NAV_ITEMS.map(({ label, icon: Icon, href }) => {
           const isActive =

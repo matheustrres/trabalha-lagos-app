@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SearchX } from "lucide-react";
 import { MOCK_INTERESTS } from "@/lib/mocks/interests.mock";
 import { EMPLOYER_MOCK_JOBS } from "@/lib/mocks/employer-jobs.mock";
 import type { Interest } from "@/types/interest.types";
@@ -84,9 +85,10 @@ const InteressesPage = () => {
 
       <div className="mt-4 space-y-3">
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-12 text-center">
-            <p className="text-gray-500 font-medium">
-              Nenhum interesse recebido ainda
+          <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+            <SearchX size={40} className="text-gray-300" aria-hidden />
+            <p className="font-semibold text-gray-500">
+              Nenhum interesse recebido
             </p>
             <p className="text-sm text-gray-400">
               Quando candidatos demonstrarem interesse nas suas vagas, eles

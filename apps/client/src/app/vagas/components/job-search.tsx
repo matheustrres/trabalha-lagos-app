@@ -10,6 +10,7 @@ import { CATEGORIES } from "@/lib/constants/categories.constants";
 import { LAGOS_CITIES } from "@/lib/constants/cities.constants";
 import { slugify } from "@/lib/utils/slugify.utils";
 import { cn } from "@/lib/utils/cn.utils";
+import { pluralizeVagas } from "@/lib/utils/pluralize.utils";
 import type { Job, ContractType } from "@/types/job.types";
 
 const CONTRACT_FILTER_OPTIONS: Array<{
@@ -123,6 +124,7 @@ export const JobSearch = ({ initialJobs }: JobSearchProps) => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar vagas, empresas..."
+            aria-label="Buscar vagas ou empresas"
             className="flex-1 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
           />
         </div>
@@ -259,7 +261,7 @@ export const JobSearch = ({ initialJobs }: JobSearchProps) => {
 
       <div className="mt-4 flex items-center justify-between">
         <span className="text-sm text-gray-500">
-          {filteredJobs.length} vagas encontradas
+          {pluralizeVagas(filteredJobs.length)} encontradas
         </span>
         <span className="text-sm text-gray-500">Ordenado por distância</span>
       </div>
@@ -271,12 +273,10 @@ export const JobSearch = ({ initialJobs }: JobSearchProps) => {
           ))}
         </div>
       ) : (
-        <div className="mt-16 flex flex-col items-center gap-3 text-center">
+        <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
           <SearchX className="size-10 text-gray-300" aria-hidden="true" />
-          <p className="text-sm font-medium text-gray-600">
-            Nenhuma vaga encontrada
-          </p>
-          <p className="text-xs text-gray-400">
+          <p className="font-semibold text-gray-500">Nenhuma vaga encontrada</p>
+          <p className="text-sm text-gray-400">
             Tente ampliar o raio ou mudar a busca
           </p>
         </div>

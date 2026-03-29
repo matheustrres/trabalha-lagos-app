@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   EMPLOYER_MOCK_JOBS,
@@ -71,14 +72,21 @@ const MinhasVagasPage = () => {
 
       <div className="mt-4 space-y-3">
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 py-12 text-center">
-            <p className="text-gray-400">Nenhuma vaga encontrada</p>
+          <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+            <SearchX size={40} className="text-gray-300" aria-hidden />
+            <p className="font-semibold text-gray-500">
+              Nenhuma vaga encontrada
+            </p>
+            <p className="text-sm text-gray-400">
+              Publique sua primeira vaga para começar
+            </p>
             <Button
               variant="primary"
               size="sm"
+              className="mt-2"
               onClick={() => router.push("/painel/nova-vaga")}
             >
-              Publicar sua primeira vaga
+              Publicar vaga
             </Button>
           </div>
         ) : (

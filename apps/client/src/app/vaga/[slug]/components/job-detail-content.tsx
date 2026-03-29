@@ -1,5 +1,6 @@
 import type { Job } from "@/types/job.types";
 import { Badge } from "@/components/ui/badge";
+import { formatSalaryRange } from "@/lib/utils/format-salary.utils";
 import { JobDetailHeader } from "./job-detail-header";
 
 interface JobDetailContentProps {
@@ -32,9 +33,7 @@ function daysAgo(dateStr: string): string {
 }
 
 export function JobDetailContent({ job }: JobDetailContentProps) {
-  const salary = job.salaryMin
-    ? `R$ ${job.salaryMin.toLocaleString("pt-BR")} - R$ ${job.salaryMax?.toLocaleString("pt-BR")}`
-    : "A combinar";
+  const salary = formatSalaryRange(job.salaryMin, job.salaryMax);
 
   return (
     <div className="pb-24">

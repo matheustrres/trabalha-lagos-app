@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/constants/categories.constants";
 import { MOCK_JOBS } from "@/lib/mocks/jobs.mock";
+import { pluralizeVagas } from "@/lib/utils/pluralize.utils";
 
 const CATEGORY_JOB_COUNTS = MOCK_JOBS.reduce<Record<string, number>>(
   (acc, job) => {
@@ -27,7 +28,7 @@ export const CategoriesSection = () => {
           <Link
             key={category.slug}
             href={`/vagas?category=${category.slug}`}
-            className="rounded-xl border border-border bg-white p-3 text-center"
+            className="rounded-xl border border-border bg-white p-3 text-center transition-all duration-150 hover:shadow-md active:scale-[0.98]"
           >
             <p className="text-2xl" aria-hidden>
               {category.icon}
@@ -36,7 +37,7 @@ export const CategoriesSection = () => {
               {category.name}
             </p>
             <p className="mt-0.5 text-xs font-semibold text-primary">
-              {CATEGORY_JOB_COUNTS[category.slug] ?? 0} vagas
+              {pluralizeVagas(CATEGORY_JOB_COUNTS[category.slug] ?? 0)}
             </p>
           </Link>
         ))}

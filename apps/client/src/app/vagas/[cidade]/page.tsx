@@ -4,6 +4,7 @@ import { SearchX } from "lucide-react";
 import type { Metadata } from "next";
 import { LAGOS_CITIES } from "@/lib/constants/cities.constants";
 import { getJobsByCity } from "@/lib/mocks/jobs.mock";
+import { pluralizeVagas } from "@/lib/utils/pluralize.utils";
 import { JobCard } from "@/components/job-card";
 
 interface Props {
@@ -57,7 +58,9 @@ const CidadePage = async ({ params }: Props) => {
           <h1 className="font-display text-2xl font-bold text-gray-900">
             {city.name}
           </h1>
-          <p className="mt-0.5 text-sm text-gray-500">{jobs.length} vagas</p>
+          <p className="mt-0.5 text-sm text-gray-500">
+            {pluralizeVagas(jobs.length)}
+          </p>
         </div>
         <Link
           href={`/vagas?city=${cidade}`}
@@ -68,9 +71,14 @@ const CidadePage = async ({ params }: Props) => {
       </div>
 
       {jobs.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-16 text-center text-gray-400">
-          <SearchX size={40} aria-hidden />
-          <p className="text-sm">Nenhuma vaga em {city.name} no momento</p>
+        <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+          <SearchX size={40} className="text-gray-300" aria-hidden />
+          <p className="font-semibold text-gray-500">
+            Nenhuma vaga em {city.name}
+          </p>
+          <p className="text-sm text-gray-400">
+            Novas oportunidades aparecem em breve
+          </p>
         </div>
       ) : (
         <div className="space-y-3">

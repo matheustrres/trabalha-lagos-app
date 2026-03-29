@@ -24,6 +24,7 @@ export const HeroSearchInput = () => {
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Buscar vagas, empresas..."
+        aria-label="Buscar vagas"
         className="flex-1 bg-transparent text-sm text-gray-500 placeholder:text-gray-400 outline-none"
       />
     </div>

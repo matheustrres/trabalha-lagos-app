@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CheckCircle } from "lucide-react";
 import { Badge, CONTRACT_BADGE } from "@/components/ui/badge";
 import { cn } from "@/lib/utils/cn.utils";
+import { formatSalaryRange } from "@/lib/utils/format-salary.utils";
 import type { Job, ContractType } from "@/types/job.types";
 
 const CONTRACT_TYPE_LABELS: Record<ContractType, string> = {
@@ -13,17 +14,6 @@ const CONTRACT_TYPE_LABELS: Record<ContractType, string> = {
   TEMPORARY: "Temporário",
   INTERNSHIP: "Estágio",
   OTHER: "Outros",
-};
-
-const formatSalary = (min?: number, max?: number): string => {
-  if (!min) return "A combinar";
-  const fmt = (n: number) =>
-    n.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-      maximumFractionDigits: 0,
-    });
-  return max ? `${fmt(min)} - ${fmt(max)}` : fmt(min);
 };
 
 interface JobCardProps {
@@ -38,10 +28,10 @@ export const JobCard = ({ job }: JobCardProps) => {
     <Link href={`/vaga/${job.slug}`} className="block">
       <div
         className={cn(
-          "relative rounded-2xl bg-white p-4",
+          "relative rounded-2xl bg-white p-4 transition-all duration-150 active:scale-[0.98]",
           job.featured
-            ? "border-2 border-primary shadow-md shadow-primary/10"
-            : "border border-border shadow-sm",
+            ? "border-2 border-primary shadow-md shadow-primary/10 hover:shadow-lg"
+            : "border border-border shadow-sm hover:shadow-md",
         )}
       >
         {job.featured && (
@@ -90,7 +80,7 @@ export const JobCard = ({ job }: JobCardProps) => {
             {job.distanceKm != null && ` • ${job.distanceKm} km`}
           </span>
           <span className="text-sm font-semibold text-primary">
-            {formatSalary(job.salaryMin, job.salaryMax)}
+            {formatSalaryRange(job.salaryMin, job.salaryMax)}
           </span>
         </div>
       </div>
