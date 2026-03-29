@@ -1,14 +1,48 @@
-import Link from "next/link";
+"use client";
 
-export const Header = () => (
-  <header className="sticky top-0 z-40 border-b border-border bg-white px-4 py-3">
-    <div className="max-w-lg mx-auto">
-      <Link href="/" className="inline-flex items-center gap-1.5">
-        <span aria-hidden>⚡</span>
-        <span className="font-display text-lg font-bold text-gray-900">
-          TrabalhaLagos
-        </span>
-      </Link>
-    </div>
-  </header>
-);
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { UserCircle } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth.hook";
+
+export const Header = () => {
+  const pathname = usePathname();
+  const { session, isAuthenticated, isLoading, logout } = useAuth();
+
+  if (pathname === "/login" || pathname === "/cadastro") return null;
+
+  const firstName = session?.name.split(" ")[0] ?? "";
+
+  return (
+    <header className="sticky top-0 z-40 border-b border-border bg-white px-4 py-3">
+      <div className="max-w-lg mx-auto flex items-center justify-between">
+        <Link href="/" className="inline-flex items-center gap-1.5">
+          <span aria-hidden>⚡</span>
+          <span className="font-display text-lg font-bold text-gray-900">
+            TrabalhaLagos
+          </span>
+        </Link>
+
+        {!isLoading &&
+          (isAuthenticated ? (
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1.5 text-sm text-gray-700">
+                <UserCircle size={18} aria-hidden />
+                {firstName}
+              </span>
+              <button
+                onClick={logout}
+                className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                Sair
+              </button>
+            </div>
+          ) : (
+            <Link href="/login" className="text-sm font-medium text-primary">
+              Entrar
+            </Link>
+          ))}
+      </div>
+    </header>
+  );
+};

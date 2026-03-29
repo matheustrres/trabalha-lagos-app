@@ -16,6 +16,8 @@ export const BottomNav = () => {
   const pathname = usePathname();
 
   if (pathname.startsWith("/vaga/")) return null;
+  if (pathname === "/login" || pathname === "/cadastro") return null;
+  if (pathname.startsWith("/painel")) return null;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 border-t border-border bg-white pb-[env(safe-area-inset-bottom,8px)]">

@@ -14,6 +14,16 @@
 1. **[2026-03-28] pnpm is the package manager for this monorepo**
    Do instead: use `pnpm` instead of `npm` or `yarn` for all install/run commands.
 
+## Next.js / React-Hook-Form / Zod Gotchas
+1. **[2026-03-29] Zod v4: `errorMap` renamed to `error`, enums need `as const`**
+   Do instead: use `error: () => ({ message: '...' })` and `z.enum([...] as const, {...})`.
+
+2. **[2026-03-29] `z.coerce.number()` causes Resolver type mismatch with react-hook-form**
+   Do instead: use `z.number().optional()` + `register('field', { valueAsNumber: true })`.
+
+3. **[2026-03-29] `z.boolean().default()` / `z.enum().default()` cause Resolver type mismatch**
+   Do instead: remove `.default()` from schema; set defaults in `useForm({ defaultValues: {...} })`.
+
 ## Domain Behavior Guardrails
 1. **[2026-03-28] apps/api and apps/client never import from each other**
    Do instead: communicate exclusively via REST API. No cross-app imports.
