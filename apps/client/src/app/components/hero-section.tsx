@@ -8,16 +8,7 @@ export const HeroSection = () => (
     <div className="absolute top-1/2 right-1/4 h-20 w-20 rounded-full bg-white/5" />
 
     <div className="relative">
-      <div className="flex items-center gap-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-xl">
-          ⚡
-        </div>
-        <span className="font-display text-xl font-bold text-white">
-          TrabalhaLagos
-        </span>
-      </div>
-
-      <h1 className="mt-6 font-display text-3xl font-extrabold text-white">
+      <h1 className="font-display text-3xl font-extrabold text-white">
         Encontre trabalho
         <br />
         <span className="text-primary-light">perto de você</span>

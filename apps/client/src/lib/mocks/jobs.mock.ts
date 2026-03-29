@@ -8,6 +8,12 @@ export const MOCK_JOBS: Job[] = [
     slug: "garcom-buzios-1",
     description:
       "Restaurante à beira-mar em Búzios busca garçom com experiência em atendimento ao cliente. Temporada alta com possibilidade de efetivação. Benefícios: refeição, transporte e gorjetas.",
+    requirements: [
+      "Experiência mínima de 6 meses como garçom",
+      "Disponibilidade para trabalhar nos finais de semana",
+      "Boa comunicação e atendimento ao cliente",
+      "Ensino médio completo",
+    ],
     company: {
       id: "c1",
       name: "Restaurante Mar Aberto",
@@ -38,6 +44,12 @@ export const MOCK_JOBS: Job[] = [
     slug: "recepcionista-pousada-arraial-2",
     description:
       "Pousada charmosa em Arraial do Cabo contrata recepcionista. Inglês básico desejável. Escala 6x1. Inclui acomodação e refeições durante o turno.",
+    requirements: [
+      "Inglês básico para atendimento a turistas",
+      "Disponibilidade para escala 6x1",
+      "Experiência em recepção ou atendimento ao público",
+      "Ensino médio completo",
+    ],
     company: {
       id: "c2",
       name: "Pousada Arraial Belo",
@@ -68,6 +80,11 @@ export const MOCK_JOBS: Job[] = [
     slug: "vendedora-cabo-frio-3",
     description:
       "Loja de confecções no centro de Cabo Frio seleciona vendedora com experiência em varejo. Comissionamento atrativo sobre vendas. Ambiente dinâmico e boa equipe.",
+    requirements: [
+      "Experiência em vendas no varejo",
+      "Boa comunicação e proatividade",
+      "Disponibilidade de horário comercial",
+    ],
     company: {
       id: "c3",
       name: "Moda Lagos",
@@ -98,6 +115,12 @@ export const MOCK_JOBS: Job[] = [
     slug: "desenvolvedor-full-stack-cabo-frio-4",
     description:
       "Startup de tecnologia com sede em Cabo Frio contrata dev full stack para trabalho 100% remoto. Stack: Node.js, React, PostgreSQL. Ambiente ágil e benefícios flexíveis.",
+    requirements: [
+      "Experiência com Node.js e React",
+      "Conhecimento em PostgreSQL e modelagem de banco de dados",
+      "Familiaridade com metodologias ágeis (Scrum/Kanban)",
+      "Inglês técnico para leitura de documentação",
+    ],
     company: {
       id: "c4",
       name: "TechLagos Soluções",
@@ -128,6 +151,11 @@ export const MOCK_JOBS: Job[] = [
     slug: "pedreiro-sao-pedro-5",
     description:
       "Construtora em expansão busca pedreiro experiente para obra residencial em São Pedro da Aldeia. Início imediato. Vale transporte e alimentação inclusos.",
+    requirements: [
+      "Experiência comprovada em alvenaria e reboco",
+      "Disponibilidade para início imediato",
+      "CNH categoria B (desejável)",
+    ],
     company: {
       id: "c5",
       name: "Construções Lagos Sul",
@@ -158,6 +186,12 @@ export const MOCK_JOBS: Job[] = [
     slug: "cozinheiro-buzios-6",
     description:
       "Bistrô renomado em Búzios contrata cozinheiro com experiência em culinária mediterrânea. Temporada de verão com possibilidade de contrato fixo. Ótimas condições.",
+    requirements: [
+      "Experiência mínima de 1 ano em cozinha profissional",
+      "Conhecimento em culinária mediterrânea",
+      "Disponibilidade para trabalhar nos fins de semana e feriados",
+      "Capacidade de trabalho sob pressão",
+    ],
     company: {
       id: "c6",
       name: "Bistrô das Pedras",
@@ -188,6 +222,11 @@ export const MOCK_JOBS: Job[] = [
     slug: "designer-grafico-sao-pedro-7",
     description:
       "Agência de marketing em São Pedro da Aldeia busca designer freelancer para projetos pontuais. Criação de peças para redes sociais, identidade visual e materiais impressos.",
+    requirements: [
+      "Portfólio com trabalhos de identidade visual e redes sociais",
+      "Domínio de Adobe Illustrator e Photoshop (ou equivalentes)",
+      "Capacidade de cumprir prazos e briefings",
+    ],
     company: {
       id: "c7",
       name: "Agência Azul Marketing",
@@ -218,6 +257,12 @@ export const MOCK_JOBS: Job[] = [
     slug: "atendente-farmacia-arraial-8",
     description:
       "Farmácia em Arraial do Cabo contrata atendente. Desejável experiência com caixa e conhecimento básico em medicamentos. Escala 5x2 com folga nos finais de semana.",
+    requirements: [
+      "Ensino médio completo",
+      "Experiência com operação de caixa",
+      "Conhecimento básico em medicamentos (desejável)",
+      "Disponibilidade para escala 5x2",
+    ],
     company: {
       id: "c8",
       name: "Farmácia Saúde & Vida",
@@ -248,6 +293,11 @@ export const MOCK_JOBS: Job[] = [
     slug: "auxiliar-administrativo-cabo-frio-9",
     description:
       "Imobiliária em Cabo Frio busca auxiliar administrativo para suporte ao setor de vendas. Excel intermediário obrigatório. Horário comercial de segunda a sexta.",
+    requirements: [
+      "Excel intermediário (tabelas, fórmulas básicas)",
+      "Organização e atenção a detalhes",
+      "Ensino médio completo",
+    ],
     company: {
       id: "c9",
       name: "Lagos Imóveis",
@@ -278,6 +328,12 @@ export const MOCK_JOBS: Job[] = [
     slug: "monitor-mergulho-buzios-10",
     description:
       "Centro de mergulho em Búzios contrata monitor certificado (PADI ou SSI). Temporada alta com alta demanda. Inglês conversacional exigido para atendimento de turistas.",
+    requirements: [
+      "Certificação PADI ou SSI de monitor de mergulho",
+      "Inglês conversacional para atendimento a turistas",
+      "Disponibilidade para temporada alta",
+      "Experiência mínima de 1 ano como monitor",
+    ],
     company: {
       id: "c10",
       name: "Búzios Dive Center",
@@ -312,3 +368,6 @@ export const getJobsCountByCity = (citySlug: string): number =>
 
 export const getFeaturedJobs = (): Job[] =>
   MOCK_JOBS.filter((job) => job.featured);
+
+export const getJobBySlug = (slug: string): Job | null =>
+  MOCK_JOBS.find((job) => job.slug === slug) ?? null;

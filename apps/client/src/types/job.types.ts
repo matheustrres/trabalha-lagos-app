@@ -29,6 +29,7 @@ export interface Job {
   title: string;
   slug: string;
   description: string;
+  requirements: string[];
   company: JobCompany;
   category: JobCategory;
   contractType: ContractType;

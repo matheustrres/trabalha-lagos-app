@@ -15,6 +15,8 @@ const NAV_ITEMS = [
 export const BottomNav = () => {
   const pathname = usePathname();
 
+  if (pathname.startsWith("/vaga/")) return null;
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 border-t border-border bg-white pb-[env(safe-area-inset-bottom,8px)]">
       <div className="max-w-lg mx-auto flex items-center">
