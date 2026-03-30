@@ -1,43 +1,75 @@
-import { execSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
-import {
-	PostgreSqlContainer,
-	StartedPostgreSqlContainer,
-} from '@testcontainers/postgresql';
-
-let pgContainer: StartedPostgreSqlContainer;
+import { Client } from 'pg';
 
 export async function setup(): Promise<void> {
-	console.log('\n[e2e] Starting containers...');
+	// Ensure JWT secrets are set for tests
+	process.env['JWT_SECRET'] =
+		process.env['JWT_SECRET'] || 'test-jwt-secret-long-enough-32-chars!!';
+	process.env['JWT_REFRESH_SECRET'] =
+		process.env['JWT_REFRESH_SECRET'] ||
+		'test-jwt-refresh-secret-long-enough-32!!';
 
-	[pgContainer] = await Promise.all([
-		new PostgreSqlContainer('postgres:alpine')
-			.withDatabase('rumo_test_db')
-			.withUsername('rumo_test')
-			.withPassword('rumo_test')
-			.start(),
-	]);
+	const databaseUrl = process.env['DATABASE_URL'];
+	if (!databaseUrl) throw new Error('[e2e] DATABASE_URL is required');
 
-	const databaseUrl = pgContainer.getConnectionUri();
+	const pgDatabase = process.env['PG_DATABASE'] ?? 'trabalha_lagos_test_db';
+	const pgUser = process.env['PG_USER'];
+	const pgPassword = process.env['PG_PASSWORD'];
+	const pgHost = process.env['PG_HOST'] ?? 'localhost';
+	const pgPort = process.env['PG_PORT'] ?? '5432';
 
-	process.env['DATABASE_URL'] = databaseUrl;
-	process.env['PG_USER'] = pgContainer.getUsername();
-	process.env['PG_PASSWORD'] = pgContainer.getPassword();
-	process.env['PG_HOST'] = pgContainer.getHost();
-	process.env['PG_PORT'] = String(pgContainer.getFirstMappedPort());
-	process.env['PG_DATABASE'] = pgContainer.getDatabase();
+	// ── Step 1: Ensure the test database exists ───────────────────────────────
+	const adminUrl = `postgresql://${pgUser}:${pgPassword}@${pgHost}:${pgPort}/postgres`;
+	const adminClient = new Client({ connectionString: adminUrl });
+	await adminClient.connect();
 
-	console.log('[e2e] Running prisma migrate deploy...');
+	const { rowCount } = await adminClient.query(
+		`SELECT 1 FROM pg_database WHERE datname = $1`,
+		[pgDatabase],
+	);
 
-	execSync('npx prisma migrate deploy', {
-		cwd: process.cwd(),
-		stdio: 'inherit',
-		env: { ...process.env, DATABASE_URL: databaseUrl },
-	});
+	if (!rowCount) {
+		console.log(`\n[e2e] Creating test database "${pgDatabase}"...`);
+		await adminClient.query(`CREATE DATABASE "${pgDatabase}"`);
+	}
 
-	console.log('[e2e] Environment ready.\n');
+	await adminClient.end();
+
+	// ── Step 2: Run migrations on the test database ───────────────────────────
+	const dbClient = new Client({ connectionString: databaseUrl });
+	await dbClient.connect();
+
+	console.log('[e2e] Running Drizzle migrations...');
+
+	const migrationSql = readFileSync(
+		join(
+			process.cwd(),
+			'src/shared/modules/database/migrations/0000_chilly_loa.sql',
+		),
+		'utf-8',
+	);
+
+	const statements = migrationSql
+		.split('--> statement-breakpoint')
+		.map((s) => s.trim())
+		.filter(Boolean);
+
+	for (const statement of statements) {
+		try {
+			await dbClient.query(statement);
+		} catch (err: unknown) {
+			const message = err instanceof Error ? err.message : String(err);
+			// Ignore "already exists" errors for idempotency
+			if (!message.includes('already exists')) throw err;
+		}
+	}
+
+	await dbClient.end();
+	console.log('[e2e] Database ready.\n');
 }
 
 export async function teardown(): Promise<void> {
-	await Promise.all([pgContainer?.stop()]);
+	// Using a persistent local test database — nothing to stop
 }

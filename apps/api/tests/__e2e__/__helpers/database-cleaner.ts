@@ -1,14 +1,16 @@
-import { DatabaseService } from '@/shared/modules/database/database.service';
+import { sql } from 'drizzle-orm';
 
-export async function cleanDatabase(db: DatabaseService): Promise<void> {
-	const tableNames = await db.$queryRaw<Array<{ tablename: string }>>`
-    SELECT tablename FROM pg_tables WHERE schemaname = 'public'
-    AND tablename != '_prisma_migrations'
-  `;
+import type { Database } from '@/shared/modules/database/database.provider';
 
-	for (const { tablename } of tableNames) {
-		await db.$executeRawUnsafe(
-			`TRUNCATE TABLE "public"."${tablename}" CASCADE`,
-		);
-	}
+export async function cleanDatabase(db: Database): Promise<void> {
+	const result = await db.execute<{ tablename: string }>(sql`
+		SELECT tablename FROM pg_tables
+		WHERE schemaname = 'public'
+	`);
+
+	const tables = result.rows.map((r) => r.tablename);
+	if (tables.length === 0) return;
+
+	const tableList = tables.map((t) => `"public"."${t}"`).join(', ');
+	await db.execute(sql.raw(`TRUNCATE ${tableList} RESTART IDENTITY CASCADE`));
 }

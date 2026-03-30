@@ -5,7 +5,10 @@ import { cleanDatabase } from './database-cleaner';
 
 import { AppModule } from '@/app.module';
 
-import { DatabaseService } from '@/shared/modules/database/database.service';
+import {
+	DATABASE_TOKEN,
+	type Database,
+} from '@/shared/modules/database/database.provider';
 
 type CreateAppFixtureOptions = {
 	shouldClearAllDb: boolean;
@@ -15,7 +18,7 @@ export async function createAppFixture({
 	shouldClearAllDb,
 }: CreateAppFixtureOptions): Promise<{
 	app: INestApplication;
-	db: DatabaseService;
+	db: Database;
 }> {
 	const module = await Test.createTestingModule({
 		imports: [AppModule],
@@ -30,16 +33,16 @@ export async function createAppFixture({
 			transform: true,
 		}),
 	);
+
+	app.setGlobalPrefix('api/v1');
+
 	await app.init();
 
-	const db = module.get(DatabaseService);
+	const db = module.get<Database>(DATABASE_TOKEN);
 
 	if (shouldClearAllDb) {
 		await cleanDatabase(db);
 	}
 
-	return {
-		app,
-		db,
-	};
+	return { app, db };
 }
