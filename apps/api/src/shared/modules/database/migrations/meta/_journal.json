@@ -8,6 +8,13 @@
       "when": 1774877560232,
       "tag": "0000_chilly_loa",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1774890880664,
+      "tag": "0001_first_morlocks",
+      "breakpoints": true
     }
   ]
 }

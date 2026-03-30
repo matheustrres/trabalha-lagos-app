@@ -13,7 +13,7 @@ export const companies = pgTable('companies', {
 		.unique()
 		.references(() => users.id),
 	name: text('name').notNull(),
-	document: text('document').notNull(),
+	document: text('document'),
 	city: text('city').notNull(),
 	segment: text('segment'),
 	logoUrl: text('logo_url'),
