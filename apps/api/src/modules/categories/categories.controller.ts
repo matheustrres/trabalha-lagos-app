@@ -1,9 +1,10 @@
-import { Public } from '@/common/decorators/public.decorator';
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { CategoriesService } from './categories.service';
 import { CategoryResponseDto } from './dto/category-response.dto';
+
+import { Public } from '@/common/decorators/public.decorator';
 
 import { SwaggerRoute } from '@/shared/docs/swagger';
 

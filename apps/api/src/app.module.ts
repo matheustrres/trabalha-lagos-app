@@ -1,12 +1,16 @@
 import { Module } from '@nestjs/common';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
 import { uuidv7 } from 'uuidv7';
 
 import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
 
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+
+import { AuthModule } from '@/modules/auth/auth.module';
 import { CategoriesModule } from '@/modules/categories/categories.module';
+import { UsersModule } from '@/modules/users/users.module';
 
 import { GlobalExceptionFilter } from '@/shared/lib/exceptions/global-exception-filter';
 import { DatabaseModule } from '@/shared/modules/database/database.module';
@@ -16,6 +20,8 @@ import { EnvModule } from '@/shared/modules/env/env.module';
 	imports: [
 		DatabaseModule,
 		EnvModule,
+		AuthModule,
+		UsersModule,
 		CategoriesModule,
 		LoggerModule.forRoot({
 			pinoHttp: {
@@ -61,6 +67,10 @@ import { EnvModule } from '@/shared/modules/env/env.module';
 		{
 			provide: APP_FILTER,
 			useClass: GlobalExceptionFilter,
+		},
+		{
+			provide: APP_GUARD,
+			useClass: JwtAuthGuard,
 		},
 	],
 })
