@@ -39,14 +39,28 @@ Repositórios injetam via `@Inject(DATABASE_TOKEN)`.
 ```
 src/database/schema/
 ├── enums.ts          # pgEnum: role, contractType, jobStatus, plan, etc.
-├── users.ts          # Tabela users
-├── companies.ts      # Tabela companies
-├── jobs.ts           # Tabela jobs (com coluna geometry PostGIS)
-├── interests.ts      # Tabela interests
-├── categories.ts     # Tabela categories (self-ref)
+├── users.ts          # Tabela users (uuid v7)
+├── companies.ts      # Tabela companies (uuid v7)
+├── jobs.ts           # Tabela jobs (uuid v7, coluna geometry PostGIS)
+├── interests.ts      # Tabela interests (uuid v7)
+├── categories.ts     # Tabela categories (serial)
 ├── relations.ts      # Todas as relações (relations API do Drizzle)
 └── index.ts          # Re-export de tudo
 ```
+
+### Estratégia de IDs
+
+| Entidade | Tipo de ID | Justificativa |
+|---|---|---|
+| users | `uuid v7` | Exposto na API, sensível. Tipo nativo 16 bytes, time-sortable |
+| companies | `uuid v7` | Exposto na API, sensível |
+| jobs | `uuid v7` | Exposto na API, sensível |
+| interests | `uuid v7` | Exposto na API, sensível |
+| categories | `serial` | Dados públicos seeded, ~10 linhas, FK em jobs é 4 bytes vs 16 |
+
+UUID v7 gerado via `uuidv7()` do pacote `uuidv7`. Tipo nativo `uuid` do PostgreSQL (16 bytes, comparação binária, inserções sequenciais no B-tree).
+
+Cidades **não** são tabela — permanecem como constantes em `src/common/constants/cities.ts`.
 
 ### Enums
 
@@ -68,20 +82,20 @@ A coluna `location` usa o tipo `geometry('point')` nativo do Drizzle com SRID 43
 
 ```typescript
 // src/database/schema/jobs.ts
-import { pgTable, text, integer, boolean, timestamp, index, serial } from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, boolean, timestamp, index, uuid } from 'drizzle-orm/pg-core';
 import { geometry } from 'drizzle-orm/pg-core';
-import { createId } from '@paralleldrive/cuid2';
+import { uuidv7 } from 'uuidv7';
 import { contractTypeEnum, jobStatusEnum, contactMethodEnum } from './enums';
 import { companies } from './companies';
 import { categories } from './categories';
 
 export const jobs = pgTable('jobs', {
-  id: text('id').primaryKey().$defaultFn(() => createId()),
-  companyId: text('company_id').notNull().references(() => companies.id),
+  id: uuid('id').primaryKey().$defaultFn(() => uuidv7()),
+  companyId: uuid('company_id').notNull().references(() => companies.id),
   title: text('title').notNull(),
   slug: text('slug').notNull().unique(),
   description: text('description').notNull(),
-  categoryId: text('category_id').notNull().references(() => categories.id),
+  categoryId: integer('category_id').notNull().references(() => categories.id),
   contractType: contractTypeEnum('contract_type').notNull(),
   salaryMin: integer('salary_min'),
   salaryMax: integer('salary_max'),
@@ -174,7 +188,7 @@ async findByRadius(lat: number, lng: number, radiusKm: number, filters: JobFilte
 3. Revisar a migration gerada em `src/database/migrations/`
 4. `npx drizzle-kit migrate` — aplicar
 5. Atualizar DTOs e types afetados
-6. `pnpm test`
+6. `npm run test`
 
 **Nota:** o drizzle-kit gera SQL puro nas migrations — fácil de revisar e versionar. Se precisar de SQL customizado (ex: `CREATE EXTENSION postgis`), criar migration manual na pasta.
 
@@ -196,10 +210,10 @@ O `extensionsFilters: ['postgis']` evita que o drizzle-kit inclua tabelas intern
 
 ### Entidades principais
 
-- `users` — candidato ou empregador, discriminado por `role`
-- `companies` — perfil da empresa, 1:1 com users (role=EMPLOYER)
-- `jobs` — vaga publicada, N:1 companies, N:1 categories, coluna `location` PostGIS
-- `interests` — manifestação de interesse, unique constraint `[userId, jobId]`
-- `categories` — árvore self-referencing via `parentId`
+- `users` — candidato ou empregador, discriminado por `role`. PK: `uuid v7`
+- `companies` — perfil da empresa, 1:1 com users (role=EMPLOYER). PK: `uuid v7`
+- `jobs` — vaga publicada, N:1 companies, N:1 categories, coluna `location` PostGIS. PK: `uuid v7`, FK categoryId: `integer`
+- `interests` — manifestação de interesse, unique constraint `[userId, jobId]`. PK: `uuid v7`
+- `categories` — lista fixa de categorias de vagas (seeded). PK: `serial`
 
 Referir a `src/database/schema/` para o schema completo e atualizado.

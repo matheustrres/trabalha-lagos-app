@@ -57,6 +57,21 @@ FRONTEND_URL=http://localhost:3001
 CORS_ORIGINS=http://localhost:3001
 ```
 
+## Dependências Principais
+
+```json
+{
+  "drizzle-orm": "latest",
+  "drizzle-kit": "latest",
+  "pg": "^8.x",
+  "uuidv7": "^1.x",
+  "zod": "^3.x",
+  "@nestjs/core": "^10.x",
+  "bullmq": "^5.x",
+  "ioredis": "^5.x"
+}
+```
+
 ## Deploy
 
 ### MVP (custo mínimo)
@@ -68,6 +83,8 @@ CORS_ORIGINS=http://localhost:3001
 | Banco | Neon (PostgreSQL + PostGIS) | $0-19/mês |
 | Redis | Upstash (serverless) | $0 |
 | Storage | Cloudflare R2 | $0 |
+
+**Nota sobre Neon:** confirmar que a instância suporta PostGIS. Neon habilita PostGIS por padrão em todas as instâncias.
 
 ### Produção
 
@@ -84,7 +101,7 @@ CORS_ORIGINS=http://localhost:3001
 
 ```
 push to staging → lint → test → deploy staging
-push to main → lint → test → migrate → deploy prod → notify Sentry
+push to main → lint → test → drizzle-kit migrate → deploy prod → notify Sentry
 ```
 
 ## Monitoramento (custo zero)

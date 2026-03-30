@@ -23,7 +23,7 @@
 
 4. **featured/urgent**: apenas plano SEASON. Validar em `JobsService.create()` e `JobsService.update()`. Silenciosamente ignorar os flags se plano não permite (não retornar erro).
 
-5. **Expiração automática**: BullMQ job roda a cada 1h, marca vagas com `expiresAt < NOW()` como `EXPIRED`. Ver `docs/queues.md`.
+5. **Expiração automática**: BullMQ job roda a cada 1h, marca vagas com `expiresAt < NOW()` como `EXPIRED`. Ver `/trabalha-lagos/docs/queues.md`.
 
 6. **Moderação**: MVP publica imediatamente. Admin pode remover via `PATCH /admin/jobs/:id`. Na v2, implementar fila de aprovação.
 
