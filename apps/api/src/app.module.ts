@@ -10,6 +10,7 @@ import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 
 import { AuthModule } from '@/modules/auth/auth.module';
 import { CategoriesModule } from '@/modules/categories/categories.module';
+import { CompaniesModule } from '@/modules/companies/companies.module';
 import { UsersModule } from '@/modules/users/users.module';
 
 import { GlobalExceptionFilter } from '@/shared/lib/exceptions/global-exception-filter';
@@ -22,6 +23,7 @@ import { EnvModule } from '@/shared/modules/env/env.module';
 		EnvModule,
 		AuthModule,
 		UsersModule,
+		CompaniesModule,
 		CategoriesModule,
 		LoggerModule.forRoot({
 			pinoHttp: {

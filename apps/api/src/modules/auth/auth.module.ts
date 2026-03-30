@@ -6,12 +6,13 @@ import { AuthService } from './auth.service';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
+import { CompaniesModule } from '@/modules/companies/companies.module';
 import { UsersModule } from '@/modules/users/users.module';
 
 import { EnvModule } from '@/shared/modules/env/env.module';
 
 @Module({
-	imports: [JwtModule.register({}), UsersModule, EnvModule],
+	imports: [JwtModule.register({}), UsersModule, CompaniesModule, EnvModule],
 	controllers: [AuthController],
 	providers: [AuthService, JwtStrategy, JwtRefreshStrategy],
 	exports: [AuthService],

@@ -9,6 +9,7 @@ import * as argon2 from 'argon2';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
+import { CompaniesService } from '@/modules/companies/companies.service';
 import { UsersService } from '@/modules/users/users.service';
 
 import { EnvService } from '@/shared/modules/env/env.service';
@@ -31,6 +32,7 @@ type AuthResult = TokenPair & {
 export class AuthService {
 	constructor(
 		private readonly usersService: UsersService,
+		private readonly companiesService: CompaniesService,
 		private readonly jwtService: JwtService,
 		private readonly envService: EnvService,
 	) {}
@@ -52,6 +54,14 @@ export class AuthService {
 			city: dto.city,
 			role: dto.role,
 		});
+
+		if (dto.role === 'EMPLOYER') {
+			await this.companiesService.create(user.id, {
+				name: dto.name,
+				city: dto.city,
+				whatsapp: dto.phone,
+			});
+		}
 
 		const tokens = await this.generateTokens(user.id, user.role);
 
