@@ -1,16 +1,19 @@
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { type MockProxy } from 'vitest-mock-extended';
 
 import { AuthService } from '@/modules/auth/auth.service';
+import { CompaniesService } from '@/modules/companies/companies.service';
 import { UsersService } from '@/modules/users/users.service';
+
 import { EnvService } from '@/shared/modules/env/env.service';
-import { JwtService } from '@nestjs/jwt';
 
 import { aLoginDto } from '#/data/builders/dtos/login.dto.builder';
 import { aRegisterDto } from '#/data/builders/dtos/register.dto.builder';
 import { aUser, type CreatedUser } from '#/data/builders/user.builder';
+import { makeCompaniesServiceMock } from '#/data/mocks/companies.service.mock';
 import { makeJwtServiceMock } from '#/data/mocks/jwt.service.mock';
 import { makeUsersServiceMock } from '#/data/mocks/users.service.mock';
 import { makeEnvServiceStub } from '#/data/stubs/env.service.stub';
@@ -23,11 +26,13 @@ vi.mock('argon2', () => ({
 // Drizzle infers the create return type from .returning() — cast through CreatedUser
 // to avoid repeating the complex generic everywhere.
 type CreateReturn = Awaited<ReturnType<UsersService['create']>>;
-const asCreateReturn = (u: CreatedUser): CreateReturn => u as unknown as CreateReturn;
+const asCreateReturn = (u: CreatedUser): CreateReturn =>
+	u as unknown as CreateReturn;
 
 describe(AuthService.name, () => {
 	let SUT: AuthService;
 	let usersService: MockProxy<UsersService>;
+	let companiesService: MockProxy<CompaniesService>;
 	let jwtService: MockProxy<JwtService>;
 	let envService: MockProxy<EnvService>;
 
@@ -35,10 +40,16 @@ describe(AuthService.name, () => {
 		vi.clearAllMocks();
 
 		usersService = makeUsersServiceMock();
+		companiesService = makeCompaniesServiceMock();
 		jwtService = makeJwtServiceMock();
 		envService = makeEnvServiceStub();
 
-		SUT = new AuthService(usersService, jwtService, envService);
+		SUT = new AuthService(
+			usersService,
+			companiesService,
+			jwtService,
+			envService,
+		);
 	});
 
 	// ─── register ──────────────────────────────────────────────────────────────
@@ -50,7 +61,9 @@ describe(AuthService.name, () => {
 
 			usersService.findByPhone.mockResolvedValue(null);
 			vi.mocked(argon2.hash).mockResolvedValue('$argon2id$mock-hash' as never);
-			usersService.create.mockResolvedValue(asCreateReturn(userBuilder.buildCreated()));
+			usersService.create.mockResolvedValue(
+				asCreateReturn(userBuilder.buildCreated()),
+			);
 
 			const result = await SUT.register(dto);
 
@@ -87,7 +100,9 @@ describe(AuthService.name, () => {
 
 			usersService.findByPhone.mockResolvedValue(null);
 			vi.mocked(argon2.hash).mockResolvedValue('$argon2id$hash' as never);
-			usersService.create.mockResolvedValue(asCreateReturn(aUser().buildCreated()));
+			usersService.create.mockResolvedValue(
+				asCreateReturn(aUser().buildCreated()),
+			);
 
 			await SUT.register(dto);
 
@@ -149,11 +164,15 @@ describe(AuthService.name, () => {
 			const dto = aLoginDto().build();
 
 			usersService.findByPhone.mockResolvedValue(null);
-			const notFoundError = await SUT.login(dto).catch((e: UnauthorizedException) => e);
+			const notFoundError = await SUT.login(dto).catch(
+				(e: UnauthorizedException) => e,
+			);
 
 			usersService.findByPhone.mockResolvedValue(aUser().build());
 			vi.mocked(argon2.verify).mockResolvedValue(false as never);
-			const wrongPwError = await SUT.login(dto).catch((e: UnauthorizedException) => e);
+			const wrongPwError = await SUT.login(dto).catch(
+				(e: UnauthorizedException) => e,
+			);
 
 			expect((notFoundError as UnauthorizedException).message).toBe(
 				(wrongPwError as UnauthorizedException).message,
@@ -185,14 +204,18 @@ describe(AuthService.name, () => {
 				throw new Error('jwt expired');
 			});
 
-			await expect(SUT.refresh('expired-token')).rejects.toThrow(UnauthorizedException);
+			await expect(SUT.refresh('expired-token')).rejects.toThrow(
+				UnauthorizedException,
+			);
 		});
 
 		it('throws UnauthorizedException when the user no longer exists', async () => {
 			jwtService.verify.mockReturnValue({ sub: 'ghost-id', role: 'CANDIDATE' });
 			usersService.findById.mockResolvedValue(null);
 
-			await expect(SUT.refresh('valid-token')).rejects.toThrow(UnauthorizedException);
+			await expect(SUT.refresh('valid-token')).rejects.toThrow(
+				UnauthorizedException,
+			);
 		});
 
 		it('generates new tokens using the verified token payload', async () => {
