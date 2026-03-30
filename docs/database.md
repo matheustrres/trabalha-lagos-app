@@ -15,7 +15,7 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 O Drizzle é injetado como provider no NestJS:
 
 ```typescript
-// src/database/index.ts
+// src/shared/modules/database/database.provider.ts
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import * as schema from './schema';
@@ -37,7 +37,7 @@ Repositórios injetam via `@Inject(DATABASE_TOKEN)`.
 ### Schema — Organização
 
 ```
-src/database/schema/
+src/shared/modules/database/schema/
 ├── enums.ts          # pgEnum: role, contractType, jobStatus, plan, etc.
 ├── users.ts          # Tabela users (uuid v7)
 ├── companies.ts      # Tabela companies (uuid v7)
@@ -65,7 +65,7 @@ Cidades **não** são tabela — permanecem como constantes em `src/common/const
 ### Enums
 
 ```typescript
-// src/database/schema/enums.ts
+// src/shared/modules/database/schema/enums.ts
 import { pgEnum } from 'drizzle-orm/pg-core';
 
 export const roleEnum = pgEnum('role', ['CANDIDATE', 'EMPLOYER', 'ADMIN']);
@@ -81,7 +81,7 @@ export const interestStatusEnum = pgEnum('interest_status', ['SENT', 'VIEWED', '
 A coluna `location` usa o tipo `geometry('point')` nativo do Drizzle com SRID 4326 e índice GiST declarativo:
 
 ```typescript
-// src/database/schema/jobs.ts
+// src/shared/modules/database/schema/jobs.ts
 import { pgTable, text, integer, boolean, timestamp, index, uuid } from 'drizzle-orm/pg-core';
 import { geometry } from 'drizzle-orm/pg-core';
 import { uuidv7 } from 'uuidv7';
@@ -183,9 +183,9 @@ async findByRadius(lat: number, lng: number, radiusKm: number, filters: JobFilte
 
 ### Workflow de alteração do schema
 
-1. Editar arquivos em `src/database/schema/`
+1. Editar arquivos em `src/shared/modules/database/schema/`
 2. `npx drizzle-kit generate` — gera migration SQL
-3. Revisar a migration gerada em `src/database/migrations/`
+3. Revisar a migration gerada em `src/shared/modules/database/migrations/`
 4. `npx drizzle-kit migrate` — aplicar
 5. Atualizar DTOs e types afetados
 6. `npm run test`
@@ -198,8 +198,8 @@ async findByRadius(lat: number, lng: number, radiusKm: number, filters: JobFilte
 import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
-  schema: './src/database/schema/index.ts',
-  out: './src/database/migrations',
+  schema: './src/shared/modules/database/schema/index.ts',
+  out: './src/shared/modules/database/migrations',
   dialect: 'postgresql',
   dbCredentials: { url: process.env.DATABASE_URL! },
   extensionsFilters: ['postgis'],  // Ignora tabelas internas do PostGIS
@@ -216,4 +216,4 @@ O `extensionsFilters: ['postgis']` evita que o drizzle-kit inclua tabelas intern
 - `interests` — manifestação de interesse, unique constraint `[userId, jobId]`. PK: `uuid v7`
 - `categories` — lista fixa de categorias de vagas (seeded). PK: `serial`
 
-Referir a `src/database/schema/` para o schema completo e atualizado.
+Referir a `src/shared/modules/database/schema/` para o schema completo e atualizado.

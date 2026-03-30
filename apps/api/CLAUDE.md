@@ -28,11 +28,6 @@ Monolito modular NestJS. Cada feature é um módulo independente em `src/modules
 ```
 src/
 ├── common/          # Guards, decorators, pipes, utils (cross-cutting APENAS)
-├── database/
-│   ├── schema/      # Drizzle schemas (tabelas, enums, relações, tipos PostGIS)
-│   ├── migrations/  # Migrations geradas pelo drizzle-kit
-│   ├── seed.ts      # Seed de categorias
-│   └── index.ts     # Drizzle client instance + provider NestJS
 ├── modules/
 │   ├── auth/        # JWT (access 15min + refresh 7d)
 │   ├── users/       # Candidatos
@@ -44,6 +39,13 @@ src/
 │   ├── payments/    # Asaas — Pix, cartão (v1.5)
 │   ├── notifications/
 │   └── admin/
+├── shared/
+│   ├── database/
+│   │  ├── migrations/              # Migrations geradas pelo drizzle-kit
+│   │  ├── schema/                  # Drizzle schemas (tabelas, enums, relações, tipos PostGIS)
+│   │  ├── database.module.ts       # Database module + providers
+│   │  └── database.provider.ts     # Drizzle client instance + provider NestJS
+│   │  ├── seed.ts                  # Seed de categorias
 └── drizzle.config.ts  # Config do drizzle-kit
 ```
 

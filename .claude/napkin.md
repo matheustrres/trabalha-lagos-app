@@ -24,6 +24,19 @@
 3. **[2026-03-29] `z.boolean().default()` / `z.enum().default()` cause Resolver type mismatch**
    Do instead: remove `.default()` from schema; set defaults in `useForm({ defaultValues: {...} })`.
 
+## Database & Drizzle
+1. **[2026-03-30] docker-compose.yml must use `postgis/postgis:16-3.4` not `postgres:alpine`**
+   Do instead: verify image in docker-compose.yml before running PostGIS migrations; update if it's plain postgres.
+
+2. **[2026-03-30] drizzle-kit migrate fails silently if DB doesn't exist yet**
+   Do instead: create the database manually first (`CREATE DATABASE trabalha_lagos_db`) before running drizzle-kit migrate.
+
+3. **[2026-03-30] drizzle-kit doesn't track manually created SQL files — only those in `_journal.json`**
+   Do instead: prepend manual SQL (e.g. `CREATE EXTENSION IF NOT EXISTS postgis`) to the first generated migration file.
+
+4. **[2026-03-30] Run drizzle-kit with `DATABASE_URL` env var since dotenv-cli syntax differs**
+   Do instead: use `DATABASE_URL="..." pnpm drizzle-kit migrate` directly (not `dotenv -e .env.dev -- pnpm drizzle-kit`).
+
 ## Domain Behavior Guardrails
 1. **[2026-03-28] apps/api and apps/client never import from each other**
    Do instead: communicate exclusively via REST API. No cross-app imports.
