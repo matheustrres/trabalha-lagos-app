@@ -52,6 +52,7 @@ process.on('unhandledRejection', (reason: unknown) => {
 	});
 	const logger = app.get(Logger);
 	app.useLogger(logger);
+	app.setGlobalPrefix('api/v1');
 	app.useGlobalPipes(
 		new ValidationPipe({
 			whitelist: true,

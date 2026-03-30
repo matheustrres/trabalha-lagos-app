@@ -1,0 +1,28 @@
+import { Public } from '@/common/decorators/public.decorator';
+import { Controller, Get } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+
+import { CategoriesService } from './categories.service';
+import { CategoryResponseDto } from './dto/category-response.dto';
+
+import { SwaggerRoute } from '@/shared/docs/swagger';
+
+@ApiTags('categories')
+@Controller('categories')
+export class CategoriesController {
+	constructor(private readonly categoriesService: CategoriesService) {}
+
+	@Public()
+	@Get()
+	@SwaggerRoute({
+		operation: 'Listar categorias com contagem de vagas ativas',
+		responses: [
+			{
+				type: [CategoryResponseDto],
+			},
+		],
+	})
+	findAll(): Promise<CategoryResponseDto[]> {
+		return this.categoriesService.findAll();
+	}
+}

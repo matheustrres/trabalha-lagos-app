@@ -6,6 +6,8 @@ import { uuidv7 } from 'uuidv7';
 import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
 
+import { CategoriesModule } from '@/modules/categories/categories.module';
+
 import { GlobalExceptionFilter } from '@/shared/lib/exceptions/global-exception-filter';
 import { DatabaseModule } from '@/shared/modules/database/database.module';
 import { EnvModule } from '@/shared/modules/env/env.module';
@@ -14,6 +16,7 @@ import { EnvModule } from '@/shared/modules/env/env.module';
 	imports: [
 		DatabaseModule,
 		EnvModule,
+		CategoriesModule,
 		LoggerModule.forRoot({
 			pinoHttp: {
 				autoLogging: false,
