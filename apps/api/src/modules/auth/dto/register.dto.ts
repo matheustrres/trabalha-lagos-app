@@ -9,6 +9,8 @@ import {
 	MinLength,
 } from 'class-validator';
 
+import { IsValidCNPJ, IsValidPhoneBR } from '@/shared/decorators';
+
 export class RegisterDto {
 	@ApiProperty({ example: 'João Silva' })
 	@IsString()
@@ -21,6 +23,7 @@ export class RegisterDto {
 	@IsNotEmpty()
 	@MinLength(10)
 	@MaxLength(15)
+	@IsValidPhoneBR()
 	phone!: string;
 
 	@ApiPropertyOptional({ example: 'joao@email.com' })
@@ -42,4 +45,13 @@ export class RegisterDto {
 	@ApiProperty({ enum: ['CANDIDATE', 'EMPLOYER'] })
 	@IsEnum(['CANDIDATE', 'EMPLOYER'])
 	role!: 'CANDIDATE' | 'EMPLOYER';
+
+	@ApiProperty({
+		example: '12345678000100',
+		description: 'CNPJ para empregadores (obrigatório)',
+	})
+	@IsString()
+	@IsNotEmpty()
+	@IsValidCNPJ()
+	document!: string;
 }

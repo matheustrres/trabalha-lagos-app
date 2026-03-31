@@ -1,5 +1,7 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
+
+import { IsValidCNPJ, IsValidPhoneBR } from '@/shared/decorators';
 
 export class CreateCompanyDto {
 	@ApiProperty({ example: 'Restaurante Beira Mar' })
@@ -12,8 +14,15 @@ export class CreateCompanyDto {
 	@IsNotEmpty()
 	city!: string;
 
-	@ApiPropertyOptional({ example: '22999999999' })
+	@ApiProperty({ example: '22999999999' })
 	@IsString()
-	@IsOptional()
-	whatsapp?: string;
+	@IsNotEmpty()
+	@IsValidPhoneBR()
+	whatsapp!: string;
+
+	@ApiProperty({ example: '12345678000100' })
+	@IsString()
+	@IsNotEmpty()
+	@IsValidCNPJ()
+	document!: string;
 }
