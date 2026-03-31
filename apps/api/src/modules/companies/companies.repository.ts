@@ -10,6 +10,7 @@ import { companies } from '@/shared/modules/database/schema';
 type CreateCompanyData = {
 	userId: string;
 	name: string;
+	document: string;
 	city: string;
 	whatsapp?: string;
 };
@@ -53,6 +54,7 @@ export class CompaniesRepository {
 			.values({
 				userId: data.userId,
 				name: data.name,
+				document: data.document,
 				city: data.city,
 				whatsapp: data.whatsapp,
 				plan: 'FREE',

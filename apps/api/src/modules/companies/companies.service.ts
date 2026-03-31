@@ -33,6 +33,7 @@ export class CompaniesService {
 		return this.companiesRepository.create({
 			userId,
 			name: dto.name,
+			document: dto.document,
 			city: dto.city,
 			whatsapp: dto.whatsapp,
 		});
