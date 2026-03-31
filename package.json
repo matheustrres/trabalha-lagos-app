@@ -5,5 +5,13 @@
   "author": "Matheus Torres <matheustrres.rj@gmail.com>",
   "license": "MIT",
   "private": "true",
-  "type": "commonjs"
+  "type": "commonjs",
+  "scripts": {
+    "lint:api": "pnpm --filter api run lint && pnpm --filter api run format",
+    "lint:client": "pnpm --filter client run lint",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "husky": "^8.0.0"
+  }
 }
