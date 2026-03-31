@@ -39,26 +39,133 @@
 &sort=distance                 # distance | recent
 ```
 
-## Validação (DTOs com Zod)
+## Validação (DTOs com class-validator + class-transformer)
 
-Todo input usa Zod schema + `ZodValidationPipe`. O pipe transforma erros Zod em `BadRequestException` com mensagens descritivas.
+Todo input usa class-validator + class-transformer.
 
 Padrão:
 ```typescript
 // dto/create-job.dto.ts
-import { contractTypeEnum } from '@/database/schema/enums';
+export enum ContractType {
+	CLT = 'CLT',
+	PJ = 'PJ',
+	FREELANCER = 'FREELANCER',
+	TEMPORARY = 'TEMPORARY',
+	INTERNSHIP = 'INTERNSHIP',
+	OTHER = 'OTHER',
+}
 
-export const CreateJobSchema = z.object({
-  title: z.string().min(3).max(120),
-  description: z.string().min(20).max(5000),
-  categoryId: z.string(),
-  contractType: z.enum(contractTypeEnum.enumValues),
-  city: z.string(),
-  locationLng: z.number().min(-180).max(180),
-  locationLat: z.number().min(-90).max(90),
-  // ...
-});
-export type CreateJobDto = z.infer<typeof CreateJobSchema>;
+export enum ContactMethod {
+	WHATSAPP = 'WHATSAPP',
+	PLATFORM = 'PLATFORM',
+	BOTH = 'BOTH',
+}
+
+export class CreateJobDto {
+	@ApiProperty({ example: 'Atendente de Turismo' })
+	@IsString()
+	@IsNotEmpty()
+	@MinLength(3)
+	@MaxLength(120)
+	title!: string;
+
+	@ApiProperty({
+		example: 'Descrição detalhada da vaga com requisitos e benefícios...',
+	})
+	@IsString()
+	@IsNotEmpty()
+	@MinLength(20)
+	@MaxLength(5000)
+	description!: string;
+
+	@ApiProperty({ example: 1 })
+	@IsInt()
+	@Min(1)
+	@Type(() => Number)
+	categoryId!: number;
+
+	@ApiProperty({ enum: ContractType, example: ContractType.CLT })
+	@IsEnum(ContractType)
+	contractType!: ContractType;
+
+	@ApiProperty({ example: 'Cabo Frio' })
+	@IsString()
+	@IsNotEmpty()
+	city!: string;
+
+	@ApiPropertyOptional({ example: 'Rua das Flores, 123' })
+	@IsString()
+	@IsOptional()
+	address?: string;
+
+	@ApiProperty({ example: -42.0187, description: 'Longitude' })
+	@IsNumber()
+	@Min(-180)
+	@Max(180)
+	locationLng!: number;
+
+	@ApiProperty({ example: -22.8789, description: 'Latitude' })
+	@IsNumber()
+	@Min(-90)
+	@Max(90)
+	locationLat!: number;
+
+	@ApiPropertyOptional({
+		example: 200000,
+		description: 'Salário mínimo em centavos',
+	})
+	@IsInt()
+	@Min(0)
+	@IsOptional()
+	@Type(() => Number)
+	salaryMin?: number;
+
+	@ApiPropertyOptional({
+		example: 300000,
+		description: 'Salário máximo em centavos',
+	})
+	@IsInt()
+	@Min(0)
+	@IsOptional()
+	@Type(() => Number)
+	salaryMax?: number;
+
+	@ApiPropertyOptional({ example: false })
+	@IsBoolean()
+	@IsOptional()
+	salaryHidden?: boolean;
+
+	@ApiProperty({ example: '22999999999' })
+	@IsString()
+	@MinLength(10)
+	@MaxLength(15)
+	@IsValidPhoneBR()
+	whatsappContact!: string;
+
+	@ApiPropertyOptional({ enum: ContactMethod, example: ContactMethod.WHATSAPP })
+	@IsEnum(ContactMethod)
+	@IsOptional()
+	contactMethod?: ContactMethod;
+
+	@ApiPropertyOptional({
+		type: [String],
+		example: ['Experiência em atendimento ao cliente'],
+	})
+	@IsArray()
+	@IsString({ each: true })
+	@IsOptional()
+	requirements?: string[];
+
+	@ApiPropertyOptional({ example: false, description: 'Apenas plano SEASON' })
+	@IsBoolean()
+	@IsOptional()
+	featured?: boolean;
+
+	@ApiPropertyOptional({ example: false, description: 'Apenas plano SEASON' })
+	@IsBoolean()
+	@IsOptional()
+	urgent?: boolean;
+}
 ```
 
 Os valores válidos de enums vêm diretamente do schema Drizzle via `.enumValues` — single source of truth.

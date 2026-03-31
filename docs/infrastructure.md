@@ -3,23 +3,23 @@
 ## Docker Compose (dev)
 
 ```yaml
-version: '3.8'
+version: "3.8"
 services:
   postgres:
-    image: postgis/postgis:16-3.4    # NÃO usar postgres puro
+    image: postgis/postgis:16-3.4 # NÃO usar postgres puro
     environment:
       POSTGRES_USER: trabalhalagos
       POSTGRES_PASSWORD: dev_password
       POSTGRES_DB: trabalhalagos_dev
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
   redis:
     image: redis:7-alpine
     ports:
-      - '6379:6379'
+      - "6379:6379"
 
 volumes:
   pgdata:
@@ -65,7 +65,8 @@ CORS_ORIGINS=http://localhost:3001
   "drizzle-kit": "latest",
   "pg": "^8.x",
   "uuidv7": "^1.x",
-  "zod": "^3.x",
+  "class-transformer": "^0.5.1",
+  "class-validator": "^0.14.1",
   "@nestjs/core": "^10.x",
   "bullmq": "^5.x",
   "ioredis": "^5.x"
@@ -76,26 +77,26 @@ CORS_ORIGINS=http://localhost:3001
 
 ### MVP (custo mínimo)
 
-| Componente | Opção | Custo |
-|-----------|-------|-------|
-| Backend | Railway ou Render | $0-7/mês |
-| Frontend | Vercel (free tier) | $0 |
-| Banco | Neon (PostgreSQL + PostGIS) | $0-19/mês |
-| Redis | Upstash (serverless) | $0 |
-| Storage | Cloudflare R2 | $0 |
+| Componente | Opção                       | Custo     |
+| ---------- | --------------------------- | --------- |
+| Backend    | Railway ou Render           | $0-7/mês  |
+| Frontend   | Vercel (free tier)          | $0        |
+| Banco      | Neon (PostgreSQL + PostGIS) | $0-19/mês |
+| Redis      | Upstash (serverless)        | $0        |
+| Storage    | Cloudflare R2               | $0        |
 
 **Nota sobre Neon:** confirmar que a instância suporta PostGIS. Neon habilita PostGIS por padrão em todas as instâncias.
 
 ### Produção
 
-| Componente | Opção |
-|-----------|-------|
-| Backend | AWS ECS Fargate ou EC2 |
-| Frontend | Vercel |
-| Banco | AWS RDS PostgreSQL (com PostGIS) |
-| Redis | AWS ElastiCache ou Upstash |
-| CDN | CloudFront ou Cloudflare |
-| Storage | S3 ou Cloudflare R2 |
+| Componente | Opção                            |
+| ---------- | -------------------------------- |
+| Backend    | AWS ECS Fargate ou EC2           |
+| Frontend   | Vercel                           |
+| Banco      | AWS RDS PostgreSQL (com PostGIS) |
+| Redis      | AWS ElastiCache ou Upstash       |
+| CDN        | CloudFront ou Cloudflare         |
+| Storage    | S3 ou Cloudflare R2              |
 
 ## CI/CD (GitHub Actions)
 

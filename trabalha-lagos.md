@@ -64,7 +64,7 @@ root/
 | Banco | PostgreSQL 16 + PostGIS |
 | Cache / Filas | Redis + BullMQ |
 | Auth | JWT (access + refresh) via Passport.js |
-| Validação | Zod (DTOs) |
+| Validação | class-validator + class-transformer (DTOs) |
 | Pagamentos | Asaas (v1.5) |
 
 ### Frontend (apps/client/)

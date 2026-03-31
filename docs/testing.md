@@ -65,7 +65,8 @@ CORS_ORIGINS=http://localhost:3001
   "drizzle-kit": "latest",
   "pg": "^8.x",
   "uuidv7": "^1.1.0",
-  "zod": "^3.x",
+  "class-transformer": "^0.5.1",
+  "class-validator": "^0.14.1",
   "@nestjs/core": "^10.x",
   "bullmq": "^5.x",
   "ioredis": "^5.x"

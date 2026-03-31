@@ -58,7 +58,7 @@ Antes de trabalhar em um módulo ou domínio específico, leia o documento relev
 ```
 docs/
 ├── database.md          # Schema Drizzle, PostGIS setup, column geometry, queries geo, estratégia de IDs
-├── api.md               # Endpoints REST, DTOs (Zod), validação, paginação, versionamento
+├── api.md               # Endpoints REST, DTOs (class-validator, class-transformer), validação, paginação, versionamento
 ├── auth.md              # JWT flow, guards (@Public, @Roles, @RequiresPlan), regras de acesso
 ├── business-rules.md    # Limites por plano, expiração, moderação, regras críticas
 ├── payments.md          # Integração Asaas, webhook flow, planos (FREE/PRO/SEASON)
@@ -75,7 +75,7 @@ Estas regras se aplicam a TODA tarefa, sem exceção:
 
 1. **Camadas**: controller nunca faz query. Service nunca importa outro service diretamente — importar o módulo.
 2. **PostGIS**: `ST_MakePoint` recebe `(longitude, latitude)` — nessa ordem. Distância em metros, converter km × 1000.
-3. **Validação**: todo input de controller usa Zod schema via `ZodValidationPipe`. Sem `any`.
+3. **Validação**: todo input de controller usa class-validator + class-transformer schema. Sem `any`.
 4. **IDs**: `uuid v7` (via pacote `uuidv7`) para entidades de negócio (users, companies, jobs, interests). `serial` para tabelas de referência (categories). Ver `/trabalha-lagos/docs/database.md` para detalhes.
 5. **Schema centralizado**: todas as tabelas definidas em `src/database/schema/`. Não criar tabelas fora.
 6. **PostGIS queries**: usar `sql` template literals do Drizzle para operações geoespaciais — composíveis e safe contra SQL injection.
