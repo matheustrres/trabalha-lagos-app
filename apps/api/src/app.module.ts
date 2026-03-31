@@ -1,3 +1,4 @@
+import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
@@ -11,20 +12,36 @@ import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { CategoriesModule } from '@/modules/categories/categories.module';
 import { CompaniesModule } from '@/modules/companies/companies.module';
+import { JobsModule } from '@/modules/jobs/jobs.module';
 import { UsersModule } from '@/modules/users/users.module';
 
 import { GlobalExceptionFilter } from '@/shared/lib/exceptions/global-exception-filter';
 import { DatabaseModule } from '@/shared/modules/database/database.module';
 import { EnvModule } from '@/shared/modules/env/env.module';
+import { EnvService } from '@/shared/modules/env/env.service';
+import { RedisModule } from '@/shared/modules/redis/redis.module';
 
 @Module({
 	imports: [
 		DatabaseModule,
 		EnvModule,
+		RedisModule,
+		BullModule.forRootAsync({
+			imports: [EnvModule],
+			useFactory: (envService: EnvService) => ({
+				connection: {
+					host: envService.getKey('REDIS_HOST') ?? 'localhost',
+					port: envService.getKey('REDIS_PORT') ?? 6379,
+					password: envService.getKey('REDIS_PASSWORD'),
+				},
+			}),
+			inject: [EnvService],
+		}),
 		AuthModule,
 		UsersModule,
 		CompaniesModule,
 		CategoriesModule,
+		JobsModule,
 		LoggerModule.forRoot({
 			pinoHttp: {
 				autoLogging: false,
