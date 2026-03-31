@@ -11,6 +11,10 @@ export async function cleanDatabase(db: Database): Promise<void> {
 	const tables = result.rows.map((r) => r.tablename);
 	if (tables.length === 0) return;
 
-	const tableList = tables.map((t) => `"public"."${t}"`).join(', ');
+	// Exclude categories from truncate (it's seeded in global-setup)
+	const tablesToTruncate = tables.filter((t) => t !== 'categories');
+	if (tablesToTruncate.length === 0) return;
+
+	const tableList = tablesToTruncate.map((t) => `"public"."${t}"`).join(', ');
 	await db.execute(sql.raw(`TRUNCATE ${tableList} RESTART IDENTITY CASCADE`));
 }

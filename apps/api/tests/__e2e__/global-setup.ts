@@ -66,6 +66,55 @@ export async function setup(): Promise<void> {
 		}
 	}
 
+	// ── Step 3: Seed categories ───────────────────────────────────────────────
+	console.log('[e2e] Seeding categories...');
+
+	const categories = [
+		{
+			name: 'Comércio e Varejo',
+			slug: 'comercio-varejo',
+			icon: '🏪',
+			order: 1,
+		},
+		{
+			name: 'Turismo e Hospitalidade',
+			slug: 'turismo-hospitalidade',
+			icon: '🏨',
+			order: 2,
+		},
+		{
+			name: 'Construção e Manutenção',
+			slug: 'construcao-manutencao',
+			icon: '🔨',
+			order: 3,
+		},
+		{ name: 'Serviços Gerais', slug: 'servicos-gerais', icon: '🧹', order: 4 },
+		{ name: 'Alimentação', slug: 'alimentacao', icon: '🍽️', order: 5 },
+		{ name: 'Saúde e Beleza', slug: 'saude-beleza', icon: '💇', order: 6 },
+		{ name: 'Educação', slug: 'educacao', icon: '📚', order: 7 },
+		{ name: 'Administrativo', slug: 'administrativo', icon: '📋', order: 8 },
+		{
+			name: 'Tecnologia e Remoto',
+			slug: 'tecnologia-remoto',
+			icon: '💻',
+			order: 9,
+		},
+		{ name: 'Outros', slug: 'outros', icon: '📦', order: 10 },
+	];
+
+	for (const cat of categories) {
+		try {
+			await dbClient.query(
+				`INSERT INTO categories (name, slug, icon, "order") VALUES ($1, $2, $3, $4) ON CONFLICT (slug) DO NOTHING`,
+				[cat.name, cat.slug, cat.icon, cat.order],
+			);
+		} catch (err: unknown) {
+			// Ignore errors if table doesn't exist yet or other issues
+		}
+	}
+
+	console.log('[e2e] Categories seeded.');
+
 	await dbClient.end();
 	console.log('[e2e] Database ready.\n');
 }

@@ -9,12 +9,16 @@ const LOGIN_URL = '/api/v1/auth/login';
 const REFRESH_URL = '/api/v1/auth/refresh';
 const CATEGORIES_URL = '/api/v1/categories';
 
+// CNPJ fixo válido para testes (usado para CANDIDATE que não precisa ter CNPJ real)
+const CNPJ_VALID = '11222333000181';
+
 const validRegisterPayload = {
 	name: 'Maria Souza',
 	phone: '22999990001',
 	password: 'senha@123',
 	city: 'Cabo Frio',
 	role: 'CANDIDATE',
+	document: CNPJ_VALID,
 };
 
 describe('Auth (e2e)', () => {
@@ -147,14 +151,10 @@ describe('Auth (e2e)', () => {
 		});
 
 		it('returns 401 for protected routes without a token', async () => {
-			// Using a dummy protected route — any non-@Public route works.
-			// The app currently only has public auth + category routes, so we verify
-			// the guard is wired by sending a Bearer-less request to a non-existent
-			// protected path and expecting 401 (not 404).
-			const res = await request(app.getHttpServer()).get('/api/v1/jobs');
-
-			// 401 means the guard ran; 404 would mean the route exists but guard didn't.
-			expect([401, 404]).toContain(res.status);
+			const res = await request(app.getHttpServer()).get(
+				'/api/v1/employer/jobs',
+			);
+			expect(res.status).toBe(401);
 		});
 	});
 });
