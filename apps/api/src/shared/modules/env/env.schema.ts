@@ -59,4 +59,17 @@ export class EnvSchema {
 	@IsString()
 	@IsNotEmpty()
 	JWT_REFRESH_EXPIRES_IN!: string;
+
+	@IsString()
+	@IsOptional()
+	REDIS_HOST = 'localhost';
+
+	@IsNumber()
+	@IsOptional()
+	@Transform(({ value }) => parseInt(value))
+	REDIS_PORT = 6379;
+
+	@IsString()
+	@IsOptional()
+	REDIS_PASSWORD?: string;
 }

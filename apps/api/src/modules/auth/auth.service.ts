@@ -60,6 +60,7 @@ export class AuthService {
 				name: dto.name,
 				city: dto.city,
 				whatsapp: dto.phone,
+				document: dto.document,
 			});
 		}
 
