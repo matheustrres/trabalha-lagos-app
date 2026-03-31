@@ -15,6 +15,13 @@
       "when": 1774890880664,
       "tag": "0001_first_morlocks",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774994958906,
+      "tag": "0002_wonderful_tiger_shark",
+      "breakpoints": true
     }
   ]
 }

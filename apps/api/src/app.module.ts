@@ -12,6 +12,7 @@ import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { CategoriesModule } from '@/modules/categories/categories.module';
 import { CompaniesModule } from '@/modules/companies/companies.module';
+import { InterestsModule } from '@/modules/interests/interests.module';
 import { JobsModule } from '@/modules/jobs/jobs.module';
 import { UsersModule } from '@/modules/users/users.module';
 
@@ -42,6 +43,7 @@ import { RedisModule } from '@/shared/modules/redis/redis.module';
 		CompaniesModule,
 		CategoriesModule,
 		JobsModule,
+		InterestsModule,
 		LoggerModule.forRoot({
 			pinoHttp: {
 				autoLogging: false,

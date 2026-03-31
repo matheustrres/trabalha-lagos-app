@@ -48,6 +48,12 @@ export class JobsService {
 		return this.jobsRepository.findByRadius(params);
 	}
 
+	async findByIdOrFail(id: string) {
+		const job = await this.jobsRepository.findById(id);
+		if (!job) throw new NotFoundException('Vaga não encontrada.');
+		return job;
+	}
+
 	async findBySlug(slug: string, ip: string, userAgent: string) {
 		const job = await this.jobsRepository.findBySlug(slug);
 		if (!job) throw new NotFoundException('Vaga não encontrada.');
