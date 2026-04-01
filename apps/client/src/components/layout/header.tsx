@@ -11,7 +11,7 @@ export const Header = () => {
 
   if (pathname === "/login" || pathname === "/cadastro") return null;
 
-  const firstName = session?.name.split(" ")[0] ?? "";
+  const firstName = session?.user.name.split(" ")[0] ?? "";
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-white px-4 py-3">

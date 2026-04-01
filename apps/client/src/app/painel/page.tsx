@@ -22,7 +22,7 @@ const COLOR_MAP: Record<string, { bg: string; text: string }> = {
 const PainelPage = () => {
   const { session } = useAuth();
   const router = useRouter();
-  const firstName = session?.name.split(" ")[0] ?? "Empregador";
+  const firstName = session?.user.name.split(" ")[0] ?? "Empregador";
 
   return (
     <div className="max-w-lg mx-auto">
