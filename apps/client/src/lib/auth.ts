@@ -1,7 +1,12 @@
 export interface Session {
-  token: string;
-  role: "CANDIDATE" | "EMPLOYER";
-  name: string;
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: string;
+    name: string;
+    phone: string;
+    role: "CANDIDATE" | "EMPLOYER";
+  };
 }
 
 export const getSession = (): Session | null => {
@@ -15,8 +20,11 @@ export const getSession = (): Session | null => {
   }
 };
 
+export const SESSION_CHANGE_EVENT = "session-change";
+
 export const setSession = (session: Session): void => {
   localStorage.setItem("session", JSON.stringify(session));
+  window.dispatchEvent(new CustomEvent(SESSION_CHANGE_EVENT));
 };
 
 export const clearSession = (): void => {
@@ -28,5 +36,5 @@ export const isAuthenticated = (): boolean => {
 };
 
 export const isEmployer = (): boolean => {
-  return getSession()?.role === "EMPLOYER";
+  return getSession()?.user.role === "EMPLOYER";
 };
