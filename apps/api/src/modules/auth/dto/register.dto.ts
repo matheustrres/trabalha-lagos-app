@@ -9,7 +9,10 @@ import {
 	MinLength,
 } from 'class-validator';
 
-import { IsValidCNPJ, IsValidPhoneBR } from '@/shared/decorators';
+import {
+	IsValidCNPJ,
+	IsValidPhoneBR,
+} from '@/common/decorators/validation.decorators';
 
 export class RegisterDto {
 	@ApiProperty({ example: 'João Silva' })

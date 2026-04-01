@@ -30,7 +30,7 @@ export class InterestsService {
 	): Promise<InterestSchema> {
 		const job = await this.jobsService.findByIdOrFail(jobId);
 
-		if (job.status !== 'ACTIVE') {
+		if (job?.status !== 'ACTIVE') {
 			throw new NotFoundException('Vaga não encontrada ou não está ativa.');
 		}
 

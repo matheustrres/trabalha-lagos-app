@@ -5,9 +5,9 @@ import {
 	registerDecorator,
 } from 'class-validator';
 
-import { isValidCNPJ } from '../validators/cnpj.validator';
-import { isValidCPF } from '../validators/cpf.validator';
-import { isValidPhoneBR } from '../validators/phone.validator';
+import { isValidCNPJ } from '@/shared/validators/cnpj.validator';
+import { isValidCPF } from '@/shared/validators/cpf.validator';
+import { isValidPhoneBR } from '@/shared/validators/phone.validator';
 
 @ValidatorConstraint({ name: 'isValidCNPJ', async: false })
 export class IsValidCNPJConstraint implements ValidatorConstraintInterface {

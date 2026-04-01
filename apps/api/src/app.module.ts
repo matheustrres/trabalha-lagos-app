@@ -16,7 +16,7 @@ import { InterestsModule } from '@/modules/interests/interests.module';
 import { JobsModule } from '@/modules/jobs/jobs.module';
 import { UsersModule } from '@/modules/users/users.module';
 
-import { GlobalExceptionFilter } from '@/shared/lib/exceptions/global-exception-filter';
+import { GlobalExceptionFilter } from '@/shared/exceptions/global-exception-filter';
 import { DatabaseModule } from '@/shared/modules/database/database.module';
 import { EnvModule } from '@/shared/modules/env/env.module';
 import { EnvService } from '@/shared/modules/env/env.service';

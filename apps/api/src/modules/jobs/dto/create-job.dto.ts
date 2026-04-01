@@ -15,7 +15,7 @@ import {
 	MinLength,
 } from 'class-validator';
 
-import { IsValidPhoneBR } from '@/shared/decorators';
+import { IsValidPhoneBR } from '@/common/decorators/validation.decorators';
 
 export enum ContractType {
 	CLT = 'CLT',

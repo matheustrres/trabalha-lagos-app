@@ -1,7 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-import { IsValidCNPJ, IsValidPhoneBR } from '@/shared/decorators';
+import {
+	IsValidCNPJ,
+	IsValidPhoneBR,
+} from '@/common/decorators/validation.decorators';
 
 export class CreateCompanyDto {
 	@ApiProperty({ example: 'Restaurante Beira Mar' })
