@@ -73,6 +73,7 @@ describe(AuthService.name, () => {
 				id: userBuilder.build().id,
 				name: userBuilder.build().name,
 				phone: userBuilder.build().phone,
+				city: userBuilder.build().city,
 				role: userBuilder.build().role,
 			});
 		});

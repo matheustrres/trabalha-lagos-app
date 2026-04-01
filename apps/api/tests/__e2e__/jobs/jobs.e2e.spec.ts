@@ -61,9 +61,16 @@ describe('Jobs (e2e)', () => {
 	// ─── GET /jobs (public) ───────────────────────────────────────────────────
 
 	describe('GET /jobs', () => {
-		it('returns 200 with empty array when no jobs exist', async () => {
+		it('returns 200 with empty paginated result when no jobs exist', async () => {
 			const res = await request(app.getHttpServer()).get(JOBS_URL).expect(200);
-			expect(res.body).toEqual([]);
+			expect(res.body).toEqual({
+				data: [],
+				meta: {
+					total: 0,
+					page: 1,
+					limit: 20,
+				},
+			});
 		});
 	});
 
