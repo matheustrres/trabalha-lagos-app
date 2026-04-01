@@ -47,7 +47,7 @@ process.on('unhandledRejection', (reason: unknown) => {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
 		bodyParser: false,
 		cors: {
-			origin: ['http://localhost:3000', 'http://localhost:3001'],
+			origin: ['http://localhost:3003'],
 		},
 	});
 	const logger = app.get(Logger);
