@@ -24,6 +24,9 @@
 3. **[2026-03-29] `z.boolean().default()` / `z.enum().default()` cause Resolver type mismatch**
    Do instead: remove `.default()` from schema; set defaults in `useForm({ defaultValues: {...} })`.
 
+4. **[2026-04-01] SSG/ISR quebra build quando API está offline durante prerender**
+   Do instead: em Server Components com `fetch`, usar fallback com `try/catch` e retornar payload seguro (sem lançar erro).
+
 ## Database & Drizzle
 1. **[2026-03-30] docker-compose.yml must use `postgis/postgis:16-3.4` not `postgres:alpine`**
    Do instead: verify image in docker-compose.yml before running PostGIS migrations; update if it's plain postgres.
