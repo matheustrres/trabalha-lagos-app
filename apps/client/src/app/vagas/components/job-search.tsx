@@ -7,12 +7,14 @@ import { Search, SearchX, SlidersHorizontal } from "lucide-react";
 import { JobCard } from "@/components/job-card";
 import { JobListSkeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce.hook";
+import { getSession } from "@/lib/auth";
 import { RADIUS_OPTIONS } from "@/lib/constants/radius.constants";
 import { CATEGORIES } from "@/lib/constants/categories.constants";
 import { LAGOS_CITIES } from "@/lib/constants/cities.constants";
 import { jobsService } from "@/lib/services/jobs.service";
 import { cn } from "@/lib/utils/cn.utils";
 import { pluralizeVagas } from "@/lib/utils/pluralize.utils";
+import { slugify } from "@/lib/utils/slugify.utils";
 import type { ContractType } from "@/types/job.types";
 
 const CONTRACT_FILTER_OPTIONS: Array<{
@@ -30,6 +32,21 @@ const CONTRACT_FILTER_OPTIONS: Array<{
 export const JobSearch = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const resolveCitySlug = (cityValue?: string | null) => {
+    if (!cityValue) return null;
+
+    const bySlug = LAGOS_CITIES.find((cityOption) => cityOption.slug === cityValue);
+    if (bySlug) return bySlug.slug;
+
+    const cityAsSlug = slugify(cityValue);
+    const byName = LAGOS_CITIES.find(
+      (cityOption) => slugify(cityOption.name) === cityAsSlug,
+    );
+
+    return byName?.slug ?? null;
+  };
+
+  const sessionDefaultCity = resolveCitySlug(getSession()?.user.city);
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") ?? "");
   const [radius, setRadius] = useState(() => {
@@ -42,7 +59,9 @@ export const JobSearch = () => {
   const [contractType, setContractType] = useState<ContractType | null>(
     searchParams.get("contractType") as ContractType | null,
   );
-  const [city, setCity] = useState<string | null>(searchParams.get("city"));
+  const [city, setCity] = useState<string | null>(
+    () => searchParams.get("city") ?? sessionDefaultCity,
+  );
   const [showFilters, setShowFilters] = useState(false);
   const page = Number(searchParams.get("page") ?? "1");
 
@@ -51,8 +70,10 @@ export const JobSearch = () => {
     () => LAGOS_CITIES.find((c) => c.slug === city) ?? null,
     [city],
   );
-  const lat = selectedCity?.lat;
-  const lng = selectedCity?.lng;
+  const fallbackCenter = LAGOS_CITIES[0];
+  const radiusLat = selectedCity?.lat ?? fallbackCenter.lat;
+  const radiusLng = selectedCity?.lng ?? fallbackCenter.lng;
+  const shouldApplyRadius = radius < 100 && (selectedCity !== null || radius !== 20);
 
   const { data, isLoading } = useQuery({
     queryKey: [
@@ -67,11 +88,9 @@ export const JobSearch = () => {
     queryFn: () =>
       jobsService.search({
         ...(debouncedQuery && { q: debouncedQuery }),
-        ...(radius < 100 &&
-          lat &&
-          lng && {
-            lat: String(lat),
-            lng: String(lng),
+        ...(shouldApplyRadius && {
+            lat: String(radiusLat),
+            lng: String(radiusLng),
             radius: String(radius),
           }),
         ...(category && { category }),
@@ -170,6 +189,13 @@ export const JobSearch = () => {
           ))}
         </div>
       </div>
+
+      {!selectedCity && radius < 100 && (
+        <p className="mt-1 text-xs text-gray-400">
+          Raio aplicado a partir de Cabo Frio quando nenhuma cidade é
+          selecionada.
+        </p>
+      )}
 
       {showFilters && (
         <div className="mt-3 rounded-xl bg-white border border-border px-4 py-4 space-y-4">
