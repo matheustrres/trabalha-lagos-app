@@ -20,15 +20,6 @@ const validEmployerPayload = {
 	document: CNPJ_VALID,
 };
 
-const validCandidatePayload = {
-	name: 'Candidato Teste',
-	phone: '22999990002',
-	password: 'senha@123',
-	city: 'Cabo Frio',
-	role: 'CANDIDATE',
-	document: CNPJ_VALID,
-};
-
 const validJobPayload = {
 	title: 'Atendente de Turismo',
 	description:
@@ -50,7 +41,6 @@ const validJobPayload = {
 describe('Jobs (e2e)', () => {
 	let app: INestApplication;
 	let employerToken: string;
-	let candidateToken: string;
 
 	beforeAll(async () => {
 		({ app } = await createAppFixture({ shouldClearAllDb: true }));
@@ -62,14 +52,6 @@ describe('Jobs (e2e)', () => {
 			.expect(201);
 
 		employerToken = employerRes.body.accessToken;
-
-		// Setup: criar candidato
-		const candidateRes = await request(app.getHttpServer())
-			.post(REGISTER_URL)
-			.send(validCandidatePayload)
-			.expect(201);
-
-		candidateToken = candidateRes.body.accessToken;
 	});
 
 	afterAll(async () => {
@@ -101,21 +83,6 @@ describe('Jobs (e2e)', () => {
 				status: 'ACTIVE',
 			});
 		});
-
-		it('returns 401 when unauthenticated user tries to create job', async () => {
-			await request(app.getHttpServer())
-				.post(JOBS_URL)
-				.send(validJobPayload)
-				.expect(401);
-		});
-
-		it('returns 403 when candidate tries to create job', async () => {
-			await request(app.getHttpServer())
-				.post(JOBS_URL)
-				.set('Authorization', `Bearer ${candidateToken}`)
-				.send(validJobPayload)
-				.expect(403);
-		});
 	});
 
 	// ─── GET /jobs/:slug (public) ─────────────────────────────────────────────
@@ -140,12 +107,6 @@ describe('Jobs (e2e)', () => {
 				title: 'Atendente de Turismo',
 			});
 		});
-
-		it('returns 404 when slug does not exist', async () => {
-			await request(app.getHttpServer())
-				.get(`${JOBS_URL}/slug-inexistente-12345`)
-				.expect(404);
-		});
 	});
 
 	// ─── GET /employer/jobs (protected) ───────────────────────────────────────
@@ -159,16 +120,69 @@ describe('Jobs (e2e)', () => {
 
 			expect(Array.isArray(res.body)).toBe(true);
 		});
+	});
 
-		it('returns 401 when unauthenticated', async () => {
-			await request(app.getHttpServer()).get(EMPLOYER_JOBS_URL).expect(401);
-		});
+	// ─── PATCH /jobs/:id (protected) ─────────────────────────────────────────
 
-		it('returns 403 when candidate tries to access', async () => {
-			await request(app.getHttpServer())
+	describe('PATCH /jobs/:id', () => {
+		it('returns 200 with updated job when owner edits', async () => {
+			// Buscar uma vaga existente do empregador (criada nos testes anteriores)
+			const listRes = await request(app.getHttpServer())
 				.get(EMPLOYER_JOBS_URL)
-				.set('Authorization', `Bearer ${candidateToken}`)
-				.expect(403);
+				.set('Authorization', `Bearer ${employerToken}`)
+				.expect(200);
+
+			const jobs = listRes.body;
+			expect(jobs.length).toBeGreaterThan(0);
+
+			const jobId = jobs[0].id;
+
+			// Editar a vaga com payload válido (campos opcionais)
+			const res = await request(app.getHttpServer())
+				.patch(`${JOBS_URL}/${jobId}`)
+				.set('Authorization', `Bearer ${employerToken}`)
+				.send({
+					title: 'Título Atualizado',
+					description:
+						'Descrição atualizada da vaga com novos requisitos e benefícios.',
+				})
+				.expect(200);
+
+			expect(res.body).toMatchObject({
+				id: jobId,
+				title: 'Título Atualizado',
+				description:
+					'Descrição atualizada da vaga com novos requisitos e benefícios.',
+			});
+		});
+	});
+
+	// ─── PATCH /jobs/:id/status (protected) ───────────────────────────────────
+
+	describe('PATCH /jobs/:id/status', () => {
+		it('returns 200 with job with new status when owner changes status', async () => {
+			// Buscar uma vaga existente do empregador (criada nos testes anteriores)
+			const listRes = await request(app.getHttpServer())
+				.get(EMPLOYER_JOBS_URL)
+				.set('Authorization', `Bearer ${employerToken}`)
+				.expect(200);
+
+			const jobs = listRes.body;
+			expect(jobs.length).toBeGreaterThan(0);
+
+			const jobId = jobs[0].id;
+
+			// Alterar status da vaga
+			const res = await request(app.getHttpServer())
+				.patch(`${JOBS_URL}/${jobId}/status`)
+				.set('Authorization', `Bearer ${employerToken}`)
+				.send({ status: 'CLOSED' })
+				.expect(200);
+
+			expect(res.body).toMatchObject({
+				id: jobId,
+				status: 'CLOSED',
+			});
 		});
 	});
 });

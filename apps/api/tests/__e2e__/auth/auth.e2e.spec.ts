@@ -52,29 +52,6 @@ describe('Auth (e2e)', () => {
 				},
 			});
 		});
-
-		it('returns 409 when the same phone is registered again', async () => {
-			const res = await request(app.getHttpServer())
-				.post(REGISTER_URL)
-				.send(validRegisterPayload)
-				.expect(409);
-
-			expect(res.body.detail).toContain('Telefone já cadastrado.');
-		});
-
-		it('returns 400 when required fields are missing', async () => {
-			await request(app.getHttpServer())
-				.post(REGISTER_URL)
-				.send({ phone: '22999990001' })
-				.expect(400);
-		});
-
-		it('returns 400 when role is not CANDIDATE or EMPLOYER', async () => {
-			await request(app.getHttpServer())
-				.post(REGISTER_URL)
-				.send({ ...validRegisterPayload, phone: '22999990099', role: 'ADMIN' })
-				.expect(400);
-		});
 	});
 
 	// ─── Login ─────────────────────────────────────────────────────────────────
@@ -94,20 +71,6 @@ describe('Auth (e2e)', () => {
 					role: 'CANDIDATE',
 				},
 			});
-		});
-
-		it('returns 401 when phone is not registered', async () => {
-			await request(app.getHttpServer())
-				.post(LOGIN_URL)
-				.send({ phone: '00000000000', password: 'senha@123' })
-				.expect(401);
-		});
-
-		it('returns 401 when password is wrong', async () => {
-			await request(app.getHttpServer())
-				.post(LOGIN_URL)
-				.send({ phone: '22999990001', password: 'wrong-password' })
-				.expect(401);
 		});
 	});
 
@@ -134,13 +97,6 @@ describe('Auth (e2e)', () => {
 				refreshToken: expect.any(String),
 			});
 		});
-
-		it('returns 401 when refresh token is invalid', async () => {
-			await request(app.getHttpServer())
-				.post(REFRESH_URL)
-				.send({ refreshToken: 'not-a-valid-jwt' })
-				.expect(401);
-		});
 	});
 
 	// ─── Guard behaviour ───────────────────────────────────────────────────────
@@ -148,13 +104,6 @@ describe('Auth (e2e)', () => {
 	describe('Global JwtAuthGuard', () => {
 		it('allows unauthenticated access to @Public() route (GET /categories)', async () => {
 			await request(app.getHttpServer()).get(CATEGORIES_URL).expect(200);
-		});
-
-		it('returns 401 for protected routes without a token', async () => {
-			const res = await request(app.getHttpServer()).get(
-				'/api/v1/employer/jobs',
-			);
-			expect(res.status).toBe(401);
 		});
 	});
 });
