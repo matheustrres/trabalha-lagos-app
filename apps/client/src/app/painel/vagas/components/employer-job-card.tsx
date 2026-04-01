@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { Pause, Play, X } from "lucide-react";
-import type { EmployerJob } from "@/lib/mocks/employer-jobs.mock";
-import type { JobStatus } from "@/types/job.types";
+import type { EmployerJob, JobStatus } from "@/types/job.types";
 import { Button } from "@/components/ui/button";
 
 const CONTRACT_TYPE_LABEL: Record<string, string> = {

@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  EMPLOYER_MOCK_JOBS,
-  type EmployerJob,
-} from "@/lib/mocks/employer-jobs.mock";
-import type { JobStatus } from "@/types/job.types";
+import { JobListSkeleton } from "@/components/ui/skeleton";
+import { jobsService } from "@/lib/services/jobs.service";
+import type { EmployerJob, JobStatus } from "@/types/job.types";
 import { EmployerJobCard } from "./components/employer-job-card";
 
 type FilterStatus = "ALL" | JobStatus;
@@ -24,8 +23,16 @@ const STATUS_ORDER: JobStatus[] = ["ACTIVE", "PAUSED", "CLOSED", "EXPIRED"];
 
 const MinhasVagasPage = () => {
   const router = useRouter();
-  const [jobs, setJobs] = useState<EmployerJob[]>(EMPLOYER_MOCK_JOBS);
+  const { data, isLoading } = useQuery({
+    queryKey: ["employer-jobs"],
+    queryFn: jobsService.findByCompany,
+  });
+  const [jobs, setJobs] = useState<EmployerJob[]>([]);
   const [filter, setFilter] = useState<FilterStatus>("ALL");
+
+  useEffect(() => {
+    setJobs(data ?? []);
+  }, [data]);
 
   const handleStatusChange = (id: string, status: JobStatus) => {
     setJobs((prev) =>
@@ -71,7 +78,9 @@ const MinhasVagasPage = () => {
       </div>
 
       <div className="mt-4 space-y-3">
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <JobListSkeleton count={3} />
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
             <SearchX size={40} className="text-gray-300" aria-hidden />
             <p className="font-semibold text-gray-500">

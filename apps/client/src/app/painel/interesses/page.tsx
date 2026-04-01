@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { SearchX } from "lucide-react";
 import { MOCK_INTERESTS } from "@/lib/mocks/interests.mock";
-import { EMPLOYER_MOCK_JOBS } from "@/lib/mocks/employer-jobs.mock";
+import { jobsService } from "@/lib/services/jobs.service";
 import type { Interest } from "@/types/interest.types";
 import { InterestCard } from "./components/interest-card";
 
@@ -17,6 +18,10 @@ const STATUS_FILTERS: { label: string; value: FilterStatus }[] = [
 ];
 
 const InteressesPage = () => {
+  const { data: companyJobs } = useQuery({
+    queryKey: ["employer-jobs"],
+    queryFn: jobsService.findByCompany,
+  });
   const [interests, setInterests] = useState<Interest[]>(MOCK_INTERESTS);
   const [statusFilter, setStatusFilter] = useState<FilterStatus>("ALL");
   const [jobFilter, setJobFilter] = useState<string>("ALL");
@@ -75,7 +80,7 @@ const InteressesPage = () => {
           className="h-10 w-full rounded-xl border border-border bg-white px-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
         >
           <option value="ALL">Todas as vagas</option>
-          {EMPLOYER_MOCK_JOBS.map((job) => (
+          {(companyJobs ?? []).map((job) => (
             <option key={job.id} value={job.id}>
               {job.title}
             </option>
