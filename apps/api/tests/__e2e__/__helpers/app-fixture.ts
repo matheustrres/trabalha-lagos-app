@@ -30,9 +30,12 @@ export async function createAppFixture({
 			if (token === EnvService) {
 				return mock<EnvService>({
 					getKey: (key: string) => {
-						if (key === 'REDIS_HOST') return 'localhost';
-						if (key === 'REDIS_PORT') return 6379;
-						if (key === 'REDIS_PASSWORD') return undefined;
+						if (key === 'REDIS_HOST')
+							return process.env['REDIS_HOST'] || 'localhost';
+						if (key === 'REDIS_PORT')
+							return parseInt(process.env['REDIS_PORT'] || '6379', 10);
+						if (key === 'REDIS_PASSWORD')
+							return process.env['REDIS_PASSWORD'] || undefined;
 						return undefined;
 					},
 				});
