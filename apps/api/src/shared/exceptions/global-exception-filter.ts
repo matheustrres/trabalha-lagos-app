@@ -24,6 +24,7 @@ type HttpValidationResponse = {
 	message: string | string[];
 	error: string;
 	statusCode: number;
+	detail?: string | string[];
 };
 
 @Catch()
@@ -80,23 +81,41 @@ export class GlobalExceptionFilter implements ExceptionFilter<unknown> {
 
 	#logError(message: string, exception: unknown): void {
 		const serializedError = this.#serializeError(exception);
-		this.logger.assign({ err: serializedError });
-		this.logger.error(message);
+
+		if (exception instanceof HttpException && exception.getStatus() < 500) {
+			this.logger.warn({ err: serializedError }, 'Handled HTTP exception');
+			return;
+		}
+
+		this.logger.error({ err: serializedError }, message);
 	}
 
 	#serializeError(exception: unknown): Record<string, unknown> {
 		if (exception instanceof HttpException) {
 			const response = exception.getResponse() as HttpValidationResponse;
+			const statusCode = exception.getStatus();
+			const detail =
+				response.detail ??
+				(Array.isArray(response.message)
+					? response.message
+					: [response.message]);
 			return {
 				type: exception.constructor.name,
 				message: exception.message,
-				statusCode: response.statusCode,
+				statusCode,
+				error: response.error,
+				detail,
+				...(statusCode >= 500 && {
+					response,
+					stack: exception.stack,
+				}),
 			};
 		}
 		if (exception instanceof Error) {
 			return {
 				type: exception.constructor.name,
 				message: exception.message,
+				stack: exception.stack,
 			};
 		}
 		return { type: 'Unknown', message: String(exception) };

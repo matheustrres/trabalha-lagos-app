@@ -52,14 +52,61 @@ import { RedisModule } from '@/shared/modules/redis/redis.module';
 				genReqId: (request: any) =>
 					request?.requestContext?.requestId || uuidv7(),
 				serializers: {
-					err: (err) => ({
-						type: err.constructor?.name,
-						message: err.message,
-						// stack: err.stack,
-						...(err.response?.statusCode && {
-							statusCode: err.response.statusCode,
-						}),
-					}),
+					err: (err: any) => {
+						const getTrimmedStack = (stack?: string, maxLines: number = 6) => {
+							if (!stack) return undefined;
+							return stack.split('\n').slice(0, maxLines).join('\n');
+						};
+
+						if (!err) return err;
+
+						if (typeof err.getStatus === 'function') {
+							const response =
+								typeof err.getResponse === 'function'
+									? err.getResponse()
+									: undefined;
+							const statusCode = err.getStatus();
+
+							return {
+								type: err.constructor?.name,
+								message: err.message,
+								statusCode,
+								detail: response?.detail ?? response?.message,
+								error: response?.error,
+								...(statusCode >= 500 && {
+									stack: getTrimmedStack(err.stack),
+								}),
+							};
+						}
+
+						if (err.type && err.message) {
+							const statusCode =
+								typeof err.statusCode === 'number' ? err.statusCode : undefined;
+							return {
+								type: err.type,
+								message: err.message,
+								statusCode,
+								detail: err.detail,
+								error: err.error,
+								...(statusCode === undefined || statusCode >= 500
+									? { stack: getTrimmedStack(err.stack) }
+									: {}),
+							};
+						}
+
+						const statusCode = err.response?.statusCode;
+
+						return {
+							type: err.constructor?.name,
+							message: err.message,
+							statusCode,
+							detail: err.response?.detail ?? err.response?.message,
+							error: err.response?.error,
+							...(statusCode === undefined || statusCode >= 500
+								? { stack: getTrimmedStack(err.stack) }
+								: {}),
+						};
+					},
 					req(req) {
 						return {
 							id: req.id,
