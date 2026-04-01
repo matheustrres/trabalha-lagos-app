@@ -68,6 +68,7 @@ export class JobsRepository {
 			category,
 			contractType,
 			city,
+			featured,
 			q,
 			page,
 			limit,
@@ -99,6 +100,7 @@ export class JobsRepository {
 			categoryId !== undefined ? eq(jobs.categoryId, categoryId) : undefined,
 			contractType ? eq(jobs.contractType, contractType) : undefined,
 			city ? eq(jobs.city, city) : undefined,
+			featured !== undefined ? eq(jobs.featured, featured) : undefined,
 			q ? ilike(jobs.title, `%${q}%`) : undefined,
 		];
 
@@ -139,6 +141,46 @@ export class JobsRepository {
 			offset: (page - 1) * limit,
 			orderBy: orderExprs,
 		});
+	}
+
+	async countByRadius(params: QueryJobsDto): Promise<number> {
+		const { lat, lng, radius, category, contractType, city, featured, q } =
+			params;
+		const hasGeo = lat !== undefined && lng !== undefined;
+
+		const point = hasGeo
+			? sql`ST_SetSRID(ST_MakePoint(${lng!}, ${lat!}), 4326)`
+			: null;
+
+		let categoryId: number | undefined;
+		if (category) {
+			const cat = await this.db.query.categories.findFirst({
+				where: eq(categories.slug, category),
+				columns: { id: true },
+			});
+			if (!cat) return 0;
+			categoryId = cat.id;
+		}
+
+		const conditions = [
+			eq(jobs.status, 'ACTIVE'),
+			gt(jobs.expiresAt, sql`NOW()`),
+			hasGeo && point
+				? sql`ST_DWithin(${jobs.location}::geography, ${point}::geography, ${radius * 1000})`
+				: undefined,
+			categoryId !== undefined ? eq(jobs.categoryId, categoryId) : undefined,
+			contractType ? eq(jobs.contractType, contractType) : undefined,
+			city ? eq(jobs.city, city) : undefined,
+			featured !== undefined ? eq(jobs.featured, featured) : undefined,
+			q ? ilike(jobs.title, `%${q}%`) : undefined,
+		];
+
+		const [result] = await this.db
+			.select({ count: sql<number>`COUNT(*)::int` })
+			.from(jobs)
+			.where(and(...conditions));
+
+		return result?.count ?? 0;
 	}
 
 	async findBySlug(slug: string): Promise<JobSchemaWithRelations | null> {

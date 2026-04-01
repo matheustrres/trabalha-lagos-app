@@ -50,10 +50,23 @@ export class JobsService {
 		private readonly viewCounterService: ViewCounterService,
 	) {}
 
-	async search(
-		params: QueryJobsDto,
-	): Promise<JobSchemaWithDetailsNoLocation[]> {
-		return this.jobsRepository.findByRadius(params);
+	async search(params: QueryJobsDto): Promise<{
+		data: JobSchemaWithDetailsNoLocation[];
+		meta: { total: number; page: number; limit: number };
+	}> {
+		const [data, total] = await Promise.all([
+			this.jobsRepository.findByRadius(params),
+			this.jobsRepository.countByRadius(params),
+		]);
+
+		return {
+			data,
+			meta: {
+				total,
+				page: params.page,
+				limit: params.limit,
+			},
+		};
 	}
 
 	async findByIdOrFail(id: string): Promise<JobSchema | null> {

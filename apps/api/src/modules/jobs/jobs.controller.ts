@@ -16,6 +16,7 @@ import type { Request } from 'express';
 import { CreateJobDto } from './dto/create-job.dto';
 import { JobResponseDto } from './dto/job-response.dto';
 import { QueryJobsDto } from './dto/query-jobs.dto';
+import { SearchJobsResponseDto } from './dto/search-jobs-response.dto';
 import { UpdateJobStatusDto } from './dto/update-job-status.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { JobsService } from './jobs.service';
@@ -39,7 +40,7 @@ export class JobsController {
 	@Get('jobs')
 	@SwaggerRoute({
 		operation: 'Buscar vagas com filtros e geolocalização',
-		responses: [{ status: HttpStatus.OK, type: [JobResponseDto] }],
+		responses: [{ status: HttpStatus.OK, type: SearchJobsResponseDto }],
 		queries: [
 			{ name: 'lat', required: false },
 			{ name: 'lng', required: false },
@@ -47,6 +48,7 @@ export class JobsController {
 			{ name: 'category', required: false },
 			{ name: 'contractType', required: false },
 			{ name: 'city', required: false },
+			{ name: 'featured', required: false },
 			{ name: 'q', required: false },
 			{ name: 'page', required: false },
 			{ name: 'limit', required: false },
