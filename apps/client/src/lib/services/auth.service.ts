@@ -22,6 +22,7 @@ export interface AuthResponse {
     id: string;
     name: string;
     phone: string;
+    city?: string | null;
     role: "CANDIDATE" | "EMPLOYER";
   };
 }

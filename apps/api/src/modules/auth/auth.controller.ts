@@ -44,9 +44,7 @@ export class AuthController {
 		operation: 'Renovar par de tokens',
 		responses: [{ status: HttpStatus.OK, type: AuthResponseDto }],
 	})
-	async refresh(
-		@Body() dto: RefreshTokenDto,
-	): Promise<{ accessToken: string; refreshToken: string }> {
+	async refresh(@Body() dto: RefreshTokenDto): Promise<AuthResponseDto> {
 		return this.authService.refresh(dto.refreshToken);
 	}
 }

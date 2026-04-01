@@ -24,6 +24,7 @@ type AuthResult = TokenPair & {
 		id: string;
 		name: string;
 		phone: string;
+		city?: string | null;
 		role: string;
 	};
 };
@@ -72,6 +73,7 @@ export class AuthService {
 				id: user.id,
 				name: user.name,
 				phone: user.phone,
+				city: user.city,
 				role: user.role,
 			},
 		};
@@ -101,12 +103,13 @@ export class AuthService {
 				id: user.id,
 				name: user.name,
 				phone: user.phone,
+				city: user.city,
 				role: user.role,
 			},
 		};
 	}
 
-	async refresh(refreshToken: string): Promise<TokenPair> {
+	async refresh(refreshToken: string): Promise<AuthResult> {
 		let payload: { sub: string; role: string };
 
 		try {
@@ -126,7 +129,18 @@ export class AuthService {
 			throw new UnauthorizedException('Usuário não encontrado.');
 		}
 
-		return this.generateTokens(user.id, user.role);
+		const tokens = await this.generateTokens(user.id, user.role);
+
+		return {
+			...tokens,
+			user: {
+				id: user.id,
+				name: user.name,
+				phone: user.phone,
+				city: user.city,
+				role: user.role,
+			},
+		};
 	}
 
 	private async generateTokens(

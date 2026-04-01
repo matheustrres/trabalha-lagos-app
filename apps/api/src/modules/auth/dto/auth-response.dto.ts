@@ -10,5 +10,5 @@ export class AuthResponseDto {
 	refreshToken!: string;
 
 	@ApiProperty({ type: UserResponseDto })
-	user!: Pick<UserResponseDto, 'id' | 'name' | 'phone' | 'role'>;
+	user!: Pick<UserResponseDto, 'id' | 'name' | 'phone' | 'role' | 'city'>;
 }
