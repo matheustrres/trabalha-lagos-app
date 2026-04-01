@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LAGOS_CITIES } from "@/lib/constants/cities.constants";
 import { setSession } from "@/lib/auth";
+import { authService } from "@/lib/services/auth.service";
 import { RoleSelector } from "./role-selector";
 import {
   candidateSchema,
@@ -98,12 +99,29 @@ export const RegisterForm = () => {
   const onSubmit = async (data: FormData) => {
     setServerError(null);
     try {
-      // await api.post('/auth/register', { ...data, role })
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setSession({ token: "fake-token", role, name: data.name });
+      const payload = {
+        name: data.name,
+        phone: data.phone.replace(/\D/g, ""),
+        email: data.email || undefined,
+        password: data.password,
+        city: data.city,
+        role,
+        ...(role === "EMPLOYER" && {
+          document:
+            (data as EmployerFormData).document?.replace(/\D/g, "") ?? "",
+        }),
+      };
+      const response = await authService.register(payload);
+      setSession(response);
+      await new Promise((resolve) => setTimeout(resolve, 500));
       router.push(role === "EMPLOYER" ? "/painel" : "/");
-    } catch {
-      setServerError("Erro ao criar conta. Tente novamente.");
+    } catch (err) {
+      const error = err as { status?: number };
+      if (error.status === 409) {
+        setServerError("Este telefone já está cadastrado.");
+      } else {
+        setServerError("Erro ao criar conta. Tente novamente.");
+      }
     }
   };
 

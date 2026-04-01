@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { setSession } from "@/lib/auth";
+import { authService } from "@/lib/services/auth.service";
 import { loginSchema, type LoginFormData } from "../schemas/login.schema";
 
 export const LoginForm = () => {
@@ -25,12 +26,19 @@ export const LoginForm = () => {
   const onSubmit = async (data: LoginFormData) => {
     setServerError(null);
     try {
-      // await api.post('/auth/login', data)
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setSession({ token: "fake-token", role: "EMPLOYER", name: data.phone });
-      router.push("/painel");
-    } catch {
-      setServerError("Telefone ou senha incorretos.");
+      const response = await authService.login({
+        phone: data.phone.replace(/\D/g, ""),
+        password: data.password,
+      });
+      setSession(response);
+      router.push(response.user.role === "EMPLOYER" ? "/painel" : "/");
+    } catch (err) {
+      const error = err as { status?: number };
+      if (error.status === 401) {
+        setServerError("Telefone ou senha incorretos.");
+      } else {
+        setServerError("Erro ao entrar. Tente novamente.");
+      }
     }
   };
 
