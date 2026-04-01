@@ -7,3 +7,5 @@ export const categories = pgTable('categories', {
 	icon: text('icon').notNull(),
 	order: integer('order').notNull(),
 });
+
+export type CategorySchema = typeof categories.$inferSelect;

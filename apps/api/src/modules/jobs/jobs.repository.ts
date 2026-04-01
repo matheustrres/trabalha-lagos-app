@@ -7,9 +7,15 @@ import {
 	DATABASE_TOKEN,
 	type Database,
 } from '@/shared/modules/database/database.provider';
-import { categories, jobs } from '@/shared/modules/database/schema';
-
-type JobStatus = 'ACTIVE' | 'PAUSED' | 'CLOSED';
+import {
+	type JobSchema,
+	type JobStatus,
+	jobs,
+	categories,
+	JobSchemaWithCategoryNoLocation,
+	JobSchemaWithDetailsNoLocation,
+	JobSchemaWithRelations,
+} from '@/shared/modules/database/schema';
 
 type CreateJobData = {
 	companyId: string;
@@ -52,7 +58,9 @@ type UpdateJobData = {
 export class JobsRepository {
 	constructor(@Inject(DATABASE_TOKEN) private readonly db: Database) {}
 
-	async findByRadius(params: QueryJobsDto) {
+	async findByRadius(
+		params: QueryJobsDto,
+	): Promise<JobSchemaWithDetailsNoLocation[]> {
 		const {
 			lat,
 			lng,
@@ -89,9 +97,7 @@ export class JobsRepository {
 				? sql`ST_DWithin(${jobs.location}::geography, ${point}::geography, ${radius * 1000})`
 				: undefined,
 			categoryId !== undefined ? eq(jobs.categoryId, categoryId) : undefined,
-			contractType
-				? eq(jobs.contractType, contractType as typeof jobs.contractType._.data)
-				: undefined,
+			contractType ? eq(jobs.contractType, contractType) : undefined,
 			city ? eq(jobs.city, city) : undefined,
 			q ? ilike(jobs.title, `%${q}%`) : undefined,
 		];
@@ -135,7 +141,7 @@ export class JobsRepository {
 		});
 	}
 
-	async findBySlug(slug: string) {
+	async findBySlug(slug: string): Promise<JobSchemaWithRelations | null> {
 		const row = await this.db.query.jobs.findFirst({
 			where: eq(jobs.slug, slug),
 			with: {
@@ -157,7 +163,7 @@ export class JobsRepository {
 		return row ?? null;
 	}
 
-	async findById(id: string) {
+	async findById(id: string): Promise<JobSchema | null> {
 		const [row] = await this.db
 			.select()
 			.from(jobs)
@@ -166,7 +172,9 @@ export class JobsRepository {
 		return row ?? null;
 	}
 
-	async findByCompanyId(companyId: string) {
+	async findByCompanyId(
+		companyId: string,
+	): Promise<JobSchemaWithCategoryNoLocation[]> {
 		return this.db.query.jobs.findMany({
 			where: eq(jobs.companyId, companyId),
 			with: {
@@ -179,7 +187,7 @@ export class JobsRepository {
 		});
 	}
 
-	async create(data: CreateJobData) {
+	async create(data: CreateJobData): Promise<JobSchema> {
 		const [row] = await this.db
 			.insert(jobs)
 			.values({
@@ -206,7 +214,7 @@ export class JobsRepository {
 		return row!;
 	}
 
-	async update(id: string, data: UpdateJobData) {
+	async update(id: string, data: UpdateJobData): Promise<JobSchema | null> {
 		const set: Partial<typeof jobs.$inferInsert> = { updatedAt: new Date() };
 
 		if (data.title !== undefined) set.title = data.title;
@@ -236,7 +244,7 @@ export class JobsRepository {
 		return row ?? null;
 	}
 
-	async updateStatus(id: string, status: JobStatus) {
+	async updateStatus(id: string, status: JobStatus): Promise<JobSchema | null> {
 		const [row] = await this.db
 			.update(jobs)
 			.set({ status, updatedAt: new Date() })

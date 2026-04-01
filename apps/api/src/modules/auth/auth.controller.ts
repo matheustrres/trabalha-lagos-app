@@ -22,7 +22,7 @@ export class AuthController {
 		operation: 'Registrar novo usuário',
 		responses: [{ status: HttpStatus.CREATED, type: AuthResponseDto }],
 	})
-	register(@Body() dto: RegisterDto): Promise<AuthResponseDto> {
+	async register(@Body() dto: RegisterDto): Promise<AuthResponseDto> {
 		return this.authService.register(dto);
 	}
 
@@ -33,7 +33,7 @@ export class AuthController {
 		operation: 'Autenticar usuário',
 		responses: [{ status: HttpStatus.OK, type: AuthResponseDto }],
 	})
-	login(@Body() dto: LoginDto): Promise<AuthResponseDto> {
+	async login(@Body() dto: LoginDto): Promise<AuthResponseDto> {
 		return this.authService.login(dto);
 	}
 
@@ -44,7 +44,7 @@ export class AuthController {
 		operation: 'Renovar par de tokens',
 		responses: [{ status: HttpStatus.OK, type: AuthResponseDto }],
 	})
-	refresh(
+	async refresh(
 		@Body() dto: RefreshTokenDto,
 	): Promise<{ accessToken: string; refreshToken: string }> {
 		return this.authService.refresh(dto.refreshToken);

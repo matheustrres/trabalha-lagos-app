@@ -9,23 +9,28 @@ import { CompaniesRepository } from './companies.repository';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 
+import {
+	CompanySchema,
+	CompanySchemaWithUser,
+} from '@/shared/modules/database/schema';
+
 @Injectable()
 export class CompaniesService {
 	constructor(private readonly companiesRepository: CompaniesRepository) {}
 
-	async findById(id: string) {
+	async findById(id: string): Promise<CompanySchemaWithUser> {
 		const company = await this.companiesRepository.findById(id);
 		if (!company) throw new NotFoundException('Empresa não encontrada.');
 		return company;
 	}
 
-	async findByUserId(userId: string) {
+	async findByUserId(userId: string): Promise<CompanySchema> {
 		const company = await this.companiesRepository.findByUserId(userId);
 		if (!company) throw new NotFoundException('Empresa não encontrada.');
 		return company;
 	}
 
-	async create(userId: string, dto: CreateCompanyDto) {
+	async create(userId: string, dto: CreateCompanyDto): Promise<CompanySchema> {
 		const existing = await this.companiesRepository.findByUserId(userId);
 		if (existing)
 			throw new ConflictException('Usuário já possui uma empresa cadastrada.');
@@ -39,7 +44,11 @@ export class CompaniesService {
 		});
 	}
 
-	async update(id: string, userId: string, dto: UpdateCompanyDto) {
+	async update(
+		id: string,
+		userId: string,
+		dto: UpdateCompanyDto,
+	): Promise<CompanySchema | null> {
 		const company = await this.companiesRepository.findById(id);
 		if (!company) throw new NotFoundException('Empresa não encontrada.');
 		if (company.userId !== userId)

@@ -5,22 +5,17 @@ import {
 	DATABASE_TOKEN,
 	type Database,
 } from '@/shared/modules/database/database.provider';
-import { users } from '@/shared/modules/database/schema';
-
-type CreateUserData = {
-	name: string;
-	phone: string;
-	email?: string;
-	passwordHash: string;
-	city: string;
-	role: 'CANDIDATE' | 'EMPLOYER' | 'ADMIN';
-};
+import {
+	NewUserSchema,
+	UserSchema,
+	users,
+} from '@/shared/modules/database/schema';
 
 @Injectable()
 export class UsersRepository {
 	constructor(@Inject(DATABASE_TOKEN) private readonly db: Database) {}
 
-	async findByPhone(phone: string) {
+	async findByPhone(phone: string): Promise<UserSchema | null> {
 		const [user] = await this.db
 			.select()
 			.from(users)
@@ -29,7 +24,7 @@ export class UsersRepository {
 		return user ?? null;
 	}
 
-	async findByEmail(email: string) {
+	async findByEmail(email: string): Promise<UserSchema | null> {
 		const [user] = await this.db
 			.select()
 			.from(users)
@@ -38,7 +33,7 @@ export class UsersRepository {
 		return user ?? null;
 	}
 
-	async findById(id: string) {
+	async findById(id: string): Promise<UserSchema | null> {
 		const [user] = await this.db
 			.select()
 			.from(users)
@@ -47,7 +42,7 @@ export class UsersRepository {
 		return user ?? null;
 	}
 
-	async create(data: CreateUserData) {
+	async create(data: CreateUserData): Promise<NewUserSchema> {
 		const [user] = await this.db
 			.insert(users)
 			.values({
@@ -70,3 +65,12 @@ export class UsersRepository {
 		return user!;
 	}
 }
+
+type CreateUserData = {
+	name: string;
+	phone: string;
+	email?: string;
+	passwordHash: string;
+	city: string;
+	role: 'CANDIDATE' | 'EMPLOYER' | 'ADMIN';
+};

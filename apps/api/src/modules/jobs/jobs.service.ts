@@ -15,7 +15,13 @@ import { generateJobSlug } from '@/common/utils/slugify';
 
 import { CompaniesService } from '@/modules/companies/companies.service';
 
-type JobStatus = 'ACTIVE' | 'PAUSED' | 'CLOSED';
+import {
+	JobSchema,
+	JobSchemaWithCategoryNoLocation,
+	JobSchemaWithDetailsNoLocation,
+	JobSchemaWithRelations,
+	JobStatus,
+} from '@/shared/modules/database/schema';
 
 const PLAN_ACTIVE_JOB_LIMITS: Record<string, number> = {
 	FREE: 2,
@@ -44,17 +50,23 @@ export class JobsService {
 		private readonly viewCounterService: ViewCounterService,
 	) {}
 
-	async search(params: QueryJobsDto) {
+	async search(
+		params: QueryJobsDto,
+	): Promise<JobSchemaWithDetailsNoLocation[]> {
 		return this.jobsRepository.findByRadius(params);
 	}
 
-	async findByIdOrFail(id: string) {
+	async findByIdOrFail(id: string): Promise<JobSchema | null> {
 		const job = await this.jobsRepository.findById(id);
 		if (!job) throw new NotFoundException('Vaga não encontrada.');
 		return job;
 	}
 
-	async findBySlug(slug: string, ip: string, userAgent: string) {
+	async findBySlug(
+		slug: string,
+		ip: string,
+		userAgent: string,
+	): Promise<JobSchemaWithRelations | null> {
 		const job = await this.jobsRepository.findBySlug(slug);
 		if (!job) throw new NotFoundException('Vaga não encontrada.');
 
@@ -64,7 +76,7 @@ export class JobsService {
 		return job;
 	}
 
-	async create(userId: string, dto: CreateJobDto) {
+	async create(userId: string, dto: CreateJobDto): Promise<JobSchema> {
 		const company = await this.companiesService.findByUserId(userId);
 
 		const activeCount = await this.jobsRepository.countActiveByCompanyId(
@@ -112,7 +124,11 @@ export class JobsService {
 		});
 	}
 
-	async update(id: string, userId: string, dto: UpdateJobDto) {
+	async update(
+		id: string,
+		userId: string,
+		dto: UpdateJobDto,
+	): Promise<JobSchema | null> {
 		const company = await this.companiesService.findByUserId(userId);
 		const job = await this.jobsRepository.findById(id);
 
@@ -145,7 +161,11 @@ export class JobsService {
 		});
 	}
 
-	async updateStatus(id: string, userId: string, status: JobStatus) {
+	async updateStatus(
+		id: string,
+		userId: string,
+		status: JobStatus,
+	): Promise<JobSchema | null> {
 		const company = await this.companiesService.findByUserId(userId);
 		const job = await this.jobsRepository.findById(id);
 
@@ -156,7 +176,9 @@ export class JobsService {
 		return this.jobsRepository.updateStatus(id, status);
 	}
 
-	async findByCompany(userId: string) {
+	async findByCompany(
+		userId: string,
+	): Promise<JobSchemaWithCategoryNoLocation[]> {
 		const company = await this.companiesService.findByUserId(userId);
 		return this.jobsRepository.findByCompanyId(company.id);
 	}

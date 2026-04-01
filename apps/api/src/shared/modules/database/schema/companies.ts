@@ -24,3 +24,13 @@ export const companies = pgTable('companies', {
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+
+export type CompanySchema = typeof companies.$inferSelect;
+export type CompanySchemaWithUser = CompanySchema & {
+	user: {
+		id: string;
+		name: string;
+		phone: string;
+		city: string | null;
+	};
+};

@@ -1,16 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { CategoriesRepository } from './categories.repository';
+import { CategoriesRepository, CategoryRow } from './categories.repository';
+
+import { CategorySchema } from '@/shared/modules/database/schema';
 
 @Injectable()
 export class CategoriesService {
 	constructor(private readonly categoriesRepository: CategoriesRepository) {}
 
-	async findAll() {
+	async findAll(): Promise<CategoryRow[]> {
 		return this.categoriesRepository.findAll();
 	}
 
-	async findBySlug(slug: string) {
+	async findBySlug(slug: string): Promise<CategorySchema | null> {
 		const category = await this.categoriesRepository.findBySlug(slug);
 		if (!category) {
 			throw new NotFoundException(`Categoria "${slug}" não encontrada`);

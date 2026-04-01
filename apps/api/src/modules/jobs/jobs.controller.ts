@@ -53,7 +53,7 @@ export class JobsController {
 			{ name: 'sort', required: false },
 		],
 	})
-	search(@Query() query: QueryJobsDto) {
+	async search(@Query() query: QueryJobsDto) {
 		return this.jobsService.search(query);
 	}
 
@@ -65,7 +65,7 @@ export class JobsController {
 		responses: [{ status: HttpStatus.OK, type: [JobResponseDto] }],
 		authName: 'jwt',
 	})
-	findMyJobs(@CurrentUser() user: CurrentUserPayload) {
+	async findMyJobs(@CurrentUser() user: CurrentUserPayload) {
 		return this.jobsService.findByCompany(user.userId);
 	}
 
@@ -76,7 +76,7 @@ export class JobsController {
 		responses: [{ status: HttpStatus.OK, type: JobResponseDto }],
 		params: [{ name: 'slug' }],
 	})
-	findBySlug(@Param('slug') slug: string, @Req() req: Request) {
+	async findBySlug(@Param('slug') slug: string, @Req() req: Request) {
 		const ip =
 			req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() ||
 			req.ip ||
@@ -94,7 +94,10 @@ export class JobsController {
 		authName: 'jwt',
 		body: CreateJobDto,
 	})
-	create(@Body() dto: CreateJobDto, @CurrentUser() user: CurrentUserPayload) {
+	async create(
+		@Body() dto: CreateJobDto,
+		@CurrentUser() user: CurrentUserPayload,
+	) {
 		return this.jobsService.create(user.userId, dto);
 	}
 
@@ -108,7 +111,7 @@ export class JobsController {
 		params: [{ name: 'id' }],
 		body: UpdateJobDto,
 	})
-	update(
+	async update(
 		@Param('id') id: string,
 		@Body() dto: UpdateJobDto,
 		@CurrentUser() user: CurrentUserPayload,
@@ -126,7 +129,7 @@ export class JobsController {
 		params: [{ name: 'id' }],
 		body: UpdateJobStatusDto,
 	})
-	updateStatus(
+	async updateStatus(
 		@Param('id') id: string,
 		@Body() dto: UpdateJobStatusDto,
 		@CurrentUser() user: CurrentUserPayload,

@@ -5,7 +5,11 @@ import {
 	DATABASE_TOKEN,
 	type Database,
 } from '@/shared/modules/database/database.provider';
-import { companies } from '@/shared/modules/database/schema';
+import {
+	companies,
+	CompanySchema,
+	CompanySchemaWithUser,
+} from '@/shared/modules/database/schema';
 
 type CreateCompanyData = {
 	userId: string;
@@ -27,7 +31,7 @@ type UpdateCompanyData = {
 export class CompaniesRepository {
 	constructor(@Inject(DATABASE_TOKEN) private readonly db: Database) {}
 
-	async findById(id: string) {
+	async findById(id: string): Promise<CompanySchemaWithUser | null> {
 		const row = await this.db.query.companies.findFirst({
 			where: eq(companies.id, id),
 			with: {
@@ -39,7 +43,7 @@ export class CompaniesRepository {
 		return row ?? null;
 	}
 
-	async findByUserId(userId: string) {
+	async findByUserId(userId: string): Promise<CompanySchema | null> {
 		const [row] = await this.db
 			.select()
 			.from(companies)
@@ -48,7 +52,7 @@ export class CompaniesRepository {
 		return row ?? null;
 	}
 
-	async create(data: CreateCompanyData) {
+	async create(data: CreateCompanyData): Promise<CompanySchema> {
 		const [row] = await this.db
 			.insert(companies)
 			.values({
@@ -63,7 +67,10 @@ export class CompaniesRepository {
 		return row!;
 	}
 
-	async update(id: string, data: UpdateCompanyData) {
+	async update(
+		id: string,
+		data: UpdateCompanyData,
+	): Promise<CompanySchema | null> {
 		const [row] = await this.db
 			.update(companies)
 			.set({ ...data, updatedAt: new Date() })

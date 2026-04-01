@@ -14,6 +14,8 @@ import { categories } from './categories';
 import { companies } from './companies';
 import { contractTypeEnum, jobStatusEnum, contactMethodEnum } from './enums';
 
+export type JobStatus = 'ACTIVE' | 'PAUSED' | 'CLOSED';
+
 export const jobs = pgTable(
 	'jobs',
 	{
@@ -61,3 +63,61 @@ export const jobs = pgTable(
 		index('jobs_created_idx').on(t.createdAt),
 	],
 );
+
+export type JobSchema = typeof jobs.$inferSelect;
+
+export type JobSchemaWithDetails = JobSchema & {
+	company: {
+		id: string;
+		name: string;
+		logoUrl: string | null;
+		verified: boolean;
+		plan: 'FREE' | 'PRO' | 'SEASON';
+	};
+	category: {
+		id: number;
+		name: string;
+		slug: string;
+		icon: string | null;
+	};
+	distanceKm: number | null;
+};
+
+export type JobSchemaWithCategory = JobSchema & {
+	category: {
+		id: number;
+		name: string;
+		slug: string;
+		icon: string | null;
+	};
+};
+
+// Tipos derivados que omitem location (usado com columns: { location: false })
+export type JobSchemaWithDetailsNoLocation = Omit<
+	JobSchemaWithDetails,
+	'location'
+>;
+export type JobSchemaWithCategoryNoLocation = Omit<
+	JobSchemaWithCategory,
+	'location'
+>;
+
+// Tipo específico para findBySlug (tem company + category, mas sem distanceKm)
+export type JobSchemaWithRelations = Omit<
+	JobSchema & {
+		company: {
+			id: string;
+			name: string;
+			logoUrl: string | null;
+			verified: boolean;
+			plan: 'FREE' | 'PRO' | 'SEASON';
+		};
+		category: {
+			id: number;
+			name: string;
+			slug: string;
+			icon: string | null;
+		};
+	},
+	'location'
+>;

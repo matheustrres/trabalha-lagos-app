@@ -26,3 +26,14 @@ export const users = pgTable('users', {
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+
+export type UserSchema = typeof users.$inferSelect;
+export type NewUserSchema = {
+	id: string;
+	name: string;
+	phone: string;
+	email: string | null;
+	city: string | null;
+	role: 'CANDIDATE' | 'EMPLOYER' | 'ADMIN';
+	createdAt: Date;
+};

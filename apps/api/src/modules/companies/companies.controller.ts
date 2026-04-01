@@ -36,7 +36,9 @@ export class CompaniesController {
 		operation: 'Retornar a empresa do empregador autenticado',
 		responses: [{ status: HttpStatus.OK, type: CompanyResponseDto }],
 	})
-	findMe(@CurrentUser() user: CurrentUserPayload): Promise<CompanyResponseDto> {
+	async findMe(
+		@CurrentUser() user: CurrentUserPayload,
+	): Promise<CompanyResponseDto> {
 		return this.companiesService.findByUserId(user.userId);
 	}
 
@@ -47,7 +49,7 @@ export class CompaniesController {
 		responses: [{ status: HttpStatus.OK, type: CompanyResponseDto }],
 		params: [{ name: 'id' }],
 	})
-	findById(@Param('id') id: string): Promise<CompanyResponseDto> {
+	async findById(@Param('id') id: string): Promise<CompanyResponseDto> {
 		return this.companiesService.findById(id);
 	}
 
@@ -60,7 +62,7 @@ export class CompaniesController {
 		params: [{ name: 'id' }],
 		body: UpdateCompanyDto,
 	})
-	update(
+	async update(
 		@Param('id') id: string,
 		@Body() dto: UpdateCompanyDto,
 		@CurrentUser() user: CurrentUserPayload,

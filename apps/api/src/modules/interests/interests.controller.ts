@@ -45,7 +45,7 @@ export class InterestsController {
 		params: [{ name: 'jobId' }],
 		body: CreateInterestDto,
 	})
-	create(
+	async create(
 		@Param('jobId') jobId: string,
 		@Body() dto: CreateInterestDto,
 		@CurrentUser() user: CurrentUserPayload | null,
@@ -65,7 +65,7 @@ export class InterestsController {
 			{ name: 'jobId', required: false },
 		],
 	})
-	findMyInterests(
+	async findMyInterests(
 		@CurrentUser() user: CurrentUserPayload,
 		@Query() query: QueryInterestsDto,
 	) {
@@ -82,7 +82,7 @@ export class InterestsController {
 		params: [{ name: 'id' }],
 		body: UpdateInterestStatusDto,
 	})
-	updateStatus(
+	async updateStatus(
 		@Param('id') id: string,
 		@Body() dto: UpdateInterestStatusDto,
 		@CurrentUser() user: CurrentUserPayload,

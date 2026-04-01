@@ -23,7 +23,7 @@ export class CategoriesController {
 			},
 		],
 	})
-	findAll(): Promise<CategoryResponseDto[]> {
+	async findAll(): Promise<CategoryResponseDto[]> {
 		return this.categoriesService.findAll();
 	}
 }

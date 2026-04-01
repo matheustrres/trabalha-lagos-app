@@ -13,6 +13,8 @@ import { InterestsRepository } from './interests.repository';
 import { CompaniesService } from '@/modules/companies/companies.service';
 import { JobsService } from '@/modules/jobs/jobs.service';
 
+import { InterestSchema } from '@/shared/modules/database/schema';
+
 @Injectable()
 export class InterestsService {
 	constructor(
@@ -21,7 +23,11 @@ export class InterestsService {
 		private readonly companiesService: CompaniesService,
 	) {}
 
-	async create(jobId: string, dto: CreateInterestDto, userId?: string) {
+	async create(
+		jobId: string,
+		dto: CreateInterestDto,
+		userId?: string,
+	): Promise<InterestSchema> {
 		const job = await this.jobsService.findByIdOrFail(jobId);
 
 		if (job.status !== 'ACTIVE') {
@@ -87,7 +93,7 @@ export class InterestsService {
 		interestId: string,
 		userId: string,
 		dto: UpdateInterestStatusDto,
-	) {
+	): Promise<InterestSchema | null> {
 		const company = await this.companiesService.findByUserId(userId);
 
 		const interest = await this.interestsRepository.findById(interestId);

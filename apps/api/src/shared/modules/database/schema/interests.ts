@@ -12,6 +12,8 @@ import { interestStatusEnum } from './enums';
 import { jobs } from './jobs';
 import { users } from './users';
 
+export type InterestStatus = 'SENT' | 'VIEWED' | 'CONTACTED' | 'REJECTED';
+
 export const interests = pgTable(
 	'interests',
 	{
@@ -39,3 +41,12 @@ export const interests = pgTable(
 			.where(sql`user_id IS NULL`),
 	],
 );
+
+export type InterestSchema = typeof interests.$inferSelect;
+export type InterestSchemaWithUserAndJobIds = InterestSchema & {
+	userId: string | null;
+	jobId: string;
+};
+export type InterestSchemaWithJobTitle = InterestSchema & {
+	jobTitle: string;
+};

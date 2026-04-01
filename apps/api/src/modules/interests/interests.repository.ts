@@ -5,9 +5,14 @@ import {
 	DATABASE_TOKEN,
 	type Database,
 } from '@/shared/modules/database/database.provider';
-import { interests, jobs } from '@/shared/modules/database/schema';
-
-type InterestStatus = 'SENT' | 'VIEWED' | 'CONTACTED' | 'REJECTED';
+import {
+	interests,
+	InterestSchema,
+	InterestSchemaWithJobTitle,
+	InterestSchemaWithUserAndJobIds,
+	InterestStatus,
+	jobs,
+} from '@/shared/modules/database/schema';
 
 type CreateInterestData = {
 	userId?: string;
@@ -22,22 +27,11 @@ type FindByCompanyFilters = {
 	jobId?: string;
 };
 
-type InterestWithJobTitle = {
-	id: string;
-	name: string;
-	phone: string;
-	city: string;
-	status: InterestStatus;
-	createdAt: Date;
-	jobId: string;
-	jobTitle: string;
-};
-
 @Injectable()
 export class InterestsRepository {
 	constructor(@Inject(DATABASE_TOKEN) private readonly db: Database) {}
 
-	async create(data: CreateInterestData) {
+	async create(data: CreateInterestData): Promise<InterestSchema> {
 		try {
 			const [row] = await this.db
 				.insert(interests)
@@ -69,7 +63,10 @@ export class InterestsRepository {
 		});
 	}
 
-	async findByUserIdAndJobId(userId: string, jobId: string) {
+	async findByUserIdAndJobId(
+		userId: string,
+		jobId: string,
+	): Promise<InterestSchemaWithUserAndJobIds | null> {
 		const [row] = await this.db
 			.select()
 			.from(interests)
@@ -81,7 +78,7 @@ export class InterestsRepository {
 	async findByCompanyJobs(
 		companyId: string,
 		filters?: FindByCompanyFilters,
-	): Promise<InterestWithJobTitle[]> {
+	): Promise<InterestSchemaWithJobTitle[]> {
 		// Resolve company jobs first to filter at DB level without cross-table joins
 		const companyJobs = await this.db
 			.select({ id: jobs.id, title: jobs.title })
@@ -117,12 +114,16 @@ export class InterestsRepository {
 			city: row.city,
 			status: row.status as InterestStatus,
 			createdAt: row.createdAt,
+			userId: row.userId,
 			jobId: row.jobId,
 			jobTitle: titleMap.get(row.jobId) ?? '',
 		}));
 	}
 
-	async updateStatus(id: string, status: InterestStatus) {
+	async updateStatus(
+		id: string,
+		status: InterestStatus,
+	): Promise<InterestSchema | null> {
 		const [row] = await this.db
 			.update(interests)
 			.set({ status })
@@ -131,7 +132,7 @@ export class InterestsRepository {
 		return row ?? null;
 	}
 
-	async findById(id: string) {
+	async findById(id: string): Promise<InterestSchema | null> {
 		const [row] = await this.db
 			.select()
 			.from(interests)

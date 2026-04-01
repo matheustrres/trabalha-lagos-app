@@ -5,9 +5,9 @@ import {
 	DATABASE_TOKEN,
 	type Database,
 } from '@/shared/modules/database/database.provider';
-import { categories } from '@/shared/modules/database/schema';
+import { categories, CategorySchema } from '@/shared/modules/database/schema';
 
-type CategoryRow = Record<string, unknown> & {
+export type CategoryRow = Record<string, unknown> & {
 	id: number;
 	name: string;
 	slug: string;
@@ -37,7 +37,7 @@ export class CategoriesRepository {
 		return result.rows;
 	}
 
-	async findBySlug(slug: string) {
+	async findBySlug(slug: string): Promise<CategorySchema | null> {
 		const [category] = await this.db
 			.select()
 			.from(categories)
