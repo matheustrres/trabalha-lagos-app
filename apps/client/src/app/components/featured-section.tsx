@@ -1,9 +1,20 @@
 import Link from "next/link";
-import { getFeaturedJobs } from "@/lib/mocks/jobs.mock";
 import { JobCard } from "@/components/job-card";
+import {
+  fetchServerJson,
+  normalizePaginatedResponse,
+  SERVER_API_URL,
+} from "@/lib/server-api";
+import type { Job } from "@/types/job.types";
 
-export const FeaturedSection = () => {
-  const jobs = getFeaturedJobs().slice(0, 3);
+export const FeaturedSection = async () => {
+  const payload = await fetchServerJson<{ data?: Job[] } | Job[]>(
+    `${SERVER_API_URL}/jobs?featured=true&limit=3`,
+    { data: [] },
+    { next: { revalidate: 600 } },
+  );
+
+  const { data: jobs } = normalizePaginatedResponse(payload, 1, 3);
 
   return (
     <section>

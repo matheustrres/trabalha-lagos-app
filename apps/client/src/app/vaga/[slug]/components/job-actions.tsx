@@ -17,18 +17,22 @@ interface JobActionsProps {
 export function JobActions({ whatsappContact, companyName }: JobActionsProps) {
   const [showInterestSheet, setShowInterestSheet] = useState(false);
   const [interestSent, setInterestSent] = useState(false);
+  const hasWhatsapp = Boolean(whatsappContact);
 
   return (
     <>
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border pb-[env(safe-area-inset-bottom,8px)]">
         <div className="max-w-lg mx-auto px-4 py-3 flex gap-2.5">
           <a
-            href={`https://wa.me/${whatsappContact}`}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={hasWhatsapp ? `https://wa.me/${whatsappContact}` : "#"}
+            target={hasWhatsapp ? "_blank" : undefined}
+            rel={hasWhatsapp ? "noopener noreferrer" : undefined}
             className="flex-1"
+            onClick={(event) => {
+              if (!hasWhatsapp) event.preventDefault();
+            }}
           >
-            <Button variant="whatsapp" className="w-full">
+            <Button variant="whatsapp" className="w-full" disabled={!hasWhatsapp}>
               📱 WhatsApp
             </Button>
           </a>

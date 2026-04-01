@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { MOCK_JOBS } from "@/lib/mocks/jobs.mock";
 import { JobSearch } from "./components/job-search";
 
 export const metadata: Metadata = {
@@ -10,10 +9,9 @@ export const metadata: Metadata = {
 };
 
 const VagasPage = () => {
-  const jobs = MOCK_JOBS;
   return (
     <Suspense>
-      <JobSearch initialJobs={jobs} />
+      <JobSearch />
     </Suspense>
   );
 };

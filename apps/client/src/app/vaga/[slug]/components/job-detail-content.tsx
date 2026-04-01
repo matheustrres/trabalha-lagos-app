@@ -34,6 +34,7 @@ function daysAgo(dateStr: string): string {
 
 export function JobDetailContent({ job }: JobDetailContentProps) {
   const salary = formatSalaryRange(job.salaryMin, job.salaryMax);
+  const requirements = Array.isArray(job.requirements) ? job.requirements : [];
 
   return (
     <div className="pb-24">
@@ -122,13 +123,13 @@ export function JobDetailContent({ job }: JobDetailContentProps) {
         </div>
 
         {/* Requirements */}
-        {job.requirements.length > 0 && (
+        {requirements.length > 0 && (
           <div>
             <h2 className="text-base font-bold text-gray-900 mb-2">
               Requisitos
             </h2>
             <ul className="space-y-1.5">
-              {job.requirements.map((req, i) => (
+              {requirements.map((req, i) => (
                 <li key={i} className="flex items-start gap-2">
                   <span className="text-success shrink-0 mt-0.5">✓</span>
                   <span className="text-sm text-gray-500">{req}</span>

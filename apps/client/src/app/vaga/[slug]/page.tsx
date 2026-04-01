@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import type { ContractType } from "@/types/job.types";
-import { getJobBySlug } from "@/lib/mocks/jobs.mock";
+import { SERVER_API_URL } from "@/lib/server-api";
+import type { ContractType, Job } from "@/types/job.types";
 import { formatSalaryRange } from "@/lib/utils/format-salary.utils";
 import { JobDetailContent } from "./components/job-detail-content";
 import { JobActions } from "./components/job-actions";
@@ -22,11 +22,21 @@ const mapContractType = (contractType: ContractType): string => {
   return map[contractType];
 };
 
+const getJobBySlug = async (slug: string): Promise<Job | null> => {
+  try {
+    const response = await fetch(`${SERVER_API_URL}/jobs/${slug}`);
+    if (!response.ok) return null;
+    return (await response.json()) as Job;
+  } catch {
+    return null;
+  }
+};
+
 export const generateMetadata = async ({
   params,
 }: Props): Promise<Metadata> => {
   const { slug } = await params;
-  const job = getJobBySlug(slug);
+  const job = await getJobBySlug(slug);
   if (!job) return {};
 
   const salary = formatSalaryRange(job.salaryMin, job.salaryMax);
@@ -44,7 +54,7 @@ export const generateMetadata = async ({
 
 export default async function JobDetailPage({ params }: Props) {
   const { slug } = await params;
-  const job = getJobBySlug(slug);
+  const job = await getJobBySlug(slug);
 
   if (!job) notFound();
 
@@ -91,7 +101,7 @@ export default async function JobDetailPage({ params }: Props) {
       />
       <JobDetailContent job={job} />
       <JobActions
-        whatsappContact={job.company.whatsapp}
+        whatsappContact={job.company.whatsapp ?? job.whatsappContact ?? ""}
         jobTitle={job.title}
         jobCity={job.city}
         jobSlug={job.slug}

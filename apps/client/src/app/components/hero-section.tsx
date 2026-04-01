@@ -1,7 +1,10 @@
-import { MOCK_JOBS } from "@/lib/mocks/jobs.mock";
 import { HeroSearchInput } from "./hero-search-input";
 
-export const HeroSection = () => (
+interface HeroSectionProps {
+  totalJobs: number;
+}
+
+export const HeroSection = ({ totalJobs }: HeroSectionProps) => (
   <div className="relative overflow-hidden bg-linear-to-br from-primary via-primary-dark to-primary-dark/90 px-6 pt-12 pb-10">
     <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white/5" />
     <div className="absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-white/5" />
@@ -22,7 +25,7 @@ export const HeroSection = () => (
 
       <div className="mt-6 flex gap-6">
         <div>
-          <p className="text-xl font-bold text-white">{MOCK_JOBS.length}</p>
+          <p className="text-xl font-bold text-white">{totalJobs}</p>
           <p className="text-xs text-white/60">vagas ativas</p>
         </div>
         <div>

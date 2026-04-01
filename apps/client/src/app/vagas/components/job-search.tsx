@@ -2,16 +2,18 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { Search, SearchX, SlidersHorizontal } from "lucide-react";
 import { JobCard } from "@/components/job-card";
+import { JobListSkeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce.hook";
 import { RADIUS_OPTIONS } from "@/lib/constants/radius.constants";
 import { CATEGORIES } from "@/lib/constants/categories.constants";
 import { LAGOS_CITIES } from "@/lib/constants/cities.constants";
-import { slugify } from "@/lib/utils/slugify.utils";
+import { jobsService } from "@/lib/services/jobs.service";
 import { cn } from "@/lib/utils/cn.utils";
 import { pluralizeVagas } from "@/lib/utils/pluralize.utils";
-import type { Job, ContractType } from "@/types/job.types";
+import type { ContractType } from "@/types/job.types";
 
 const CONTRACT_FILTER_OPTIONS: Array<{
   value: ContractType;
@@ -25,11 +27,7 @@ const CONTRACT_FILTER_OPTIONS: Array<{
   { value: "INTERNSHIP", label: "Estágio", color: "#10b981" },
 ];
 
-interface JobSearchProps {
-  initialJobs: Job[];
-}
-
-export const JobSearch = ({ initialJobs }: JobSearchProps) => {
+export const JobSearch = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -46,8 +44,43 @@ export const JobSearch = ({ initialJobs }: JobSearchProps) => {
   );
   const [city, setCity] = useState<string | null>(searchParams.get("city"));
   const [showFilters, setShowFilters] = useState(false);
+  const page = Number(searchParams.get("page") ?? "1");
 
   const debouncedQuery = useDebounce(searchQuery, 300);
+  const selectedCity = useMemo(
+    () => LAGOS_CITIES.find((c) => c.slug === city) ?? null,
+    [city],
+  );
+  const lat = selectedCity?.lat;
+  const lng = selectedCity?.lng;
+
+  const { data, isLoading } = useQuery({
+    queryKey: [
+      "jobs",
+      debouncedQuery,
+      radius,
+      category,
+      contractType,
+      city,
+      page,
+    ],
+    queryFn: () =>
+      jobsService.search({
+        ...(debouncedQuery && { q: debouncedQuery }),
+        ...(radius < 100 &&
+          lat &&
+          lng && {
+            lat: String(lat),
+            lng: String(lng),
+            radius: String(radius),
+          }),
+        ...(category && { category }),
+        ...(contractType && { contractType }),
+        ...(selectedCity && { city: selectedCity.name }),
+        page: String(page),
+        limit: "20",
+      }),
+  });
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -56,47 +89,17 @@ export const JobSearch = ({ initialJobs }: JobSearchProps) => {
     if (category) params.set("category", category);
     if (contractType) params.set("contractType", contractType);
     if (city) params.set("city", city);
+    if (page > 1) params.set("page", String(page));
     const qs = params.toString();
     router.replace(qs ? `/vagas?${qs}` : "/vagas", { scroll: false });
-  }, [debouncedQuery, radius, category, contractType, city, router]);
+  }, [debouncedQuery, radius, category, contractType, city, page, router]);
 
   const activeFiltersCount = [category, contractType, city].filter(
     Boolean,
   ).length;
 
-  const filteredJobs = useMemo(() => {
-    const query = debouncedQuery.toLowerCase().trim();
-
-    return initialJobs
-      .filter((job) => {
-        if (
-          query &&
-          !job.title.toLowerCase().includes(query) &&
-          !job.company.name.toLowerCase().includes(query)
-        ) {
-          return false;
-        }
-        if (radius < 100 && job.distanceKm != null && job.distanceKm > radius) {
-          return false;
-        }
-        if (category && job.category.slug !== category) {
-          return false;
-        }
-        if (contractType && job.contractType !== contractType) {
-          return false;
-        }
-        if (city && slugify(job.city) !== city) {
-          return false;
-        }
-        return true;
-      })
-      .sort((a, b) => {
-        if (a.featured !== b.featured) return a.featured ? -1 : 1;
-        const da = a.distanceKm ?? Infinity;
-        const db = b.distanceKm ?? Infinity;
-        return da - db;
-      });
-  }, [initialJobs, debouncedQuery, radius, category, contractType, city]);
+  const jobs = data?.data ?? [];
+  const total = data?.meta.total ?? jobs.length;
 
   const clearFilters = () => {
     setCategory(null);
@@ -261,14 +264,18 @@ export const JobSearch = ({ initialJobs }: JobSearchProps) => {
 
       <div className="mt-4 flex items-center justify-between">
         <span className="text-sm text-gray-500">
-          {pluralizeVagas(filteredJobs.length)} encontradas
+          {pluralizeVagas(total)} encontradas
         </span>
         <span className="text-sm text-gray-500">Ordenado por distância</span>
       </div>
 
-      {filteredJobs.length > 0 ? (
+      {isLoading ? (
+        <div className="mt-3">
+          <JobListSkeleton count={4} />
+        </div>
+      ) : jobs.length > 0 ? (
         <div className="mt-3 space-y-3">
-          {filteredJobs.map((job) => (
+          {jobs.map((job) => (
             <JobCard key={job.id} job={job} />
           ))}
         </div>

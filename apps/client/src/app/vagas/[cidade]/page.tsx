@@ -3,9 +3,10 @@ import Link from "next/link";
 import { SearchX } from "lucide-react";
 import type { Metadata } from "next";
 import { LAGOS_CITIES } from "@/lib/constants/cities.constants";
-import { getJobsByCity } from "@/lib/mocks/jobs.mock";
+import { fetchServerJson, SERVER_API_URL } from "@/lib/server-api";
 import { pluralizeVagas } from "@/lib/utils/pluralize.utils";
 import { JobCard } from "@/components/job-card";
+import type { Job } from "@/types/job.types";
 
 interface Props {
   params: Promise<{ cidade: string }>;
@@ -39,7 +40,15 @@ const CidadePage = async ({ params }: Props) => {
 
   if (!city) notFound();
 
-  const jobs = getJobsByCity(cidade).sort((a, b) => {
+  const payload = await fetchServerJson<{ data?: Job[] } | Job[]>(
+    `${SERVER_API_URL}/jobs?city=${encodeURIComponent(city.name)}&limit=50`,
+    { data: [] },
+    { next: { revalidate: 600 } },
+  );
+
+  const jobsData = Array.isArray(payload) ? payload : (payload.data ?? []);
+
+  const jobs = jobsData.sort((a, b) => {
     if (a.featured === b.featured) return 0;
     return a.featured ? -1 : 1;
   });

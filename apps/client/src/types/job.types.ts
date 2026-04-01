@@ -11,14 +11,12 @@ export type JobStatus = "ACTIVE" | "PAUSED" | "CLOSED" | "EXPIRED";
 export interface JobCompany {
   id: string;
   name: string;
-  city: string;
-  logoUrl?: string;
   verified: boolean;
-  whatsapp: string;
+  whatsapp?: string;
 }
 
 export interface JobCategory {
-  id: string;
+  id: number;
   name: string;
   slug: string;
   icon?: string;
@@ -35,11 +33,19 @@ export interface Job {
   contractType: ContractType;
   salaryMin?: number;
   salaryMax?: number;
+  whatsappContact?: string;
   city: string;
-  distanceKm?: number;
+  distanceKm: number | null;
   featured: boolean;
   urgent: boolean;
   status: JobStatus;
   createdAt: string;
   expiresAt: string;
+  viewCount?: number;
+  interestCount?: number;
+}
+
+export interface EmployerJob extends Job {
+  viewCount: number;
+  interestCount: number;
 }
