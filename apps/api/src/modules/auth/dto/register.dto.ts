@@ -7,6 +7,7 @@ import {
 	IsString,
 	MaxLength,
 	MinLength,
+	ValidateIf,
 } from 'class-validator';
 
 import {
@@ -49,10 +50,11 @@ export class RegisterDto {
 	@IsEnum(['CANDIDATE', 'EMPLOYER'])
 	role!: 'CANDIDATE' | 'EMPLOYER';
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		example: '12345678000100',
-		description: 'CNPJ para empregadores (obrigatório)',
+		description: 'CNPJ para empregadores (obrigatório se role=EMPLOYER)',
 	})
+	@ValidateIf((o: RegisterDto) => o.role === 'EMPLOYER')
 	@IsString()
 	@IsNotEmpty()
 	@IsValidCNPJ()
