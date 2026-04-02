@@ -3,7 +3,7 @@ import {
 	ForbiddenException,
 	NotFoundException,
 } from '@nestjs/common';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { type MockProxy } from 'vitest-mock-extended';
 
 import { CompaniesService } from '@/modules/companies/companies.service';
@@ -104,6 +104,60 @@ describe(InterestsService.name, () => {
 				ConflictException,
 			);
 		});
+
+		it('creates anonymous interest when user is not authenticated', async () => {
+			const job = aJob().withStatus('ACTIVE').build();
+			const dto = {
+				name: 'Visitante',
+				phone: '22999990009',
+				city: 'Búzios',
+			};
+			const interest = anInterest().withUserId(null).build();
+
+			jobsService.findByIdOrFail.mockResolvedValue(job as any);
+			interestsRepository.create.mockResolvedValue(interest);
+			interestsRepository.incrementJobInterestCount.mockResolvedValue(
+				undefined,
+			);
+
+			const result = await SUT.create(job.id, dto);
+
+			expect(interestsRepository.findByUserIdAndJobId).not.toHaveBeenCalled();
+			expect(interestsRepository.create).toHaveBeenCalledWith({
+				userId: undefined,
+				jobId: job.id,
+				name: dto.name,
+				phone: dto.phone,
+				city: dto.city,
+			});
+			expect(result.userId).toBeNull();
+		});
+
+		it('does not fail create response when interest count increment fails', async () => {
+			const job = aJob().withStatus('ACTIVE').build();
+			const dto = {
+				name: 'João Silva',
+				phone: '22999999999',
+				city: 'Cabo Frio',
+			};
+			const interest = anInterest().build();
+
+			jobsService.findByIdOrFail.mockResolvedValue(job as any);
+			interestsRepository.findByUserIdAndJobId.mockResolvedValue(null);
+			interestsRepository.create.mockResolvedValue(interest);
+			interestsRepository.incrementJobInterestCount.mockRejectedValue(
+				new Error('counter failed'),
+			);
+
+			const result = await SUT.create(job.id, dto, 'user-uuid-1');
+
+			await vi.waitFor(() => {
+				expect(
+					interestsRepository.incrementJobInterestCount,
+				).toHaveBeenCalledWith(job.id);
+			});
+			expect(result).toEqual(interest);
+		});
 	});
 
 	// ─── findByCompany ─────────────────────────────────────────────────────────
@@ -165,6 +219,24 @@ describe(InterestsService.name, () => {
 			expect(result.data).toHaveLength(1);
 			expect(result.data[0]?.status).toBe('CONTACTED');
 		});
+
+		it('returns empty list metadata when no interests are found', async () => {
+			const company = aCompany().withPlan('FREE').build();
+
+			companiesService.findByUserId.mockResolvedValue(company);
+			interestsRepository.findByCompanyJobs.mockResolvedValue([]);
+
+			const result = await SUT.findByCompany('user-uuid-1');
+
+			expect(result).toEqual({
+				data: [],
+				meta: {
+					total: 0,
+					plan: 'FREE',
+					phoneRestricted: true,
+				},
+			});
+		});
 	});
 
 	// ─── updateStatus ────────────────────────────────────────────────────────────
@@ -217,6 +289,38 @@ describe(InterestsService.name, () => {
 					status: 'VIEWED' as const,
 				}),
 			).rejects.toThrow(NotFoundException);
+		});
+
+		it('returns null when repository updateStatus returns null', async () => {
+			const company = aCompany().build();
+			const interest = anInterest().build();
+
+			companiesService.findByUserId.mockResolvedValue(company);
+			interestsRepository.findById.mockResolvedValue(interest as any);
+			interestsRepository.findByCompanyJobs.mockResolvedValue([
+				interest as any,
+			]);
+			interestsRepository.updateStatus.mockResolvedValue(null);
+
+			const result = await SUT.updateStatus(interest.id, 'user-uuid-1', {
+				status: 'VIEWED',
+			});
+
+			expect(result).toBeNull();
+		});
+
+		it('propagates unexpected repository errors', async () => {
+			const company = aCompany().build();
+			const dbError = new Error('database unavailable');
+
+			companiesService.findByUserId.mockResolvedValue(company);
+			interestsRepository.findById.mockRejectedValue(dbError);
+
+			await expect(
+				SUT.updateStatus('interest-uuid-1', 'user-uuid-1', {
+					status: 'REJECTED',
+				}),
+			).rejects.toThrow(dbError);
 		});
 	});
 });
