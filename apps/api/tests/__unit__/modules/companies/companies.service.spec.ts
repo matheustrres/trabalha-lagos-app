@@ -42,6 +42,13 @@ describe(CompaniesService.name, () => {
 				NotFoundException,
 			);
 		});
+
+		it('propagates unexpected repository errors', async () => {
+			const dbError = new Error('database unavailable');
+			companiesRepository.findById.mockRejectedValue(dbError);
+
+			await expect(SUT.findById('company-uuid-1')).rejects.toThrow(dbError);
+		});
 	});
 
 	// ─── findByUserId ─────────────────────────────────────────────────────────
@@ -111,6 +118,20 @@ describe(CompaniesService.name, () => {
 				ConflictException,
 			);
 		});
+
+		it('propagates unexpected repository errors', async () => {
+			const dto = {
+				name: 'Nova Empresa',
+				document: '11222333000181',
+				city: 'Cabo Frio',
+				whatsapp: '22999999999',
+			};
+			const dbError = new Error('database timeout');
+
+			companiesRepository.findByUserId.mockRejectedValue(dbError);
+
+			await expect(SUT.create('user-uuid-1', dto)).rejects.toThrow(dbError);
+		});
 	});
 
 	// ─── update ────────────────────────────────────────────────────────────────
@@ -146,6 +167,31 @@ describe(CompaniesService.name, () => {
 			await expect(
 				SUT.update(company.id, 'other-user-id', { name: 'Test' }),
 			).rejects.toThrow(ForbiddenException);
+		});
+
+		it('returns null when repository update returns null after ownership check', async () => {
+			const company = aCompany().withUserId('user-uuid-1').build();
+
+			companiesRepository.findById.mockResolvedValue(company as any);
+			companiesRepository.update.mockResolvedValue(null);
+
+			const result = await SUT.update(company.id, 'user-uuid-1', {
+				name: 'Nome Atualizado',
+			});
+
+			expect(result).toBeNull();
+		});
+
+		it('propagates unexpected repository errors', async () => {
+			const company = aCompany().withUserId('user-uuid-1').build();
+			const dbError = new Error('write failed');
+
+			companiesRepository.findById.mockResolvedValue(company as any);
+			companiesRepository.update.mockRejectedValue(dbError);
+
+			await expect(
+				SUT.update(company.id, 'user-uuid-1', { name: 'Test' }),
+			).rejects.toThrow(dbError);
 		});
 	});
 });
