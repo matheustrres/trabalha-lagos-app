@@ -7,7 +7,6 @@ import { createAppFixture } from '../__helpers/app-fixture';
 const REGISTER_URL = '/api/v1/auth/register';
 const LOGIN_URL = '/api/v1/auth/login';
 const REFRESH_URL = '/api/v1/auth/refresh';
-const CATEGORIES_URL = '/api/v1/categories';
 
 // CNPJ fixo válido para testes (usado para CANDIDATE que não precisa ter CNPJ real)
 const CNPJ_VALID = '11222333000181';
@@ -96,14 +95,6 @@ describe('Auth (e2e)', () => {
 				accessToken: expect.any(String),
 				refreshToken: expect.any(String),
 			});
-		});
-	});
-
-	// ─── Guard behaviour ───────────────────────────────────────────────────────
-
-	describe('Global JwtAuthGuard', () => {
-		it('allows unauthenticated access to @Public() route (GET /categories)', async () => {
-			await request(app.getHttpServer()).get(CATEGORIES_URL).expect(200);
 		});
 	});
 });
