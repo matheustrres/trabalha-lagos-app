@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { MessageCircle, Eye, X } from "lucide-react";
 import type { Interest } from "@/types/interest.types";
 
@@ -28,39 +27,38 @@ const getRelativeTime = (iso: string): string => {
 interface InterestCardProps {
   interest: Interest;
   onStatusChange: (id: string, status: Interest["status"]) => void;
+  isUpdating?: boolean;
 }
 
 export const InterestCard = ({
   interest,
   onStatusChange,
+  isUpdating = false,
 }: InterestCardProps) => {
-  const [flashing, setFlashing] = useState(false);
   const { label, className } = STATUS_CONFIG[interest.status];
   const initial = interest.candidateName.charAt(0).toUpperCase();
 
-  const flash = (cb: () => void) => {
-    setFlashing(true);
-    cb();
-    setTimeout(() => setFlashing(false), 300);
-  };
+  const whatsappDisabled = !interest.candidatePhone || isUpdating;
 
   const handleWhatsApp = () => {
+    if (!interest.candidatePhone || isUpdating) return;
+
     window.open(`https://wa.me/${interest.candidatePhone}`, "_blank");
     if (interest.status !== "CONTACTED") {
-      flash(() => onStatusChange(interest.id, "CONTACTED"));
+      onStatusChange(interest.id, "CONTACTED");
     }
   };
 
   const handleDiscard = () => {
+    if (isUpdating) return;
+
     if (window.confirm("Tem certeza que deseja descartar este candidato?")) {
-      flash(() => onStatusChange(interest.id, "REJECTED"));
+      onStatusChange(interest.id, "REJECTED");
     }
   };
 
   return (
-    <div
-      className={`bg-white rounded-2xl border border-border p-4 transition-opacity duration-150 ${flashing ? "opacity-50" : "opacity-100"}`}
-    >
+    <div className="bg-white rounded-2xl border border-border p-4 transition-opacity duration-150">
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
           <span className="text-primary font-semibold text-sm">{initial}</span>
@@ -90,6 +88,8 @@ export const InterestCard = ({
       <div className="flex gap-2 mt-3">
         <button
           onClick={handleWhatsApp}
+          disabled={whatsappDisabled}
+          title={!interest.candidatePhone ? "Disponível no plano Pro" : undefined}
           className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-[#25D366]/10 text-[#25D366]"
         >
           <MessageCircle size={13} aria-hidden />
@@ -98,7 +98,8 @@ export const InterestCard = ({
 
         {interest.status === "SENT" && (
           <button
-            onClick={() => flash(() => onStatusChange(interest.id, "VIEWED"))}
+            onClick={() => onStatusChange(interest.id, "VIEWED")}
+            disabled={isUpdating}
             className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-500"
           >
             <Eye size={13} aria-hidden />
@@ -109,6 +110,7 @@ export const InterestCard = ({
         {interest.status !== "REJECTED" && (
           <button
             onClick={handleDiscard}
+            disabled={isUpdating}
             className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-gray-100 text-gray-400"
           >
             <X size={13} aria-hidden />

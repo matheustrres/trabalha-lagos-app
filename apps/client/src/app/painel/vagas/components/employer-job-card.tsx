@@ -31,11 +31,13 @@ const formatDate = (iso: string) =>
 interface EmployerJobCardProps {
   job: EmployerJob;
   onStatusChange: (id: string, status: JobStatus) => void;
+  isUpdating?: boolean;
 }
 
 export const EmployerJobCard = ({
   job,
   onStatusChange,
+  isUpdating = false,
 }: EmployerJobCardProps) => {
   const [flashing, setFlashing] = useState(false);
   const statusConfig = STATUS_CONFIG[job.status];
@@ -47,9 +49,9 @@ export const EmployerJobCard = ({
   };
 
   const handleClose = () => {
-    if (window.confirm("Tem certeza que deseja encerrar esta vaga?")) {
-      flash(() => onStatusChange(job.id, "CLOSED"));
-    }
+    if (isUpdating) return;
+
+    flash(() => onStatusChange(job.id, "CLOSED"));
   };
 
   return (
@@ -82,6 +84,7 @@ export const EmployerJobCard = ({
             <Button
               variant="ghost"
               size="sm"
+              disabled={isUpdating}
               onClick={() => flash(() => onStatusChange(job.id, "PAUSED"))}
               className="flex items-center gap-1 text-gray-500"
             >
@@ -93,6 +96,7 @@ export const EmployerJobCard = ({
             <Button
               variant="ghost"
               size="sm"
+              disabled={isUpdating}
               onClick={() => flash(() => onStatusChange(job.id, "ACTIVE"))}
               className="flex items-center gap-1 text-success"
             >
@@ -103,6 +107,7 @@ export const EmployerJobCard = ({
           <Button
             variant="ghost"
             size="sm"
+            disabled={isUpdating}
             onClick={handleClose}
             className="flex items-center gap-1 text-error"
           >

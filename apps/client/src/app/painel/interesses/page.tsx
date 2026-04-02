@@ -1,40 +1,60 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { SearchX } from "lucide-react";
-import { MOCK_INTERESTS } from "@/lib/mocks/interests.mock";
-import { jobsService } from "@/lib/services/jobs.service";
+import { employerService } from "@/lib/services/employer.service";
 import type { Interest } from "@/types/interest.types";
 import { InterestCard } from "./components/interest-card";
 
-type FilterStatus = "ALL" | "SENT" | "VIEWED" | "CONTACTED";
+type FilterStatus = "ALL" | Interest["status"];
 
 const STATUS_FILTERS: { label: string; value: FilterStatus }[] = [
   { label: "Todos", value: "ALL" },
   { label: "Novos", value: "SENT" },
   { label: "Visualizados", value: "VIEWED" },
   { label: "Contatados", value: "CONTACTED" },
+  { label: "Descartados", value: "REJECTED" },
 ];
 
 const InteressesPage = () => {
+  const queryClient = useQueryClient();
+
   const { data: companyJobs } = useQuery({
-    queryKey: ["employer-jobs"],
-    queryFn: jobsService.findByCompany,
+    queryKey: ["employer", "jobs"],
+    queryFn: employerService.getMyJobs,
   });
-  const [interests, setInterests] = useState<Interest[]>(MOCK_INTERESTS);
+
   const [statusFilter, setStatusFilter] = useState<FilterStatus>("ALL");
   const [jobFilter, setJobFilter] = useState<string>("ALL");
 
+  const filters = {
+    ...(statusFilter !== "ALL" && { status: statusFilter }),
+    ...(jobFilter !== "ALL" && { jobId: jobFilter }),
+  };
+
+  const { data: interestsResponse, isLoading } = useQuery({
+    queryKey: ["employer", "interests", filters],
+    queryFn: () => employerService.getInterests(filters),
+  });
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: Interest["status"] }) =>
+      employerService.updateInterestStatus(id, status),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["employer", "interests"] });
+      await queryClient.invalidateQueries({ queryKey: ["employer", "dashboard"] });
+    },
+  });
+
+  const interests = interestsResponse?.data ?? [];
+  const phoneRestricted = interestsResponse?.meta.phoneRestricted ?? false;
+
   const handleStatusChange = (id: string, status: Interest["status"]) => {
-    setInterests((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, status } : item)),
-    );
+    statusMutation.mutate({ id, status });
   };
 
   const filtered = interests
-    .filter((i) => statusFilter === "ALL" || i.status === statusFilter)
-    .filter((i) => jobFilter === "ALL" || i.jobId === jobFilter)
     .sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
@@ -47,15 +67,17 @@ const InteressesPage = () => {
           Interesses recebidos
         </h1>
         <p className="text-sm text-gray-500">
-          {interests.length} candidatos interessados
+          {interestsResponse?.meta.total ?? 0} candidatos interessados
         </p>
       </div>
 
-      <div className="mt-4 bg-blue-500/10 text-blue-600 text-sm rounded-xl px-4 py-3">
-        No plano gratuito, você vê nome e cidade.{" "}
-        <span className="font-semibold">Faça upgrade</span> para ver o WhatsApp
-        completo.
-      </div>
+      {phoneRestricted && (
+        <div className="mt-4 bg-blue-500/10 text-blue-600 text-sm rounded-xl px-4 py-3">
+          No plano gratuito, você vê nome e cidade.{" "}
+          <span className="font-semibold">Faça upgrade</span> para ver o WhatsApp
+          completo.
+        </div>
+      )}
 
       <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
         {STATUS_FILTERS.map(({ label, value }) => (
@@ -89,7 +111,9 @@ const InteressesPage = () => {
       </div>
 
       <div className="mt-4 space-y-3">
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <p className="text-sm text-gray-500">Carregando interesses...</p>
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
             <SearchX size={40} className="text-gray-300" aria-hidden />
             <p className="font-semibold text-gray-500">
@@ -106,6 +130,10 @@ const InteressesPage = () => {
               key={interest.id}
               interest={interest}
               onStatusChange={handleStatusChange}
+              isUpdating={
+                statusMutation.isPending &&
+                statusMutation.variables?.id === interest.id
+              }
             />
           ))
         )}

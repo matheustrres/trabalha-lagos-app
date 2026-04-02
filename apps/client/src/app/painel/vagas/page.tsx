@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { JobListSkeleton } from "@/components/ui/skeleton";
-import { jobsService } from "@/lib/services/jobs.service";
-import type { EmployerJob, JobStatus } from "@/types/job.types";
+import { employerService } from "@/lib/services/employer.service";
+import type { JobStatus } from "@/types/job.types";
 import { EmployerJobCard } from "./components/employer-job-card";
 
 type FilterStatus = "ALL" | JobStatus;
@@ -23,21 +23,27 @@ const STATUS_ORDER: JobStatus[] = ["ACTIVE", "PAUSED", "CLOSED", "EXPIRED"];
 
 const MinhasVagasPage = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
+
   const { data, isLoading } = useQuery({
-    queryKey: ["employer-jobs"],
-    queryFn: jobsService.findByCompany,
+    queryKey: ["employer", "jobs"],
+    queryFn: employerService.getMyJobs,
   });
-  const [jobs, setJobs] = useState<EmployerJob[]>([]);
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: JobStatus }) =>
+      employerService.updateJobStatus(id, status),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["employer", "jobs"] });
+      await queryClient.invalidateQueries({ queryKey: ["employer", "dashboard"] });
+    },
+  });
+
+  const jobs = data ?? [];
   const [filter, setFilter] = useState<FilterStatus>("ALL");
 
-  useEffect(() => {
-    setJobs(data ?? []);
-  }, [data]);
-
   const handleStatusChange = (id: string, status: JobStatus) => {
-    setJobs((prev) =>
-      prev.map((job) => (job.id === id ? { ...job, status } : job)),
-    );
+    statusMutation.mutate({ id, status });
   };
 
   const filtered = jobs
@@ -104,6 +110,9 @@ const MinhasVagasPage = () => {
               key={job.id}
               job={job}
               onStatusChange={handleStatusChange}
+              isUpdating={
+                statusMutation.isPending && statusMutation.variables?.id === job.id
+              }
             />
           ))
         )}

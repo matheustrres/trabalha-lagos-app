@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Briefcase, MapPin, DollarSign, Phone, ListChecks } from "lucide-react";
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CATEGORIES } from "@/lib/constants/categories.constants";
 import { LAGOS_CITIES } from "@/lib/constants/cities.constants";
+import { employerService } from "@/lib/services/employer.service";
 import {
   createJobSchema,
   type CreateJobData,
@@ -64,7 +66,8 @@ const SectionHeading = ({ icon, title }: SectionHeadingProps) => (
 
 export const JobForm = () => {
   const router = useRouter();
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
     register,
@@ -82,24 +85,69 @@ export const JobForm = () => {
 
   const salaryHidden = watch("salaryHidden");
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onSubmit = async (_data: CreateJobData) => {
-    // TODO: call real API
-    // await api.post('/jobs', { ..._data, requirements: _data.requirements?.split('\n').filter(Boolean) })
+  const resolveErrorStatus = (error: unknown): number | undefined => {
+    if (!error || typeof error !== "object") return undefined;
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const candidate = error as { status?: number; statusCode?: number };
+    return candidate.status ?? candidate.statusCode;
+  };
 
-    setSuccessMessage("Vaga publicada com sucesso!");
+  const onSubmit = async (data: CreateJobData) => {
+    setSubmitError(null);
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    router.push("/painel/vagas");
+    const selectedCity = LAGOS_CITIES.find((cityOption) => cityOption.slug === data.city);
+    const categoryIndex = CATEGORIES.findIndex(
+      (categoryOption) => categoryOption.slug === data.categoryId,
+    );
+
+    if (!selectedCity || categoryIndex < 0) {
+      setSubmitError("Não foi possível validar os dados da vaga.");
+      return;
+    }
+
+    const requirements = data.requirements
+      ?.split("\n")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    try {
+      await employerService.createJob({
+        ...data,
+        categoryId: categoryIndex + 1,
+        city: selectedCity.name,
+        locationLat: selectedCity.lat,
+        locationLng: selectedCity.lng,
+        whatsappContact: data.whatsappContact.replace(/\D/g, ""),
+        requirements: requirements?.length ? requirements : undefined,
+      });
+
+      await queryClient.invalidateQueries({ queryKey: ["employer", "jobs"] });
+      await queryClient.invalidateQueries({ queryKey: ["employer", "dashboard"] });
+      router.push("/painel/vagas");
+    } catch (error) {
+      const status = resolveErrorStatus(error);
+
+      if (status === 403) {
+        setSubmitError(
+          "Limite de vagas atingido. Faça upgrade para publicar mais.",
+        );
+        return;
+      }
+
+      if (status === 400) {
+        setSubmitError("Localização fora da Região dos Lagos");
+        return;
+      }
+
+      setSubmitError("Não foi possível publicar a vaga. Tente novamente.");
+    }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      {successMessage && (
-        <div className="bg-success/10 text-success rounded-xl px-4 py-3 text-sm font-medium mb-4">
-          {successMessage}
+      {submitError && (
+        <div className="bg-error/10 text-error rounded-xl px-4 py-3 text-sm font-medium mb-4">
+          {submitError}
         </div>
       )}
 
@@ -345,6 +393,15 @@ export const JobForm = () => {
 
       {/* Ações */}
       <div className="mt-8 flex flex-col gap-3">
+        {submitError && (
+          <div
+            role="alert"
+            className="bg-error/10 text-error rounded-xl px-4 py-3 text-sm font-medium"
+          >
+            {submitError}
+          </div>
+        )}
+
         <Button
           type="submit"
           variant="primary"
