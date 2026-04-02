@@ -72,4 +72,8 @@ export class EnvSchema {
 	@IsString()
 	@IsOptional()
 	REDIS_PASSWORD?: string;
+
+	@IsString()
+	@IsOptional()
+	VIEW_COUNTER_FLUSH_CRON?: string;
 }

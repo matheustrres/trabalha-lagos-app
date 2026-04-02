@@ -1,6 +1,7 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerModule } from 'nestjs-pino';
 import { uuidv7 } from 'uuidv7';
 
@@ -27,6 +28,7 @@ import { RedisModule } from '@/shared/modules/redis/redis.module';
 		DatabaseModule,
 		EnvModule,
 		RedisModule,
+		ScheduleModule.forRoot(),
 		BullModule.forRootAsync({
 			imports: [EnvModule],
 			useFactory: (envService: EnvService) => ({
