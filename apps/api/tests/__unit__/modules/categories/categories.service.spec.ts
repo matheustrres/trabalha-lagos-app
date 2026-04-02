@@ -41,6 +41,13 @@ describe(CategoriesService.name, () => {
 
 			expect(result).toEqual([]);
 		});
+
+		it('propagates unexpected repository errors (e.g. database failure)', async () => {
+			const dbError = new Error('database connection lost');
+			categoriesRepository.findAll.mockRejectedValue(dbError);
+
+			await expect(SUT.findAll()).rejects.toThrow(dbError);
+		});
 	});
 
 	// ─── findBySlug ───────────────────────────────────────────────────────────
