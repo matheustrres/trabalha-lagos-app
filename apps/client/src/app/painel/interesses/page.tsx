@@ -6,14 +6,13 @@ import { SearchX } from "lucide-react";
 import { employerService } from "@/lib/services/employer.service";
 import type { Interest } from "@/types/interest.types";
 import { InterestCard } from "./components/interest-card";
+import { InterestDetailsSheet } from "./components/interest-details-sheet";
 
 type FilterStatus = "ALL" | Interest["status"];
 
 const STATUS_FILTERS: { label: string; value: FilterStatus }[] = [
   { label: "Todos", value: "ALL" },
   { label: "Novos", value: "SENT" },
-  { label: "Visualizados", value: "VIEWED" },
-  { label: "Contatados", value: "CONTACTED" },
   { label: "Descartados", value: "REJECTED" },
 ];
 
@@ -27,6 +26,7 @@ const InteressesPage = () => {
 
   const [statusFilter, setStatusFilter] = useState<FilterStatus>("ALL");
   const [jobFilter, setJobFilter] = useState<string>("ALL");
+  const [selectedInterest, setSelectedInterest] = useState<Interest | null>(null);
 
   const filters = {
     ...(statusFilter !== "ALL" && { status: statusFilter }),
@@ -129,6 +129,7 @@ const InteressesPage = () => {
             <InterestCard
               key={interest.id}
               interest={interest}
+              onOpenDetails={setSelectedInterest}
               onStatusChange={handleStatusChange}
               isUpdating={
                 statusMutation.isPending &&
@@ -138,6 +139,17 @@ const InteressesPage = () => {
           ))
         )}
       </div>
+
+      <InterestDetailsSheet
+        interest={selectedInterest}
+        isOpen={selectedInterest !== null}
+        onClose={() => setSelectedInterest(null)}
+        onStatusChange={handleStatusChange}
+        isUpdating={
+          statusMutation.isPending &&
+          statusMutation.variables?.id === selectedInterest?.id
+        }
+      />
     </div>
   );
 };

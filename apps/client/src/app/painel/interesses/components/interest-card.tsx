@@ -1,6 +1,7 @@
 "use client";
 
-import { MessageCircle, Eye, X } from "lucide-react";
+import { MessageCircle, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { Interest } from "@/types/interest.types";
 
 const STATUS_CONFIG: Record<
@@ -27,12 +28,14 @@ const getRelativeTime = (iso: string): string => {
 interface InterestCardProps {
   interest: Interest;
   onStatusChange: (id: string, status: Interest["status"]) => void;
+  onOpenDetails: (interest: Interest) => void;
   isUpdating?: boolean;
 }
 
 export const InterestCard = ({
   interest,
   onStatusChange,
+  onOpenDetails,
   isUpdating = false,
 }: InterestCardProps) => {
   const { label, className } = STATUS_CONFIG[interest.status];
@@ -44,9 +47,6 @@ export const InterestCard = ({
     if (!interest.candidatePhone || isUpdating) return;
 
     window.open(`https://wa.me/${interest.candidatePhone}`, "_blank");
-    if (interest.status !== "CONTACTED") {
-      onStatusChange(interest.id, "CONTACTED");
-    }
   };
 
   const handleDiscard = () => {
@@ -58,7 +58,19 @@ export const InterestCard = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-border p-4 transition-opacity duration-150">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpenDetails(interest)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpenDetails(interest);
+        }
+      }}
+      className="bg-white rounded-2xl border border-border p-4 transition-opacity duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      aria-label={`Ver detalhes de ${interest.candidateName}`}
+    >
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
           <span className="text-primary font-semibold text-sm">{initial}</span>
@@ -86,36 +98,50 @@ export const InterestCard = ({
       </div>
 
       <div className="flex gap-2 mt-3">
-        <button
-          onClick={handleWhatsApp}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={(event) => {
+            event.stopPropagation();
+            onOpenDetails(interest);
+          }}
+          className="text-xs"
+        >
+          Ver detalhes
+        </Button>
+
+        <Button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            handleWhatsApp();
+          }}
           disabled={whatsappDisabled}
+          variant="ghost"
+          size="sm"
           title={!interest.candidatePhone ? "Disponível no plano Pro" : undefined}
-          className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-[#25D366]/10 text-[#25D366]"
+          className="text-xs bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20"
         >
           <MessageCircle size={13} aria-hidden />
-          WhatsApp
-        </button>
-
-        {interest.status === "SENT" && (
-          <button
-            onClick={() => onStatusChange(interest.id, "VIEWED")}
-            disabled={isUpdating}
-            className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-500"
-          >
-            <Eye size={13} aria-hidden />
-            Visualizado
-          </button>
-        )}
+          Abrir WhatsApp
+        </Button>
 
         {interest.status !== "REJECTED" && (
-          <button
-            onClick={handleDiscard}
+          <Button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              handleDiscard();
+            }}
             disabled={isUpdating}
-            className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-gray-100 text-gray-400"
+            variant="ghost"
+            size="sm"
+            className="text-xs bg-gray-100 text-gray-500 hover:bg-gray-200"
           >
             <X size={13} aria-hidden />
             Descartar
-          </button>
+          </Button>
         )}
       </div>
     </div>
