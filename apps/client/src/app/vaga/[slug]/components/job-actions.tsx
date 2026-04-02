@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { InterestForm } from "./interest-form";
@@ -14,10 +14,16 @@ interface JobActionsProps {
   jobId: string;
 }
 
-export function JobActions({ whatsappContact, companyName }: JobActionsProps) {
+export function JobActions({ whatsappContact, companyName, jobId }: JobActionsProps) {
   const [showInterestSheet, setShowInterestSheet] = useState(false);
   const [interestSent, setInterestSent] = useState(false);
   const hasWhatsapp = Boolean(whatsappContact);
+  const interestStorageKey = `tl:interest:${jobId}`;
+
+  useEffect(() => {
+    const savedInterest = localStorage.getItem(interestStorageKey);
+    setInterestSent(savedInterest === "true");
+  }, [interestStorageKey]);
 
   return (
     <>
@@ -62,8 +68,10 @@ export function JobActions({ whatsappContact, companyName }: JobActionsProps) {
         title="Demonstrar interesse"
       >
         <InterestForm
+          jobId={jobId}
           companyName={companyName}
           onSuccess={() => {
+            localStorage.setItem(interestStorageKey, "true");
             setInterestSent(true);
             setShowInterestSheet(false);
           }}
