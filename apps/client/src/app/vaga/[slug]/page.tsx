@@ -1,10 +1,21 @@
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import type { Metadata } from "next";
 import { SERVER_API_URL } from "@/lib/server-api";
 import type { ContractType, Job } from "@/types/job.types";
 import { formatSalaryRange } from "@/lib/utils/format-salary.utils";
 import { JobDetailContent } from "./components/job-detail-content";
 import { JobActions } from "./components/job-actions";
+
+const getClientHeaders = async (): Promise<Record<string, string>> => {
+  const headersList = await headers();
+  const forwardedFor = headersList.get("x-forwarded-for") ?? headersList.get("x-real-ip") ?? "";
+  const userAgent = headersList.get("user-agent") ?? "";
+  return {
+    "x-forwarded-for": forwardedFor,
+    "user-agent": userAgent,
+  };
+};
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -24,7 +35,11 @@ const mapContractType = (contractType: ContractType): string => {
 
 const getJobBySlug = async (slug: string): Promise<Job | null> => {
   try {
-    const response = await fetch(`${SERVER_API_URL}/jobs/${slug}`);
+    const clientHeaders = await getClientHeaders();
+    const response = await fetch(`${SERVER_API_URL}/jobs/${slug}`, {
+      headers: clientHeaders,
+      cache: "no-store",
+    });
     if (!response.ok) return null;
     return (await response.json()) as Job;
   } catch {

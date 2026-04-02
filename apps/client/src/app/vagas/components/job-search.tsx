@@ -7,14 +7,12 @@ import { Search, SearchX, SlidersHorizontal } from "lucide-react";
 import { JobCard } from "@/components/job-card";
 import { JobListSkeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce.hook";
-import { getSession } from "@/lib/auth";
 import { RADIUS_OPTIONS } from "@/lib/constants/radius.constants";
 import { CATEGORIES } from "@/lib/constants/categories.constants";
 import { LAGOS_CITIES } from "@/lib/constants/cities.constants";
 import { jobsService } from "@/lib/services/jobs.service";
 import { cn } from "@/lib/utils/cn.utils";
 import { pluralizeVagas } from "@/lib/utils/pluralize.utils";
-import { slugify } from "@/lib/utils/slugify.utils";
 import type { ContractType } from "@/types/job.types";
 
 const CONTRACT_FILTER_OPTIONS: Array<{
@@ -32,21 +30,6 @@ const CONTRACT_FILTER_OPTIONS: Array<{
 export const JobSearch = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const resolveCitySlug = (cityValue?: string | null) => {
-    if (!cityValue) return null;
-
-    const bySlug = LAGOS_CITIES.find((cityOption) => cityOption.slug === cityValue);
-    if (bySlug) return bySlug.slug;
-
-    const cityAsSlug = slugify(cityValue);
-    const byName = LAGOS_CITIES.find(
-      (cityOption) => slugify(cityOption.name) === cityAsSlug,
-    );
-
-    return byName?.slug ?? null;
-  };
-
-  const sessionDefaultCity = resolveCitySlug(getSession()?.user.city);
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") ?? "");
   const [radius, setRadius] = useState(() => {
@@ -60,7 +43,7 @@ export const JobSearch = () => {
     searchParams.get("contractType") as ContractType | null,
   );
   const [city, setCity] = useState<string | null>(
-    () => searchParams.get("city") ?? sessionDefaultCity,
+    () => searchParams.get("city"),
   );
   const [showFilters, setShowFilters] = useState(false);
   const page = Number(searchParams.get("page") ?? "1");
