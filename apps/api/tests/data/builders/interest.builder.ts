@@ -13,6 +13,7 @@ export type InterestSchema = {
 
 export type InterestSchemaWithJobTitle = InterestSchema & {
 	jobTitle: string;
+	jobSlug: string;
 };
 
 const defaults: InterestSchema = {
@@ -62,6 +63,7 @@ export class InterestBuilder {
 		return {
 			...this.props,
 			jobTitle: 'Vaga de Turismo',
+			jobSlug: 'vaga-de-turismo-uuid',
 		};
 	}
 }

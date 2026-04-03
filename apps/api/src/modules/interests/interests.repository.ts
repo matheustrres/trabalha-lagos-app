@@ -8,10 +8,10 @@ import {
 import {
 	interests,
 	InterestSchema,
-	InterestSchemaWithJobTitle,
 	InterestSchemaWithUserAndJobIds,
 	InterestStatus,
 	jobs,
+	users,
 } from '@/shared/modules/database/schema';
 
 type CreateInterestData = {
@@ -25,6 +25,31 @@ type CreateInterestData = {
 type FindByCompanyFilters = {
 	status?: InterestStatus;
 	jobId?: string;
+	availability?: 'IMMEDIATE' | 'IN_15_DAYS' | 'IN_30_DAYS' | 'NEGOTIABLE';
+	area?: string;
+};
+
+export type InterestWithCandidateProfileRow = {
+	id: string;
+	name: string;
+	phone: string;
+	city: string;
+	status: InterestStatus;
+	createdAt: Date;
+	userId: string | null;
+	jobId: string;
+	jobTitle: string;
+	jobSlug: string;
+	candidateInterests: string[] | null;
+	candidateExperience: string | null;
+	candidateAvailability:
+		| 'IMMEDIATE'
+		| 'IN_15_DAYS'
+		| 'IN_30_DAYS'
+		| 'NEGOTIABLE'
+		| null;
+	candidateAcceptedContractTypes: string[] | null;
+	candidateNeighborhood: string | null;
 };
 
 @Injectable()
@@ -78,21 +103,23 @@ export class InterestsRepository {
 	async findByCompanyJobs(
 		companyId: string,
 		filters?: FindByCompanyFilters,
-	): Promise<InterestSchemaWithJobTitle[]> {
+	): Promise<InterestWithCandidateProfileRow[]> {
 		// Resolve company jobs first to filter at DB level without cross-table joins
 		const companyJobs = await this.db
-			.select({ id: jobs.id, title: jobs.title })
+			.select({ id: jobs.id, title: jobs.title, slug: jobs.slug })
 			.from(jobs)
 			.where(eq(jobs.companyId, companyId));
 
 		if (companyJobs.length === 0) return [];
 
-		const titleMap = new Map(companyJobs.map((j) => [j.id, j.title]));
+		const jobMetaMap = new Map(
+			companyJobs.map((job) => [job.id, { title: job.title, slug: job.slug }]),
+		);
 
 		let jobIds = companyJobs.map((j) => j.id);
 		if (filters?.jobId) {
 			// Restrict to the specific jobId only if it belongs to this company
-			if (!titleMap.has(filters.jobId)) return [];
+			if (!jobMetaMap.has(filters.jobId)) return [];
 			jobIds = [filters.jobId];
 		}
 
@@ -107,17 +134,67 @@ export class InterestsRepository {
 			.where(and(...conditions))
 			.orderBy(desc(interests.createdAt));
 
-		return rows.map((row) => ({
-			id: row.id,
-			name: row.name,
-			phone: row.phone,
-			city: row.city,
-			status: row.status as InterestStatus,
-			createdAt: row.createdAt,
-			userId: row.userId,
-			jobId: row.jobId,
-			jobTitle: titleMap.get(row.jobId) ?? '',
-		}));
+		const userIds = rows
+			.map((row) => row.userId)
+			.filter((userId): userId is string => Boolean(userId));
+
+		const profiles =
+			userIds.length > 0
+				? await this.db
+						.select({
+							id: users.id,
+							interests: users.interests,
+							experience: users.experience,
+							availability: users.availability,
+							acceptedContractTypes: users.acceptedContractTypes,
+							neighborhood: users.neighborhood,
+						})
+						.from(users)
+						.where(inArray(users.id, userIds))
+				: [];
+
+		const profileMap = new Map(
+			profiles.map((profile) => [profile.id, profile]),
+		);
+
+		return rows
+			.map((row) => {
+				const profile = row.userId ? profileMap.get(row.userId) : undefined;
+				const jobMeta = jobMetaMap.get(row.jobId);
+
+				return {
+					id: row.id,
+					name: row.name,
+					phone: row.phone,
+					city: row.city,
+					status: row.status as InterestStatus,
+					createdAt: row.createdAt,
+					userId: row.userId,
+					jobId: row.jobId,
+					jobTitle: jobMeta?.title ?? '',
+					jobSlug: jobMeta?.slug ?? '',
+					candidateInterests: profile?.interests ?? null,
+					candidateExperience: profile?.experience ?? null,
+					candidateAvailability: profile?.availability ?? null,
+					candidateAcceptedContractTypes:
+						profile?.acceptedContractTypes ?? null,
+					candidateNeighborhood: profile?.neighborhood ?? null,
+				};
+			})
+			.filter((row) => {
+				if (
+					filters?.availability &&
+					row.candidateAvailability !== filters.availability
+				) {
+					return false;
+				}
+
+				if (filters?.area) {
+					return row.candidateInterests?.includes(filters.area) ?? false;
+				}
+
+				return true;
+			});
 	}
 
 	async updateStatus(

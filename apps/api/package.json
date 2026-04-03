@@ -21,6 +21,7 @@
 		"test:e2e": "dotenv -e .env.test -- vitest run --config vitest.e2e.config.mts",
 		"test:e2e:watch": "dotenv -e .env.test -- vitest --config vitest.e2e.config.mts",
 		"test:cov": "dotenv -e .env.test -- vitest run --config vitest.config.mts --coverage --pool=forks --poolOptions.forks.singleFork=true",
+		"db:migrate": "dotenv -e .env.dev -- drizzle-kit migrate --config drizzle.config.ts",
 		"db:seed": "dotenv -e .env.dev -- tsx src/shared/modules/database/seed.ts"
 	},
 	"dependencies": {

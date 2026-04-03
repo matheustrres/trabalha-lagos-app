@@ -11,6 +11,14 @@ import {
 	users,
 } from '@/shared/modules/database/schema';
 
+type UpdateUserProfileData = {
+	interests?: string[];
+	experience?: string;
+	availability?: 'IMMEDIATE' | 'IN_15_DAYS' | 'IN_30_DAYS' | 'NEGOTIABLE';
+	acceptedContractTypes?: string[];
+	neighborhood?: string;
+};
+
 @Injectable()
 export class UsersRepository {
 	constructor(@Inject(DATABASE_TOKEN) private readonly db: Database) {}
@@ -63,6 +71,26 @@ export class UsersRepository {
 				createdAt: users.createdAt,
 			});
 		return user!;
+	}
+
+	async updateProfile(
+		userId: string,
+		data: UpdateUserProfileData,
+	): Promise<UserSchema | null> {
+		const [user] = await this.db
+			.update(users)
+			.set({
+				interests: data.interests,
+				experience: data.experience,
+				availability: data.availability,
+				acceptedContractTypes: data.acceptedContractTypes,
+				neighborhood: data.neighborhood,
+				updatedAt: new Date(),
+			})
+			.where(eq(users.id, userId))
+			.returning();
+
+		return user ?? null;
 	}
 }
 

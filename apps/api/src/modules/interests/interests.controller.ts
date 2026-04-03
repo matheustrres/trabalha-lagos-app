@@ -63,6 +63,8 @@ export class InterestsController {
 		queries: [
 			{ name: 'status', required: false },
 			{ name: 'jobId', required: false },
+			{ name: 'availability', required: false },
+			{ name: 'area', required: false },
 		],
 	})
 	async findMyInterests(

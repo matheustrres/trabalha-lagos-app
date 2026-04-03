@@ -64,6 +64,8 @@ describe('Interests DTOs', () => {
 			const errors = getValidationErrors(QueryInterestsDto, {
 				status: 'SENT',
 				jobId: '019682b6-7b4a-7000-8000-000000000002',
+				availability: 'IMMEDIATE',
+				area: 'turismo-hospitalidade',
 			});
 
 			expect(errors).toHaveLength(0);
@@ -75,6 +77,14 @@ describe('Interests DTOs', () => {
 			});
 
 			expect(hasPropertyError(errors, 'status')).toBe(true);
+		});
+
+		it('rejects invalid availability enum', () => {
+			const errors = getValidationErrors(QueryInterestsDto, {
+				availability: 'TOMORROW' as QueryInterestsDto['availability'],
+			});
+
+			expect(hasPropertyError(errors, 'availability')).toBe(true);
 		});
 
 		it('rejects invalid jobId UUID', () => {
@@ -113,6 +123,7 @@ describe('Interests DTOs', () => {
 				candidatePhone: null,
 				jobId: 'job-uuid-1',
 				jobTitle: 'Atendente',
+				jobSlug: 'atendente-cabo-frio-uuid',
 				status: 'SENT',
 				createdAt: new Date('2026-01-01T00:00:00.000Z'),
 			};

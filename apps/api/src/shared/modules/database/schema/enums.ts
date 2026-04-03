@@ -27,3 +27,10 @@ export const interestStatusEnum = pgEnum('interest_status', [
 	'CONTACTED',
 	'REJECTED',
 ]);
+
+export const candidateAvailabilityEnum = pgEnum('candidate_availability', [
+	'IMMEDIATE',
+	'IN_15_DAYS',
+	'IN_30_DAYS',
+	'NEGOTIABLE',
+]);

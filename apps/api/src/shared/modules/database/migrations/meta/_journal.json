@@ -22,6 +22,13 @@
       "when": 1774994958906,
       "tag": "0002_wonderful_tiger_shark",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1775177193492,
+      "tag": "0003_flat_toro",
+      "breakpoints": true
     }
   ]
 }

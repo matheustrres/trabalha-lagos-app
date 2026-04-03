@@ -1,4 +1,9 @@
 type UserRole = 'CANDIDATE' | 'EMPLOYER' | 'ADMIN';
+type CandidateAvailability =
+	| 'IMMEDIATE'
+	| 'IN_15_DAYS'
+	| 'IN_30_DAYS'
+	| 'NEGOTIABLE';
 
 export type User = {
 	id: string;
@@ -7,6 +12,11 @@ export type User = {
 	email: string | null;
 	passwordHash: string;
 	city: string | null;
+	interests: string[] | null;
+	experience: string | null;
+	availability: CandidateAvailability | null;
+	acceptedContractTypes: string[] | null;
+	neighborhood: string | null;
 	role: UserRole;
 	lat: number | null;
 	lng: number | null;
@@ -27,6 +37,11 @@ const defaults: User = {
 	email: null,
 	passwordHash: '$argon2id$mock-hash',
 	city: 'Cabo Frio',
+	interests: null,
+	experience: null,
+	availability: null,
+	acceptedContractTypes: null,
+	neighborhood: null,
 	role: 'CANDIDATE',
 	lat: null,
 	lng: null,

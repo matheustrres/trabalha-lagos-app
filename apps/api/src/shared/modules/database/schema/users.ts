@@ -8,7 +8,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { uuidv7 } from 'uuidv7';
 
-import { roleEnum } from './enums';
+import { candidateAvailabilityEnum, roleEnum } from './enums';
 
 export const users = pgTable('users', {
 	id: uuid('id')
@@ -20,6 +20,11 @@ export const users = pgTable('users', {
 	passwordHash: text('password_hash').notNull(),
 	role: roleEnum('role').notNull(),
 	city: text('city'),
+	interests: text('interests').array(),
+	experience: text('experience'),
+	availability: candidateAvailabilityEnum('availability'),
+	acceptedContractTypes: text('accepted_contract_types').array(),
+	neighborhood: text('neighborhood'),
 	lat: real('lat'),
 	lng: real('lng'),
 	searchRadius: integer('search_radius').default(10),

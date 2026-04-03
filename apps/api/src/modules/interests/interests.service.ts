@@ -15,6 +15,12 @@ import { JobsService } from '@/modules/jobs/jobs.service';
 
 import { InterestSchema } from '@/shared/modules/database/schema';
 
+const isFilledText = (value?: string | null): boolean =>
+	Boolean(value && value.trim().length > 0);
+
+const hasAtLeastOneItem = (value?: string[] | null): boolean =>
+	Array.isArray(value) && value.length > 0;
+
 @Injectable()
 export class InterestsService {
 	constructor(
@@ -69,12 +75,26 @@ export class InterestsService {
 		const phoneRestricted = company.plan === 'FREE';
 
 		const data = rows.map((row) => ({
+			profileBadge:
+				hasAtLeastOneItem(row.candidateInterests) &&
+				hasAtLeastOneItem(row.candidateAcceptedContractTypes) &&
+				isFilledText(row.candidateExperience) &&
+				isFilledText(row.candidateAvailability) &&
+				isFilledText(row.candidateNeighborhood)
+					? 'COMPLETE'
+					: 'BASIC',
 			id: row.id,
 			candidateName: row.name,
 			candidateCity: row.city,
 			candidatePhone: phoneRestricted ? null : row.phone,
+			candidateInterests: row.candidateInterests,
+			candidateExperience: row.candidateExperience,
+			candidateAvailability: row.candidateAvailability,
+			candidateAcceptedContractTypes: row.candidateAcceptedContractTypes,
+			candidateNeighborhood: row.candidateNeighborhood,
 			jobId: row.jobId,
 			jobTitle: row.jobTitle,
+			jobSlug: row.jobSlug,
 			status: row.status,
 			createdAt: row.createdAt,
 		}));

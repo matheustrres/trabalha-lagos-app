@@ -163,6 +163,7 @@ describe('InterestsRepository (integration)', () => {
 				await interestsRepository.findByCompanyJobs(companyId);
 			expect(companyRows).toHaveLength(1);
 			expect(companyRows[0]?.jobTitle).toBe('Vaga 0003');
+			expect(companyRows[0]?.jobSlug).toContain('vaga-0003-');
 
 			await interestsRepository.updateStatus(created.id, 'CONTACTED');
 
