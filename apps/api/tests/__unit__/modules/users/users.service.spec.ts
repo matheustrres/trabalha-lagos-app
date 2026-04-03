@@ -42,6 +42,13 @@ describe(UsersService.name, () => {
 
 			expect(result).toBeNull();
 		});
+
+		it('propagates unexpected repository errors', async () => {
+			const dbError = new Error('database unavailable');
+			usersRepository.findByPhone.mockRejectedValue(dbError);
+
+			await expect(SUT.findByPhone('22999990001')).rejects.toThrow(dbError);
+		});
 	});
 
 	// ─── findByEmail ───────────────────────────────────────────────────────────
@@ -114,6 +121,21 @@ describe(UsersService.name, () => {
 
 			expect(result).toEqual(created);
 			expect(usersRepository.create).toHaveBeenCalledWith(input);
+		});
+
+		it('propagates unexpected repository errors', async () => {
+			const input = {
+				name: 'Ana Lima',
+				phone: '22988887777',
+				passwordHash: '$argon2id$mock',
+				city: 'Búzios',
+				role: 'CANDIDATE' as const,
+			};
+			const dbError = new Error('insert failed');
+
+			usersRepository.create.mockRejectedValue(dbError);
+
+			await expect(SUT.create(input)).rejects.toThrow(dbError);
 		});
 	});
 });
