@@ -30,7 +30,7 @@ export async function setup(): Promise<void> {
 	process.env['PG_PORT'] = String(pgContainer.getFirstMappedPort());
 	process.env['PG_DATABASE'] = pgContainer.getDatabase();
 	process.env['REDIS_HOST'] = redisContainer.getHost();
-	process.env['REDIS_PORT'] = String(redisContainer.getPort());
+	process.env['REDIS_PORT'] = String(redisContainer.getMappedPort(6379));
 	process.env['REDIS_PASSWORD'] = '';
 
 	console.log('[e2e] Running drizzle-kit migrate...');
