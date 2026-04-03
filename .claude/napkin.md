@@ -14,6 +14,9 @@
 1. **[2026-03-28] pnpm is the package manager for this monorepo**
    Do instead: use `pnpm` instead of `npm` or `yarn` for all install/run commands.
 
+2. **[2026-04-02] zsh interpreta `[]` em paths dinâmicos do Next.js como glob**
+   Do instead: sempre envolver paths com `[slug]`, `[id]`, etc. entre aspas em comandos git/bash.
+
 ## Next.js / React-Hook-Form / Zod Gotchas
 1. **[2026-03-29] Zod v4: `errorMap` renamed to `error`, enums need `as const`**
    Do instead: use `error: () => ({ message: '...' })` and `z.enum([...] as const, {...})`.
@@ -48,8 +51,11 @@
    Do instead: rename any file not in kebab-case before committing.
 
 ## User Directives
-1. **[2026-03-28] TypeScript strict mode is mandatory in both apps**
+1. **[2026-04-02] Para explorar o codebase, usar smart-explorer primeiro**
+   Do instead: iniciar com `explore_overview` e só depois usar `explore_search/codemap/peek`.
+
+2. **[2026-03-28] TypeScript strict mode is mandatory in both apps**
    Do instead: ensure `"strict": true` in tsconfig.json; no implicit `any`.
 
-2. **[2026-03-28] User-visible content must be in Portuguese, code in English**
+3. **[2026-03-28] User-visible content must be in Portuguese, code in English**
    Do instead: write variable/function/type names in English; UI strings in pt-BR.
