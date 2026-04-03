@@ -2,6 +2,7 @@
 
 import { MessageCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CATEGORIES } from "@/lib/constants/categories.constants";
 import type { Interest } from "@/types/interest.types";
 
 const STATUS_CONFIG: Record<
@@ -23,6 +24,29 @@ const getRelativeTime = (iso: string): string => {
   if (days === 0) return "hoje";
   if (days === 1) return "há 1 dia";
   return `há ${days} dias`;
+};
+
+const AVAILABILITY_LABELS: Record<
+  NonNullable<Interest["candidateAvailability"]>,
+  string
+> = {
+  IMMEDIATE: "Imediata",
+  IN_15_DAYS: "Em 15 dias",
+  IN_30_DAYS: "Em 30 dias",
+  NEGOTIABLE: "A combinar",
+};
+
+const CATEGORY_LABELS = Object.fromEntries(
+  CATEGORIES.map((category) => [category.slug, category.name]),
+);
+
+const CONTRACT_LABELS: Record<string, string> = {
+  CLT: "CLT",
+  PJ: "PJ",
+  FREELANCER: "Freelancer",
+  TEMPORARY: "Temporário",
+  INTERNSHIP: "Estágio",
+  OTHER: "Outro",
 };
 
 interface InterestCardProps {
@@ -87,7 +111,35 @@ export const InterestCard = ({
               {label}
             </span>
           </div>
-          <p className="text-sm text-gray-500">{interest.candidateCity}</p>
+          <p className="text-sm text-gray-500 break-words">{interest.candidateCity}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <span
+              className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                interest.profileBadge === "COMPLETE"
+                  ? "bg-success/10 text-success"
+                  : "bg-gray-100 text-gray-500"
+              }`}
+            >
+              {interest.profileBadge === "COMPLETE"
+                ? "Perfil completo"
+                : "Perfil básico"}
+            </span>
+            {interest.candidateAvailability && (
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                {AVAILABILITY_LABELS[interest.candidateAvailability]}
+              </span>
+            )}
+            {interest.candidateInterests?.[0] && (
+              <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-medium text-gray-600">
+                Área: {CATEGORY_LABELS[interest.candidateInterests[0]] ?? interest.candidateInterests[0]}
+              </span>
+            )}
+            {interest.candidateAcceptedContractTypes?.[0] && (
+              <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-medium text-gray-600">
+                Vínculo: {CONTRACT_LABELS[interest.candidateAcceptedContractTypes[0]] ?? interest.candidateAcceptedContractTypes[0]}
+              </span>
+            )}
+          </div>
           <p className="text-xs text-gray-400 mt-1">
             Vaga: {interest.jobTitle}
           </p>
@@ -97,7 +149,7 @@ export const InterestCard = ({
         </div>
       </div>
 
-      <div className="flex gap-2 mt-3">
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
         <Button
           type="button"
           variant="ghost"
@@ -106,7 +158,7 @@ export const InterestCard = ({
             event.stopPropagation();
             onOpenDetails(interest);
           }}
-          className="text-xs"
+          className="w-full text-xs"
         >
           Ver detalhes
         </Button>
@@ -121,7 +173,7 @@ export const InterestCard = ({
           variant="ghost"
           size="sm"
           title={!interest.candidatePhone ? "Disponível no plano Pro" : undefined}
-          className="text-xs bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20"
+          className="w-full text-xs bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20"
         >
           <MessageCircle size={13} aria-hidden />
           Abrir WhatsApp
@@ -137,7 +189,7 @@ export const InterestCard = ({
             disabled={isUpdating}
             variant="ghost"
             size="sm"
-            className="text-xs bg-gray-100 text-gray-500 hover:bg-gray-200"
+            className="w-full text-xs bg-gray-100 text-gray-500 hover:bg-gray-200"
           >
             <X size={13} aria-hidden />
             Descartar

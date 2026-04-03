@@ -2,6 +2,8 @@ export { Button } from "./button";
 
 export { BottomSheet } from "./bottom-sheet";
 
+export { Modal } from "./modal";
+
 export { Input } from "./input";
 
 export { Badge, CONTRACT_BADGE } from "./badge";
