@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
+import { getSession } from "@/lib/auth";
 import { InterestForm } from "./interest-form";
 
 interface JobActionsProps {
@@ -17,6 +19,7 @@ interface JobActionsProps {
 export function JobActions({ whatsappContact, companyName, jobId }: JobActionsProps) {
   const [showInterestSheet, setShowInterestSheet] = useState(false);
   const [interestSent, setInterestSent] = useState(false);
+  const [showProfileCta, setShowProfileCta] = useState(false);
   const hasWhatsapp = Boolean(whatsappContact);
   const interestStorageKey = `tl:interest:${jobId}`;
 
@@ -27,6 +30,19 @@ export function JobActions({ whatsappContact, companyName, jobId }: JobActionsPr
 
   return (
     <>
+      {showProfileCta && (
+        <div className="fixed bottom-[92px] left-0 right-0 z-30 px-4">
+          <div className="max-w-lg mx-auto rounded-xl border border-primary/20 bg-primary/10 px-4 py-3 text-sm text-primary">
+            <p>
+              Complete seu perfil para se destacar entre os candidatos. {" "}
+              <Link href="/perfil" className="font-semibold underline">
+                Ir para perfil
+              </Link>
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border pb-[env(safe-area-inset-bottom,8px)]">
         <div className="max-w-lg mx-auto px-4 py-3 flex gap-2.5">
           <a
@@ -74,6 +90,9 @@ export function JobActions({ whatsappContact, companyName, jobId }: JobActionsPr
             localStorage.setItem(interestStorageKey, "true");
             setInterestSent(true);
             setShowInterestSheet(false);
+
+            const session = getSession();
+            setShowProfileCta(session?.user.role === "CANDIDATE");
           }}
           onCancel={() => setShowInterestSheet(false)}
         />

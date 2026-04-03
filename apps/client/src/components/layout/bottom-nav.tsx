@@ -9,7 +9,7 @@ const NAV_ITEMS = [
   { label: "Início", icon: Home, href: "/" },
   { label: "Vagas", icon: Briefcase, href: "/vagas" },
   { label: "Empresas", icon: Building2, href: null },
-  { label: "Perfil", icon: User, href: null },
+  { label: "Perfil", icon: User, href: "/perfil" },
 ] as const;
 
 export const BottomNav = () => {
