@@ -10,12 +10,18 @@
 1. **[2026-03-28] Always read app-specific CLAUDE.md before working on apps/api/ or apps/client/**
    Do instead: run `Read apps/<target>/CLAUDE.md` before any task in that app.
 
+2. **[2026-04-03] APP_GUARD com `ThrottlerGuard` quebra testes com `useMocker` (Reflector não resolvido)**
+   Do instead: usar um guard wrapper (`GlobalThrottlerGuard`) que instancia `ThrottlerGuard` com `new Reflector()` e delega `canActivate`.
+
 ## Shell & Command Reliability
 1. **[2026-03-28] pnpm is the package manager for this monorepo**
    Do instead: use `pnpm` instead of `npm` or `yarn` for all install/run commands.
 
 2. **[2026-04-02] zsh interpreta `[]` em paths dinâmicos do Next.js como glob**
    Do instead: sempre envolver paths com `[slug]`, `[id]`, etc. entre aspas em comandos git/bash.
+
+3. **[2026-04-03] Pacote `@nestjs/throttler-storage-redis` não existe no npm**
+   Do instead: instalar `@nest-lab/throttler-storage-redis` junto com `@nestjs/throttler`.
 
 ## Next.js / React-Hook-Form / Zod Gotchas
 1. **[2026-03-29] Zod v4: `errorMap` renamed to `error`, enums need `as const`**
