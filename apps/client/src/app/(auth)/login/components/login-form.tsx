@@ -36,6 +36,10 @@ export const LoginForm = () => {
       const error = err as { status?: number };
       if (error.status === 401) {
         setServerError("Telefone ou senha incorretos.");
+      } else if (error.status === 429) {
+        setServerError(
+          "Muitas requisições. Aguarde alguns segundos e tente novamente.",
+        );
       } else {
         setServerError("Erro ao entrar. Tente novamente.");
       }

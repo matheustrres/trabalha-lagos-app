@@ -103,6 +103,13 @@ export function InterestForm({
         return;
       }
 
+      if (status === 429) {
+        setServerError(
+          "Muitas requisições. Aguarde alguns segundos e tente novamente.",
+        );
+        return;
+      }
+
       setServerError("Erro ao enviar interesse. Tente novamente.");
     }
   };

@@ -119,6 +119,10 @@ export const RegisterForm = () => {
       const error = err as { status?: number };
       if (error.status === 409) {
         setServerError("Este telefone já está cadastrado.");
+      } else if (error.status === 429) {
+        setServerError(
+          "Muitas requisições. Aguarde alguns segundos e tente novamente.",
+        );
       } else {
         setServerError("Erro ao criar conta. Tente novamente.");
       }

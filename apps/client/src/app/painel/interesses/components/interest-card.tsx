@@ -85,8 +85,12 @@ export const InterestCard = ({
     <div
       role="button"
       tabIndex={0}
-      onClick={() => onOpenDetails(interest)}
+      onClick={() => {
+        if (isUpdating) return;
+        onOpenDetails(interest);
+      }}
       onKeyDown={(event) => {
+        if (isUpdating) return;
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           onOpenDetails(interest);
@@ -152,6 +156,7 @@ export const InterestCard = ({
       <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
         <Button
           type="button"
+          disabled={isUpdating}
           variant="ghost"
           size="sm"
           onClick={(event) => {

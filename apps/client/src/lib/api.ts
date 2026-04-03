@@ -3,6 +3,8 @@ import { clearSession, getSession, setSession } from "@/lib/auth";
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
+const inflightRequests = new Map<string, Promise<unknown>>();
+
 const getAuthHeaders = (): HeadersInit => {
   const session = getSession();
   return session ? { Authorization: `Bearer ${session.accessToken}` } : {};
@@ -64,6 +66,14 @@ const request = async <T>(
     throw err;
   }
 
+  if (res.status === 429) {
+    const err = new Error(
+      "Muitas requisições. Aguarde alguns segundos e tente novamente.",
+    ) as ApiError;
+    err.status = 429;
+    throw err;
+  }
+
   if (!res.ok) {
     const body = await res
       .json()
@@ -78,8 +88,24 @@ const request = async <T>(
   return res.json();
 };
 
+const deduplicatedGet = async <T>(path: string): Promise<T> => {
+  const inflightRequest = inflightRequests.get(path);
+
+  if (inflightRequest) {
+    return inflightRequest as Promise<T>;
+  }
+
+  const promise = request<T>(path).finally(() => {
+    inflightRequests.delete(path);
+  });
+
+  inflightRequests.set(path, promise);
+
+  return promise;
+};
+
 export const api = {
-  get: <T>(path: string) => request<T>(path),
+  get: <T>(path: string) => deduplicatedGet<T>(path),
 
   post: <T>(path: string, body: unknown) =>
     request<T>(path, { method: "POST", body: JSON.stringify(body) }),

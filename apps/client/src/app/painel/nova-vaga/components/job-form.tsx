@@ -134,6 +134,13 @@ export const JobForm = () => {
         return;
       }
 
+      if (status === 429) {
+        setSubmitError(
+          "Muitas requisições. Aguarde alguns segundos e tente novamente.",
+        );
+        return;
+      }
+
       if (status === 400) {
         setSubmitError("Localização fora da Região dos Lagos");
         return;

@@ -58,7 +58,7 @@ export const JobSearch = () => {
   const radiusLng = selectedCity?.lng ?? fallbackCenter.lng;
   const shouldApplyRadius = radius < 100 && (selectedCity !== null || radius !== 20);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: [
       "jobs",
       debouncedQuery,
@@ -102,6 +102,16 @@ export const JobSearch = () => {
 
   const jobs = data?.data ?? [];
   const total = data?.meta.total ?? jobs.length;
+
+  const queryErrorStatus =
+    typeof error === "object" && error !== null && "status" in error
+      ? Number(error.status)
+      : undefined;
+
+  const queryErrorMessage =
+    queryErrorStatus === 429
+      ? "Muitas requisições. Aguarde alguns segundos e tente novamente."
+      : "Não foi possível carregar as vagas agora. Tente novamente.";
 
   const clearFilters = () => {
     setCategory(null);
@@ -277,6 +287,15 @@ export const JobSearch = () => {
         </span>
         <span className="text-sm text-gray-500">Ordenado por distância</span>
       </div>
+
+      {isError && (
+        <div
+          role="alert"
+          className="mt-3 rounded-xl bg-error/10 px-4 py-2 text-sm text-error"
+        >
+          {queryErrorMessage}
+        </div>
+      )}
 
       {isLoading ? (
         <div className="mt-3">
