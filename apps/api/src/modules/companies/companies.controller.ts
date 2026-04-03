@@ -8,6 +8,7 @@ import {
 	UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 import { CompaniesService } from './companies.service';
 import { CompanyResponseDto } from './dto/company-response.dto';
@@ -22,6 +23,7 @@ import { Roles } from '@/common/decorators/roles.decorator';
 import { RolesGuard } from '@/common/guards/roles.guard';
 
 import { SwaggerRoute } from '@/shared/docs/swagger';
+import { getUserTracker } from '@/shared/utils/get-user-tracker';
 
 @ApiTags('companies')
 @Controller('companies')
@@ -32,6 +34,13 @@ export class CompaniesController {
 	@UseGuards(RolesGuard)
 	@Roles('EMPLOYER')
 	@Get('me')
+	@Throttle({
+		medium: {
+			limit: 120,
+			ttl: 60000,
+			getTracker: getUserTracker,
+		},
+	})
 	@SwaggerRoute({
 		operation: 'Retornar a empresa do empregador autenticado',
 		responses: [{ status: HttpStatus.OK, type: CompanyResponseDto }],
@@ -44,6 +53,9 @@ export class CompaniesController {
 
 	@Public()
 	@Get(':id')
+	@Throttle({
+		medium: { limit: 120, ttl: 60000 },
+	})
 	@SwaggerRoute({
 		operation: 'Perfil público da empresa',
 		responses: [{ status: HttpStatus.OK, type: CompanyResponseDto }],
@@ -56,6 +68,13 @@ export class CompaniesController {
 	@UseGuards(RolesGuard)
 	@Roles('EMPLOYER')
 	@Patch(':id')
+	@Throttle({
+		medium: {
+			limit: 30,
+			ttl: 60000,
+			getTracker: getUserTracker,
+		},
+	})
 	@SwaggerRoute({
 		operation: 'Atualizar perfil da empresa',
 		responses: [{ status: HttpStatus.OK, type: CompanyResponseDto }],

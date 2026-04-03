@@ -7,6 +7,7 @@ import {
 	UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 import { UserProfileResponseDto } from './dto/user-profile-response.dto';
@@ -21,6 +22,7 @@ import { RolesGuard } from '@/common/guards/roles.guard';
 
 import { SwaggerRoute } from '@/shared/docs/swagger';
 import { UserSchema } from '@/shared/modules/database/schema';
+import { getUserTracker } from '@/shared/utils/get-user-tracker';
 
 @ApiTags('users')
 @Controller('users')
@@ -30,6 +32,13 @@ export class UsersController {
 	@UseGuards(RolesGuard)
 	@Roles('CANDIDATE')
 	@Get('me/profile')
+	@Throttle({
+		medium: {
+			limit: 120,
+			ttl: 60000,
+			getTracker: getUserTracker,
+		},
+	})
 	@SwaggerRoute({
 		operation: 'Retornar mini-perfil do candidato autenticado',
 		responses: [{ status: HttpStatus.OK, type: UserProfileResponseDto }],
@@ -43,6 +52,13 @@ export class UsersController {
 	@UseGuards(RolesGuard)
 	@Roles('CANDIDATE')
 	@Patch('me/profile')
+	@Throttle({
+		medium: {
+			limit: 20,
+			ttl: 60000,
+			getTracker: getUserTracker,
+		},
+	})
 	@SwaggerRoute({
 		operation: 'Atualizar mini-perfil do candidato autenticado',
 		responses: [{ status: HttpStatus.OK, type: UserProfileResponseDto }],

@@ -11,6 +11,7 @@ import {
 	UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 
 import { CreateJobDto } from './dto/create-job.dto';
@@ -30,6 +31,7 @@ import { Roles } from '@/common/decorators/roles.decorator';
 import { RolesGuard } from '@/common/guards/roles.guard';
 
 import { SwaggerRoute } from '@/shared/docs/swagger';
+import { getUserTracker } from '@/shared/utils/get-user-tracker';
 
 @ApiTags('jobs')
 @Controller()
@@ -62,6 +64,13 @@ export class JobsController {
 	@UseGuards(RolesGuard)
 	@Roles('EMPLOYER')
 	@Get('employer/jobs')
+	@Throttle({
+		medium: {
+			limit: 90,
+			ttl: 60000,
+			getTracker: getUserTracker,
+		},
+	})
 	@SwaggerRoute({
 		operation: 'Listar vagas da empresa do empregador autenticado',
 		responses: [{ status: HttpStatus.OK, type: [JobResponseDto] }],
@@ -73,6 +82,9 @@ export class JobsController {
 
 	@Public()
 	@Get('jobs/:slug')
+	@Throttle({
+		medium: { limit: 120, ttl: 60000 },
+	})
 	@SwaggerRoute({
 		operation: 'Detalhe da vaga por slug',
 		responses: [{ status: HttpStatus.OK, type: JobResponseDto }],
@@ -90,6 +102,13 @@ export class JobsController {
 	@UseGuards(RolesGuard)
 	@Roles('EMPLOYER')
 	@Post('jobs')
+	@Throttle({
+		medium: {
+			limit: 5,
+			ttl: 60000,
+			getTracker: getUserTracker,
+		},
+	})
 	@SwaggerRoute({
 		operation: 'Criar nova vaga',
 		responses: [{ status: HttpStatus.CREATED, type: JobResponseDto }],
@@ -106,6 +125,13 @@ export class JobsController {
 	@UseGuards(RolesGuard)
 	@Roles('EMPLOYER')
 	@Patch('jobs/:id')
+	@Throttle({
+		medium: {
+			limit: 30,
+			ttl: 60000,
+			getTracker: getUserTracker,
+		},
+	})
 	@SwaggerRoute({
 		operation: 'Editar vaga (apenas o dono)',
 		responses: [{ status: HttpStatus.OK, type: JobResponseDto }],
@@ -124,6 +150,13 @@ export class JobsController {
 	@UseGuards(RolesGuard)
 	@Roles('EMPLOYER')
 	@Patch('jobs/:id/status')
+	@Throttle({
+		medium: {
+			limit: 30,
+			ttl: 60000,
+			getTracker: getUserTracker,
+		},
+	})
 	@SwaggerRoute({
 		operation: 'Alterar status da vaga (apenas o dono)',
 		responses: [{ status: HttpStatus.OK, type: JobResponseDto }],

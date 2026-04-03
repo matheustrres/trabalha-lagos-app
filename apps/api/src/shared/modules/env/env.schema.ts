@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
+	IsBoolean,
 	IsEnum,
 	IsNotEmpty,
 	IsNumber,
@@ -76,4 +77,15 @@ export class EnvSchema {
 	@IsString()
 	@IsOptional()
 	VIEW_COUNTER_FLUSH_CRON?: string;
+
+	@IsBoolean()
+	@IsOptional()
+	@Transform(({ value }) => {
+		if (typeof value === 'boolean') return value;
+		if (typeof value === 'string') {
+			return !['false', '0', 'off', 'no'].includes(value.toLowerCase());
+		}
+		return true;
+	})
+	THROTTLE_ENABLED = true;
 }

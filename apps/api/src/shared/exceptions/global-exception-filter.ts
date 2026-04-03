@@ -2,7 +2,6 @@ import {
 	ArgumentsHost,
 	Catch,
 	ExceptionFilter,
-	HttpException,
 	HttpStatus,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
@@ -25,6 +24,14 @@ type HttpValidationResponse = {
 	error: string;
 	statusCode: number;
 	detail?: string | string[];
+};
+
+type HttpLikeException = {
+	getStatus: () => number;
+	getResponse: () => unknown;
+	message?: string;
+	stack?: string;
+	constructor?: { name?: string };
 };
 
 @Catch()
@@ -55,9 +62,12 @@ export class GlobalExceptionFilter implements ExceptionFilter<unknown> {
 			detail: 'An unexpected error occurred. Please try again later.',
 			instance: requestUrl,
 		};
-		if (exception instanceof HttpException) {
-			const { message, statusCode } =
-				exception.getResponse() as HttpValidationResponse;
+		if (this.#isHttpLikeException(exception)) {
+			const statusCode = exception.getStatus();
+			const response = exception.getResponse() as HttpValidationResponse;
+			const message =
+				response?.message ?? exception.message ?? 'Unexpected error';
+
 			return {
 				...problemDetails,
 				type: this.#getType(statusCode),
@@ -82,7 +92,7 @@ export class GlobalExceptionFilter implements ExceptionFilter<unknown> {
 	#logError(message: string, exception: unknown): void {
 		const serializedError = this.#serializeError(exception);
 
-		if (exception instanceof HttpException && exception.getStatus() < 500) {
+		if (this.#isHttpLikeException(exception) && exception.getStatus() < 500) {
 			this.logger.warn({ err: serializedError }, 'Handled HTTP exception');
 			return;
 		}
@@ -91,7 +101,7 @@ export class GlobalExceptionFilter implements ExceptionFilter<unknown> {
 	}
 
 	#serializeError(exception: unknown): Record<string, unknown> {
-		if (exception instanceof HttpException) {
+		if (this.#isHttpLikeException(exception)) {
 			const response = exception.getResponse() as HttpValidationResponse;
 			const statusCode = exception.getStatus();
 			const detail =
@@ -100,7 +110,7 @@ export class GlobalExceptionFilter implements ExceptionFilter<unknown> {
 					? response.message
 					: [response.message]);
 			return {
-				type: exception.constructor.name,
+				type: exception.constructor?.name,
 				message: exception.message,
 				statusCode,
 				error: response.error,
@@ -119,6 +129,17 @@ export class GlobalExceptionFilter implements ExceptionFilter<unknown> {
 			};
 		}
 		return { type: 'Unknown', message: String(exception) };
+	}
+
+	#isHttpLikeException(exception: unknown): exception is HttpLikeException {
+		if (!exception || typeof exception !== 'object') {
+			return false;
+		}
+
+		return (
+			typeof (exception as HttpLikeException).getStatus === 'function' &&
+			typeof (exception as HttpLikeException).getResponse === 'function'
+		);
 	}
 
 	#sendResponse(

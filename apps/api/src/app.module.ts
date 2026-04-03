@@ -1,13 +1,17 @@
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerModule } from '@nestjs/throttler';
+import type Redis from 'ioredis';
 import { LoggerModule } from 'nestjs-pino';
 import { uuidv7 } from 'uuidv7';
 
 import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
 
+import { GlobalThrottlerGuard } from '@/common/guards/global-throttler.guard';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 
 import { AuthModule } from '@/modules/auth/auth.module';
@@ -22,6 +26,8 @@ import { DatabaseModule } from '@/shared/modules/database/database.module';
 import { EnvModule } from '@/shared/modules/env/env.module';
 import { EnvService } from '@/shared/modules/env/env.service';
 import { RedisModule } from '@/shared/modules/redis/redis.module';
+import { REDIS_TOKEN } from '@/shared/modules/redis/redis.provider';
+import { getIpTracker } from '@/shared/utils/get-ip-tracker';
 
 @Module({
 	imports: [
@@ -39,6 +45,29 @@ import { RedisModule } from '@/shared/modules/redis/redis.module';
 				},
 			}),
 			inject: [EnvService],
+		}),
+		ThrottlerModule.forRootAsync({
+			imports: [EnvModule, RedisModule],
+			inject: [EnvService, REDIS_TOKEN],
+			useFactory: (envService: EnvService, redis: Redis) => ({
+				throttlers: [
+					{ name: 'short', ttl: 1000, limit: 3 },
+					{ name: 'medium', ttl: 60000, limit: 60 },
+				],
+				storage: new ThrottlerStorageRedisService(redis),
+				setHeaders: true,
+				skipIf: (context) => {
+					if (!envService.getKey('THROTTLE_ENABLED')) {
+						return true;
+					}
+
+					const req = context.switchToHttp().getRequest<{ url?: string }>();
+					const url = req?.url ?? '';
+
+					return !url.startsWith('/api/v1');
+				},
+				getTracker: getIpTracker,
+			}),
 		}),
 		AuthModule,
 		UsersModule,
@@ -141,6 +170,10 @@ import { RedisModule } from '@/shared/modules/redis/redis.module';
 		{
 			provide: APP_GUARD,
 			useClass: JwtAuthGuard,
+		},
+		{
+			provide: APP_GUARD,
+			useClass: GlobalThrottlerGuard,
 		},
 	],
 })

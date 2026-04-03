@@ -10,6 +10,7 @@ import {
 	UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 import { CreateInterestDto } from './dto/create-interest.dto';
 import {
@@ -30,6 +31,7 @@ import { OptionalJwtAuthGuard } from '@/common/guards/optional-jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
 
 import { SwaggerRoute } from '@/shared/docs/swagger';
+import { getUserTracker } from '@/shared/utils/get-user-tracker';
 
 @ApiTags('interests')
 @Controller()
@@ -39,6 +41,9 @@ export class InterestsController {
 	@Public()
 	@UseGuards(OptionalJwtAuthGuard)
 	@Post('jobs/:jobId/interest')
+	@Throttle({
+		medium: { limit: 10, ttl: 60000 },
+	})
 	@SwaggerRoute({
 		operation: 'Demonstrar interesse em uma vaga (público)',
 		responses: [{ status: HttpStatus.CREATED, type: InterestResponseDto }],
@@ -56,6 +61,13 @@ export class InterestsController {
 	@UseGuards(RolesGuard)
 	@Roles('EMPLOYER')
 	@Get('employer/interests')
+	@Throttle({
+		medium: {
+			limit: 90,
+			ttl: 60000,
+			getTracker: getUserTracker,
+		},
+	})
 	@SwaggerRoute({
 		operation: 'Listar interesses recebidos nas vagas da empresa',
 		responses: [{ status: HttpStatus.OK, type: InterestsListResponseDto }],
@@ -77,6 +89,13 @@ export class InterestsController {
 	@UseGuards(RolesGuard)
 	@Roles('EMPLOYER')
 	@Patch('interests/:id/status')
+	@Throttle({
+		medium: {
+			limit: 60,
+			ttl: 60000,
+			getTracker: getUserTracker,
+		},
+	})
 	@SwaggerRoute({
 		operation: 'Atualizar status de um interesse (apenas o dono da vaga)',
 		responses: [{ status: HttpStatus.OK, type: InterestResponseDto }],

@@ -1,5 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 import { AuthService } from './auth.service';
 import { AuthResponseDto } from './dto/auth-response.dto';
@@ -18,6 +19,9 @@ export class AuthController {
 
 	@Public()
 	@Post('register')
+	@Throttle({
+		medium: { limit: 3, ttl: 60000 },
+	})
 	@SwaggerRoute({
 		operation: 'Registrar novo usuário',
 		responses: [{ status: HttpStatus.CREATED, type: AuthResponseDto }],
@@ -28,6 +32,9 @@ export class AuthController {
 
 	@Public()
 	@Post('login')
+	@Throttle({
+		medium: { limit: 5, ttl: 60000 },
+	})
 	@HttpCode(HttpStatus.OK)
 	@SwaggerRoute({
 		operation: 'Autenticar usuário',
@@ -39,6 +46,9 @@ export class AuthController {
 
 	@Public()
 	@Post('refresh')
+	@Throttle({
+		medium: { limit: 20, ttl: 60000 },
+	})
 	@HttpCode(HttpStatus.OK)
 	@SwaggerRoute({
 		operation: 'Renovar par de tokens',
