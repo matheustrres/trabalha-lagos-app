@@ -14,7 +14,8 @@ const CNPJ_VALID = '11222333000181';
 const validRegisterPayload = {
 	name: 'Maria Souza',
 	phone: '22999990001',
-	password: 'senha@123',
+	email: 'maria@trabalhalagos.com',
+	password: 'Senha@123',
 	city: 'Cabo Frio',
 	role: 'CANDIDATE',
 	document: CNPJ_VALID,
@@ -59,7 +60,7 @@ describe('Auth (e2e)', () => {
 		it('returns 200 with tokens when credentials are valid', async () => {
 			const res = await request(app.getHttpServer())
 				.post(LOGIN_URL)
-				.send({ phone: '22999990001', password: 'senha@123' })
+				.send({ phone: '22999990001', password: 'Senha@123' })
 				.expect(200);
 
 			expect(res.body).toMatchObject({
@@ -79,7 +80,7 @@ describe('Auth (e2e)', () => {
 		it('returns 200 with a new token pair when refresh token is valid', async () => {
 			const loginRes = await request(app.getHttpServer())
 				.post(LOGIN_URL)
-				.send({ phone: '22999990001', password: 'senha@123' })
+				.send({ phone: '22999990001', password: 'Senha@123' })
 				.expect(200);
 
 			const { refreshToken } = loginRes.body as {

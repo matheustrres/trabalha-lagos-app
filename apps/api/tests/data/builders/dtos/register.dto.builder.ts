@@ -3,9 +3,11 @@ import type { RegisterDto } from '@/modules/auth/dto/register.dto';
 const defaults: RegisterDto = {
 	name: 'João Silva',
 	phone: '21999999999',
-	password: 'senha@123',
+	email: 'joao@trabalhalagos.com',
+	password: 'Senha@123',
 	city: 'Cabo Frio',
 	role: 'CANDIDATE',
+	document: '',
 };
 
 export class RegisterDtoBuilder {

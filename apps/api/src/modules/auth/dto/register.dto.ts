@@ -3,7 +3,7 @@ import {
 	IsEmail,
 	IsEnum,
 	IsNotEmpty,
-	IsOptional,
+	IsStrongPassword,
 	IsString,
 	MaxLength,
 	MinLength,
@@ -30,15 +30,28 @@ export class RegisterDto {
 	@IsValidPhoneBR()
 	phone!: string;
 
-	@ApiPropertyOptional({ example: 'joao@email.com' })
-	@IsEmail()
-	@IsOptional()
-	email?: string;
-
-	@ApiProperty({ example: 'senha123', minLength: 6 })
+	@ApiProperty({ example: 'joao@email.com' })
 	@IsString()
 	@IsNotEmpty()
-	@MinLength(6)
+	@IsEmail()
+	email!: string;
+
+	@ApiProperty({ example: 'Senha@123', minLength: 8 })
+	@IsString()
+	@IsNotEmpty()
+	@IsStrongPassword(
+		{
+			minLength: 8,
+			minLowercase: 1,
+			minUppercase: 1,
+			minNumbers: 1,
+			minSymbols: 1,
+		},
+		{
+			message:
+				'A senha deve ter no mínimo 8 caracteres, incluindo letra maiúscula, letra minúscula, número e símbolo.',
+		},
+	)
 	password!: string;
 
 	@ApiProperty({ example: 'Cabo Frio' })

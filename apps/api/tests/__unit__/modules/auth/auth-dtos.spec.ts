@@ -29,7 +29,8 @@ describe('Auth DTOs', () => {
 			const errors = getValidationErrors(RegisterDto, {
 				name: 'Maria Souza',
 				phone: '22999990001',
-				password: 'senha@123',
+				email: 'maria@trabalhalagos.com',
+				password: 'Senha@123',
 				city: 'Cabo Frio',
 				role: 'CANDIDATE',
 			});
@@ -41,7 +42,8 @@ describe('Auth DTOs', () => {
 			const errors = getValidationErrors(RegisterDto, {
 				name: 'Empresa Teste',
 				phone: '22999990001',
-				password: 'senha@123',
+				email: 'contato@empresateste.com',
+				password: 'Senha@123',
 				city: 'Cabo Frio',
 				role: 'EMPLOYER',
 				document: CNPJ_VALID,
@@ -54,9 +56,24 @@ describe('Auth DTOs', () => {
 			const errors = getValidationErrors(RegisterDto, {
 				name: 'Empresa Teste',
 				phone: '22999990001',
-				password: 'senha@123',
+				email: 'contato@empresateste.com',
+				password: 'Senha@123',
 				city: 'Cabo Frio',
 				role: 'EMPLOYER',
+			});
+
+			expect(hasPropertyError(errors, 'document')).toBe(true);
+		});
+
+		it('rejects CPF as employer document', () => {
+			const errors = getValidationErrors(RegisterDto, {
+				name: 'Empresa Teste',
+				phone: '22999990001',
+				email: 'contato@empresateste.com',
+				password: 'Senha@123',
+				city: 'Cabo Frio',
+				role: 'EMPLOYER',
+				document: '52998224725',
 			});
 
 			expect(hasPropertyError(errors, 'document')).toBe(true);
@@ -66,7 +83,8 @@ describe('Auth DTOs', () => {
 			const errors = getValidationErrors(RegisterDto, {
 				name: 'Maria Souza',
 				phone: '22999990001',
-				password: 'senha@123',
+				email: 'maria@trabalhalagos.com',
+				password: 'Senha@123',
 				city: 'Cabo Frio',
 				role: 'ADMIN' as RegisterDto['role'],
 			});
@@ -78,12 +96,38 @@ describe('Auth DTOs', () => {
 			const errors = getValidationErrors(RegisterDto, {
 				name: 'Maria Souza',
 				phone: '11111111111',
-				password: 'senha@123',
+				email: 'maria@trabalhalagos.com',
+				password: 'Senha@123',
 				city: 'Cabo Frio',
 				role: 'CANDIDATE',
 			});
 
 			expect(hasPropertyError(errors, 'phone')).toBe(true);
+		});
+
+		it('rejects weak password', () => {
+			const errors = getValidationErrors(RegisterDto, {
+				name: 'Maria Souza',
+				phone: '22999990001',
+				email: 'maria@trabalhalagos.com',
+				password: 'senha1234',
+				city: 'Cabo Frio',
+				role: 'CANDIDATE',
+			});
+
+			expect(hasPropertyError(errors, 'password')).toBe(true);
+		});
+
+		it('requires email', () => {
+			const errors = getValidationErrors(RegisterDto, {
+				name: 'Maria Souza',
+				phone: '22999990001',
+				password: 'Senha@123',
+				city: 'Cabo Frio',
+				role: 'CANDIDATE',
+			});
+
+			expect(hasPropertyError(errors, 'email')).toBe(true);
 		});
 	});
 

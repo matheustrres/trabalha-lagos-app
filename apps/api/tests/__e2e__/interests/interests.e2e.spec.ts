@@ -14,7 +14,8 @@ const CNPJ_VALID = '11222333000181';
 const validEmployerPayload = {
 	name: 'Empresa Teste',
 	phone: '22999990001',
-	password: 'senha@123',
+	email: 'empresa@trabalhalagos.com',
+	password: 'Senha@123',
 	city: 'Cabo Frio',
 	role: 'EMPLOYER',
 	document: CNPJ_VALID,
