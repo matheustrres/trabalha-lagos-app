@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CheckCircle } from "lucide-react";
 import { Badge, CONTRACT_BADGE } from "@/components/ui/badge";
 import { cn } from "@/lib/utils/cn.utils";
+import { formatDistanceKm } from "@/lib/utils/format-distance.utils";
 import { formatSalaryRange } from "@/lib/utils/format-salary.utils";
 import type { Job, ContractType } from "@/types/job.types";
 
@@ -77,7 +78,7 @@ export const JobCard = ({ job }: JobCardProps) => {
         <div className="mt-3 flex items-center justify-between">
           <span className="flex items-center gap-1 text-xs text-gray-500">
             📍 {job.city}
-            {job.distanceKm != null && ` • ${job.distanceKm} km`}
+            {job.distanceKm != null && ` • ${formatDistanceKm(job.distanceKm)}`}
           </span>
           <span className="text-sm font-semibold text-primary">
             {formatSalaryRange(job.salaryMin, job.salaryMax)}

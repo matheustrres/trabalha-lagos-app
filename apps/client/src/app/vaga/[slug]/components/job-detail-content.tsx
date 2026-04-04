@@ -1,5 +1,6 @@
 import type { Job } from "@/types/job.types";
 import { Badge } from "@/components/ui/badge";
+import { formatDistanceKm } from "@/lib/utils/format-distance.utils";
 import { formatSalaryRange } from "@/lib/utils/format-salary.utils";
 import { JobDetailHeader } from "./job-detail-header";
 
@@ -85,7 +86,7 @@ export function JobDetailContent({ job }: JobDetailContentProps) {
             <p className="text-xs text-gray-400">📍 Localização</p>
             <p className="text-sm font-semibold text-gray-800 mt-0.5">
               {job.city}
-              {job.distanceKm != null ? ` • ${job.distanceKm} km` : ""}
+              {job.distanceKm != null ? ` • ${formatDistanceKm(job.distanceKm)}` : ""}
             </p>
           </div>
           <div className="bg-surface rounded-xl p-3">

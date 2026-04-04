@@ -58,7 +58,7 @@ export const JobSearch = () => {
   const fallbackCenter = LAGOS_CITIES[0];
   const radiusLat = selectedCity?.lat ?? fallbackCenter.lat;
   const radiusLng = selectedCity?.lng ?? fallbackCenter.lng;
-  const shouldApplyRadius = radius < 100 && (selectedCity !== null || radius !== 20);
+  const shouldApplyRadius = radius < 100;
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: [
