@@ -33,6 +33,8 @@ const refreshAccessToken = async (): Promise<string | null> => {
 
 interface ApiError extends Error {
   status: number;
+  detail?: string[];
+  error?: string;
 }
 
 const request = async <T>(
@@ -75,13 +77,28 @@ const request = async <T>(
   }
 
   if (!res.ok) {
-    const body = await res
-      .json()
-      .catch(() => ({ message: "Erro desconhecido" }));
-    const err = new Error(
-      body.message || `API Error: ${res.status}`,
-    ) as ApiError;
+    const body = await res.json().catch(() => ({})) as {
+      message?: string | string[];
+      detail?: string[];
+      error?: string;
+    };
+
+    const detail = Array.isArray(body.detail)
+      ? body.detail.filter((item) => typeof item === "string")
+      : [];
+
+    const message =
+      typeof body.message === "string"
+        ? body.message
+        : Array.isArray(body.message) && body.message.length > 0
+          ? body.message[0]
+          : detail[0] || `API Error: ${res.status}`;
+
+    const err = new Error(message) as ApiError;
     err.status = res.status;
+    err.detail = detail.length > 0 ? detail : undefined;
+    err.error = body.error;
+
     throw err;
   }
 

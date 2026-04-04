@@ -3,7 +3,7 @@ import { api } from "@/lib/api";
 export interface RegisterPayload {
   name: string;
   phone: string;
-  email?: string;
+  email: string;
   password: string;
   city: string;
   role: "CANDIDATE" | "EMPLOYER";

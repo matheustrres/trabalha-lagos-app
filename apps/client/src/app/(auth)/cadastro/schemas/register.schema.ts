@@ -3,8 +3,17 @@ import { z } from "zod";
 const baseSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   phone: z.string().regex(/^\(\d{2}\) \d{4,5}-\d{4}$/, "WhatsApp inválido"),
-  email: z.string().email("E-mail inválido").optional().or(z.literal("")),
-  password: z.string().min(6, "Mínimo 6 caracteres"),
+  email: z
+    .string()
+    .min(1, "E-mail obrigatório")
+    .email("E-mail inválido"),
+  password: z
+    .string()
+    .min(8, "A senha deve ter no mínimo 8 caracteres")
+    .regex(/[A-Z]/, "A senha deve conter ao menos 1 letra maiúscula")
+    .regex(/[a-z]/, "A senha deve conter ao menos 1 letra minúscula")
+    .regex(/\d/, "A senha deve conter ao menos 1 número")
+    .regex(/[^A-Za-z0-9]/, "A senha deve conter ao menos 1 símbolo"),
   confirmPassword: z.string().min(1, "Confirme a senha"),
   city: z.string().min(1, "Selecione uma cidade"),
 });
@@ -18,16 +27,9 @@ export const employerSchema = baseSchema
   .extend({
     companyName: z.string().min(2, "Nome da empresa obrigatório"),
     document: z
-      .union([
-        z.literal(""),
-        z
-          .string()
-          .regex(
-            /^(\d{3}\.\d{3}\.\d{3}-\d{2}|\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})$/,
-            "CPF ou CNPJ inválido",
-          ),
-      ])
-      .optional(),
+      .string()
+      .min(1, "CNPJ obrigatório")
+      .regex(/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/, "CNPJ inválido"),
     segment: z.string().optional().or(z.literal("")),
     whatsappBusiness: z
       .string()
