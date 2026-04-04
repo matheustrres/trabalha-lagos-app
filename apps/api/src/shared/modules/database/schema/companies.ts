@@ -11,7 +11,7 @@ export const companies = pgTable('companies', {
 	userId: uuid('user_id')
 		.notNull()
 		.unique()
-		.references(() => users.id),
+		.references(() => users.id, { onDelete: 'cascade' }),
 	name: text('name').notNull(),
 	document: text('document'),
 	city: text('city').notNull(),

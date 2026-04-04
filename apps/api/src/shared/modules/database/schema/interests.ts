@@ -20,10 +20,12 @@ export const interests = pgTable(
 		id: uuid('id')
 			.primaryKey()
 			.$defaultFn(() => uuidv7()),
-		userId: uuid('user_id').references(() => users.id), // nullable for anonymous users
+		userId: uuid('user_id').references(() => users.id, {
+			onDelete: 'cascade',
+		}), // nullable for anonymous users
 		jobId: uuid('job_id')
 			.notNull()
-			.references(() => jobs.id),
+			.references(() => jobs.id, { onDelete: 'cascade' }),
 		name: text('name').notNull(),
 		phone: text('phone').notNull(),
 		city: text('city').notNull(),

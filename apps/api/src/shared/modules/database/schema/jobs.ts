@@ -24,7 +24,7 @@ export const jobs = pgTable(
 			.$defaultFn(() => uuidv7()),
 		companyId: uuid('company_id')
 			.notNull()
-			.references(() => companies.id),
+			.references(() => companies.id, { onDelete: 'cascade' }),
 		title: text('title').notNull(),
 		slug: text('slug').notNull().unique(),
 		description: text('description').notNull(),

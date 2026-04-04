@@ -29,6 +29,13 @@
       "when": 1775177193492,
       "tag": "0003_flat_toro",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1775261615312,
+      "tag": "0004_rich_malice",
+      "breakpoints": true
     }
   ]
 }
