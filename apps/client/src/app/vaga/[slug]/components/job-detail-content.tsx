@@ -38,11 +38,7 @@ export function JobDetailContent({ job }: JobDetailContentProps) {
 
   return (
     <div className="pb-24">
-      <JobDetailHeader
-        jobTitle={job.title}
-        jobCity={job.city}
-        jobSlug={job.slug}
-      />
+      <JobDetailHeader jobSlug={job.slug} />
 
       <div className="px-4 py-5 space-y-5">
         {/* Job header */}

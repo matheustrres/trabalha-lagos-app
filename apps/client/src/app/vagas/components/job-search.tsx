@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Search, SearchX, SlidersHorizontal } from "lucide-react";
@@ -46,6 +46,8 @@ export const JobSearch = () => {
     () => searchParams.get("city"),
   );
   const [showFilters, setShowFilters] = useState(false);
+  const filtersPanelRef = useRef<HTMLDivElement | null>(null);
+  const filtersButtonRef = useRef<HTMLButtonElement | null>(null);
   const page = Number(searchParams.get("page") ?? "1");
 
   const debouncedQuery = useDebounce(searchQuery, 300);
@@ -96,6 +98,27 @@ export const JobSearch = () => {
     router.replace(qs ? `/vagas?${qs}` : "/vagas", { scroll: false });
   }, [debouncedQuery, radius, category, contractType, city, page, router]);
 
+  useEffect(() => {
+    if (!showFilters) return;
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+
+      if (filtersPanelRef.current?.contains(target)) return;
+      if (filtersButtonRef.current?.contains(target)) return;
+
+      setShowFilters(false);
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [showFilters]);
+
   const activeFiltersCount = [category, contractType, city].filter(
     Boolean,
   ).length;
@@ -145,6 +168,7 @@ export const JobSearch = () => {
         </div>
 
         <button
+          ref={filtersButtonRef}
           onClick={() => setShowFilters((v) => !v)}
           className={cn(
             "relative shrink-0 rounded-xl p-3",
@@ -191,7 +215,10 @@ export const JobSearch = () => {
       )}
 
       {showFilters && (
-        <div className="mt-3 rounded-xl bg-white border border-border px-4 py-4 space-y-4">
+        <div
+          ref={filtersPanelRef}
+          className="mt-3 rounded-xl bg-white border border-border px-4 py-4 space-y-4"
+        >
           <div>
             <p className="text-sm font-semibold text-gray-500 mb-2">
               Tipo de contrato
