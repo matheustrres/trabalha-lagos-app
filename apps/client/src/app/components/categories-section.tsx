@@ -43,7 +43,7 @@ export const CategoriesSection = async () => {
         {topCategories.map((category) => (
           <Link
             key={category.slug}
-            href={`/vagas?category=${category.slug}`}
+            href={`/vagas?category=${category.slug}&radius=100`}
             className="flex min-h-[136px] flex-col items-center rounded-xl border border-border bg-white p-3 text-center transition-all duration-150 hover:shadow-md active:scale-[0.98]"
           >
             <p className="text-2xl" aria-hidden>
