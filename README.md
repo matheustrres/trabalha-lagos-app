@@ -1,5 +1,7 @@
 # TrabalhaLagos
 
+![CI](https://github.com/matheustrres/trabalha-lagos-app/actions/workflows/ci.yml/badge.svg)
+
 TrabalhaLagos é uma plataforma de vagas hiperlocal para a Região dos Lagos (RJ), conectando candidatos e empregadores com busca por cidade, categoria e raio geográfico. O projeto é um monorepo com API NestJS (PostgreSQL/PostGIS + Redis) e frontend Next.js focado em SEO e experiência mobile-first.
 
 ## Como rodar localmente
