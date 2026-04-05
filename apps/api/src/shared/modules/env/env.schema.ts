@@ -13,12 +13,12 @@ import { ENodeEnv } from '@/@core/enums/node-env';
 export class EnvSchema {
 	@IsEnum(ENodeEnv)
 	@IsNotEmpty()
-	NODE_ENV?: ENodeEnv;
+	NODE_ENV: ENodeEnv = ENodeEnv.Development;
 
 	@IsNumber()
-	@IsOptional()
+	@IsNotEmpty()
 	@Transform(({ value }) => parseInt(value))
-	PORT = 3000;
+	PORT!: number;
 
 	@IsString()
 	@IsNotEmpty()
@@ -51,7 +51,7 @@ export class EnvSchema {
 
 	@IsString()
 	@IsNotEmpty()
-	JWT_EXPIRES_IN!: string;
+	JWT_EXPIRES_IN = '15m';
 
 	@IsString()
 	@IsNotEmpty()
@@ -59,16 +59,20 @@ export class EnvSchema {
 
 	@IsString()
 	@IsNotEmpty()
-	JWT_REFRESH_EXPIRES_IN!: string;
+	JWT_REFRESH_EXPIRES_IN = '7d';
 
 	@IsString()
-	@IsOptional()
-	REDIS_HOST = 'localhost';
+	@IsNotEmpty()
+	CORS_ORIGINS!: string;
+
+	@IsString()
+	@IsNotEmpty()
+	REDIS_HOST!: string;
 
 	@IsNumber()
-	@IsOptional()
+	@IsNotEmpty()
 	@Transform(({ value }) => parseInt(value))
-	REDIS_PORT = 6379;
+	REDIS_PORT!: number;
 
 	@IsString()
 	@IsOptional()

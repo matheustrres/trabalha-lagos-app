@@ -46,10 +46,15 @@ process.on('unhandledRejection', (reason: unknown) => {
 (async () => {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
 		bodyParser: false,
-		cors: {
-			origin: ['http://localhost:3000', 'http://localhost:3001'],
-			credentials: true,
-		},
+	});
+	const envService = app.get(EnvService);
+	app.enableCors({
+		origin: envService
+			.getKeyOrThrow('CORS_ORIGINS')
+			.split(',')
+			.map((origin) => origin.trim())
+			.filter(Boolean),
+		credentials: true,
 	});
 	const logger = app.get(Logger);
 	app.useLogger(logger);
@@ -76,12 +81,11 @@ process.on('unhandledRejection', (reason: unknown) => {
 			},
 		}),
 	);
-	const envService = app.get(EnvService);
 	const appPort = envService.getKeyOrThrow('PORT');
 	const logMessages: string[] = [];
 	if (envService.getKeyOrThrow('NODE_ENV') !== ENodeEnv.Production) {
 		setupSwaggerDocs(app);
-		logMessages.push(`API client available at http://localhost:${appPort}/api`);
+		logMessages.push(`API client available at /api`);
 	}
 	await app.listen(appPort).then(() => {
 		logger.debug(`HTTP server running on port ${appPort}.`);
