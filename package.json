@@ -7,8 +7,13 @@
   "private": "true",
   "type": "commonjs",
   "scripts": {
-    "lint:api": "pnpm --filter api run lint:fix && pnpm --filter api run format",
-    "lint:client": "pnpm --filter client run lint",
+    "dev": "pnpm --parallel --filter @trabalha-lagos/api --filter @trabalha-lagos/client run dev",
+    "dev:api": "pnpm --filter @trabalha-lagos/api run dev",
+    "dev:client": "pnpm --filter @trabalha-lagos/client run dev",
+    "dev:infra": "docker compose --env-file apps/api/.env.dev -f apps/api/docker-compose.yml up -d",
+    "dev:infra:down": "docker compose --env-file apps/api/.env.dev -f apps/api/docker-compose.yml down",
+    "lint:api": "pnpm --filter @trabalha-lagos/api run lint:fix && pnpm --filter @trabalha-lagos/api run format",
+    "lint:client": "pnpm --filter @trabalha-lagos/client run lint",
     "prepare": "husky install"
   },
   "devDependencies": {

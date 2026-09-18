@@ -7,10 +7,6 @@ services:
       - POSTGRES_USER=${PG_USER}
       - POSTGRES_PASSWORD=${PG_PASSWORD}
       - POSTGRES_DB=${PG_DATABASE}
-    env_file:
-      - .env
-      - .env.dev
-      - .env.staging
     volumes:
       - pgdata:/var/lib/postgresql/data
   redis:
@@ -18,7 +14,7 @@ services:
     ports:
       - "6379:6379"
     environment:
-      REDIS_PASSWORD: ${REDIS_PASS}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
       ALLOW_EMPTY_PASSWORD: "yes"
 volumes:
   pgdata:

@@ -15,26 +15,27 @@ pnpm install
 ### 2) Configurar variáveis de ambiente
 
 ```bash
-cp apps/api/.env.example apps/api/.env
+cp apps/api/.env.sample apps/api/.env.dev
 cp apps/client/.env.example apps/client/.env.local
 ```
 
 ### 3) Subir infraestrutura (PostgreSQL + Redis)
 
 ```bash
-cd apps/api && docker compose up -d
+pnpm dev:infra
 ```
 
-### 4) Rodar API
+### 4) Rodar API e client
 
 ```bash
-cd apps/api && pnpm start:dev
+pnpm dev
 ```
 
-### 5) Rodar Client
+Também é possível iniciar cada app separadamente:
 
 ```bash
-cd apps/client && pnpm dev
+pnpm dev:api
+pnpm dev:client
 ```
 
 ## Variáveis de ambiente
@@ -42,11 +43,11 @@ cd apps/client && pnpm dev
 ### `apps/client/.env.example`
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
-API_URL=http://localhost:3001/api/v1
+NEXT_PUBLIC_API_URL=http://localhost:3004/api/v1
+API_URL=http://localhost:3004/api/v1
 ```
 
-### `apps/api/.env.example`
+### `apps/api/.env.sample`
 
 ```env
 DATABASE_URL=postgresql://trabalhalagos:dev_password@localhost:5432/trabalhalagos_dev
@@ -56,24 +57,22 @@ JWT_SECRET=
 JWT_EXPIRES_IN=15m
 JWT_REFRESH_SECRET=
 JWT_REFRESH_EXPIRES_IN=7d
-PORT=3001
-FRONTEND_URL=http://localhost:3000
+PORT=3004
 CORS_ORIGINS=http://localhost:3000
 ```
 
 ## Comandos principais
 
 ```bash
-# Infra
-cd apps/api && docker compose up -d
+# Desenvolvimento
+pnpm dev:infra
+pnpm dev
+pnpm dev:api
+pnpm dev:client
 
-# API
-cd apps/api && pnpm start:dev
-cd apps/api && pnpm test
-cd apps/api && pnpm build
-
-# Client
-cd apps/client && pnpm dev
-cd apps/client && pnpm lint
-cd apps/client && pnpm build
+# Validação por app
+pnpm --filter @trabalha-lagos/api test:unit
+pnpm --filter @trabalha-lagos/api build
+pnpm --filter @trabalha-lagos/client lint
+pnpm --filter @trabalha-lagos/client build
 ```

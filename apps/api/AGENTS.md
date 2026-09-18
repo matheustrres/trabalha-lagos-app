@@ -10,15 +10,14 @@ NestJS (TypeScript) · Drizzle ORM · PostgreSQL + PostGIS · Redis · BullMQ
 ## Comandos
 
 ```bash
-docker compose up -d                     # PostgreSQL (PostGIS) + Redis
-npm run start:dev                        # NestJS watch mode
-npx drizzle-kit generate                 # Gerar migration a partir do schema
-npx drizzle-kit migrate                  # Aplicar migrations pendentes
-npx drizzle-kit studio                   # GUI do banco (Drizzle Studio)
-npm run db:seed                          # Seed (categorias)
-npm run test                             # Unit tests (Vitest)
-npm run test:e2e                         # Integration tests
-npm run lint:fix                         # ESLint + autofix
+pnpm dev                                 # NestJS watch mode
+pnpm exec drizzle-kit generate           # Gerar migration a partir do schema
+pnpm exec drizzle-kit migrate            # Aplicar migrations pendentes
+pnpm exec drizzle-kit studio             # GUI do banco (Drizzle Studio)
+pnpm db:seed                             # Seed (categorias)
+pnpm test:unit                           # Unit tests (Vitest)
+pnpm test:e2e                            # Integration tests
+pnpm lint:fix                            # ESLint + autofix
 ```
 
 ## Arquitetura
@@ -89,4 +88,3 @@ Estas regras se aplicam a TODA tarefa, sem exceção:
 - Commits: Conventional Commits (`feat:`, `fix:`, `refactor:`, `test:`)
 - Imports absolutos: `@/common/`, `@/modules/`, `@/database/`
 - Enums definidos no schema Drizzle com `pgEnum` — importar de `@/database/schema`
-

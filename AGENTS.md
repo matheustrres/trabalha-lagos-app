@@ -17,14 +17,11 @@ Cada app tem seu próprio `AGENTS.md` com stack, comandos e regras específicas.
 ## Comandos Globais
 
 ```bash
-# Subir dependências de infra
-cd apps/api && docker compose up -d                  # PostgreSQL (PostGIS) + Redis
-
-# API (apps/api/)
-cd apps/api && pnpm start:dev      # NestJS watch mode
-
-# Client (apps/client/)
-cd apps/client && pnpm dev         # Next.js dev server
+# Na raiz do projeto
+pnpm dev:infra    # PostgreSQL (PostGIS) + Redis
+pnpm dev          # API e client em paralelo
+pnpm dev:api      # somente API, NestJS watch mode
+pnpm dev:client   # somente client, Next.js dev server
 ```
 
 ## Regras Globais
