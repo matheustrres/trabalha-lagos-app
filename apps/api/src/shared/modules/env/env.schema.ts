@@ -82,6 +82,10 @@ export class EnvSchema {
 	@IsOptional()
 	VIEW_COUNTER_FLUSH_CRON?: string;
 
+	@IsString()
+	@IsOptional()
+	SENTRY_DSN?: string;
+
 	@IsBoolean()
 	@IsOptional()
 	@Transform(({ value }) => {

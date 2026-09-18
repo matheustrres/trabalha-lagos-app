@@ -3,6 +3,7 @@ import './shared/module-alias';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import * as Sentry from '@sentry/nestjs';
 import { json, urlencoded } from 'express';
 import { Logger } from 'nestjs-pino';
 
@@ -12,6 +13,24 @@ import { ENodeEnv } from '@/@core/enums/node-env';
 
 import { setupSwaggerDocs } from '@/shared/docs/swagger';
 import { EnvService } from '@/shared/modules/env/env.service';
+
+if (process.env['NODE_ENV'] === ENodeEnv.Production) {
+	Sentry.init({
+		dsn: process.env['SENTRY_DSN'],
+		environment: process.env['NODE_ENV'],
+		tracesSampleRate: 0.2,
+		beforeSend(event, hint) {
+			const error = hint?.originalException;
+
+			if (error && typeof error === 'object' && 'getStatus' in error) {
+				const status = (error as { getStatus: () => number }).getStatus();
+				if (status >= 400 && status < 500) return null;
+			}
+
+			return event;
+		},
+	});
+}
 
 enum ExitStatusEnum {
 	FAILURE = 1,

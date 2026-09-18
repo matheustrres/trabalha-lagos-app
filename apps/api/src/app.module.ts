@@ -1,9 +1,10 @@
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, HttpAdapterHost } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import type Redis from 'ioredis';
 import { LoggerModule } from 'nestjs-pino';
 import { uuidv7 } from 'uuidv7';
@@ -33,6 +34,7 @@ import { getIpTracker } from '@/shared/utils/get-ip-tracker';
 	imports: [
 		DatabaseModule,
 		EnvModule,
+		SentryModule.forRoot(),
 		RedisModule,
 		ScheduleModule.forRoot(),
 		BullModule.forRootAsync({
@@ -166,6 +168,12 @@ import { getIpTracker } from '@/shared/utils/get-ip-tracker';
 		{
 			provide: APP_FILTER,
 			useClass: GlobalExceptionFilter,
+		},
+		{
+			provide: APP_FILTER,
+			inject: [HttpAdapterHost],
+			useFactory: ({ httpAdapter }: HttpAdapterHost) =>
+				new SentryGlobalFilter(httpAdapter),
 		},
 		{
 			provide: APP_GUARD,
