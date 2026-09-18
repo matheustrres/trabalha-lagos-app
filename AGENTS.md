@@ -12,7 +12,7 @@ root/
 └── docs/              # Documentação detalhada (progressive disclosure)
 ```
 
-Cada app tem seu próprio `CLAUDE.md` com stack, comandos e regras específicas. **Leia o CLAUDE.md da app alvo antes de qualquer tarefa.**
+Cada app tem seu próprio `AGENTS.md` com stack, comandos e regras específicas. **Leia o AGENTS.md da app alvo antes de qualquer tarefa.**
 
 ## Comandos Globais
 

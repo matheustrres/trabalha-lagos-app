@@ -1,4 +1,4 @@
-# CLAUDE.md — TrabalhaLagos Client
+# AGENTS.md — TrabalhaLagos Client
 
 Frontend da plataforma TrabalhaLagos. PWA mobile-first com SEO forte para landing pages por cidade e vagas indexáveis no Google Jobs.
 
@@ -49,10 +49,10 @@ Componentes de feature são **colocated** com a rota: `app/vagas/components/`, `
 
 ## Skill de Referência
 
-Antes de implementar, leia os docs em `.claude/skills/frontend-standards/`:
+Antes de implementar, leia os docs em `.agents/skills/frontend-standards/`:
 
 ```
-.claude/skills/frontend-standards/
+.agents/skills/frontend-standards/
 ├── SKILL.md                # Stack, convenções, estrutura, regras de código
 ├── component-patterns.md   # Button, Input, Badge, Form, Skeleton, hooks
 ├── routing-patterns.md     # App Router: layouts, SSG/ISR, metadata, sitemap, navegação
@@ -65,9 +65,9 @@ Antes de implementar, leia os docs em `.claude/skills/frontend-standards/`:
 2. **SEO em toda página pública**: `generateMetadata` em cada `page.tsx`. JSON-LD `JobPosting` no detalhe de vaga.
 3. **SSG + ISR nas landing pages**: `generateStaticParams` + `revalidate = 600` em `/vagas/[cidade]`.
 4. **Formulários**: react-hook-form + Zod sempre. Schemas colocated em `app/<rota>/schemas/`.
-6. **Nomenclatura**: `kebab-case` em todos os arquivos. `use-geolocation.hook.ts`, não `useGeolocation.ts`.
-7. **Primitivos UI**: usar `Button`, `Input`, `Card` de `components/ui/`. Nunca HTML bruto.
-8. **Nunca tocar no backend**: este CLAUDE.md cobre apenas `apps/client/`.
+5. **Nomenclatura**: `kebab-case` em todos os arquivos. `use-geolocation.hook.ts`, não `useGeolocation.ts`.
+6. **Primitivos UI**: usar `Button`, `Input`, `Card` de `components/ui/`. Nunca HTML bruto.
+7. **Nunca tocar no backend**: este AGENTS.md cobre apenas `apps/client/`.
 
 ## Convenções Rápidas
 
@@ -77,3 +77,4 @@ Antes de implementar, leia os docs em `.claude/skills/frontend-standards/`:
 - Cores do tema: `primary`, `primary-dark`, `primary-light`, `surface`, `border`, `error`, `success`
 - `border-radius` padrão: `rounded-xl` (botões/inputs), `rounded-2xl` (cards)
 - Mobile-first: largura máxima `max-w-lg` no container principal
+

@@ -27,7 +27,7 @@ Atuação restrita a `frontend/` e seus configs.
 
 Antes de implementar:
 
-1. Leia a skill `frontend-standards` em `.claude/skills/frontend-standards/SKILL.md`
+1. Leia a skill `frontend-standards` em `.agents/skills/frontend-standards/SKILL.md`
 2. Verifique componentes em `frontend/src/components/ui/` — se existem, **use-os**
 3. Verifique se a feature envolve SEO (landing page, detalhe de vaga) → usar Server Component + metadata
 4. Verifique se a feature envolve interatividade (filtros, mapa, forms) → usar `'use client'`

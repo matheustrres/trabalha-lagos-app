@@ -1,4 +1,4 @@
-# CLAUDE.md — TrabalhaLagos API
+# AGENTS.md — TrabalhaLagos API
 
 Backend da plataforma TrabalhaLagos, Plataforma de vagas de emprego hiperlocal 
 para a Região dos Lagos (RJ). API REST com busca geoespacial por raio em KM via PostGIS.
@@ -89,3 +89,4 @@ Estas regras se aplicam a TODA tarefa, sem exceção:
 - Commits: Conventional Commits (`feat:`, `fix:`, `refactor:`, `test:`)
 - Imports absolutos: `@/common/`, `@/modules/`, `@/database/`
 - Enums definidos no schema Drizzle com `pgEnum` — importar de `@/database/schema`
+
