@@ -53,8 +53,8 @@ const MinhasVagasPage = () => {
     );
 
   return (
-    <div className="max-w-lg mx-auto">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto flex w-full max-w-lg flex-1 flex-col">
+      <div className="flex items-baseline justify-between">
         <h1 className="font-display text-xl font-bold text-gray-900">
           Minhas vagas
         </h1>
@@ -67,27 +67,29 @@ const MinhasVagasPage = () => {
         </Button>
       </div>
 
-      <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-        {FILTERS.map(({ label, value }) => (
-          <button
-            key={value}
-            onClick={() => setFilter(value)}
-            className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-              filter === value
-                ? "bg-primary text-white"
-                : "bg-surface text-gray-500"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="mt-4 overflow-x-auto pb-1">
+        <div className="mx-auto flex w-max gap-2">
+          {FILTERS.map(({ label, value }) => (
+            <button
+              key={value}
+              onClick={() => setFilter(value)}
+              className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                filter === value
+                  ? "bg-primary text-white"
+                  : "bg-surface text-gray-500"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-4 flex flex-1 flex-col space-y-3">
         {isLoading ? (
           <JobListSkeleton count={3} />
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+          <div className="flex flex-1 flex-col items-center justify-center gap-2 pb-12 text-center">
             <SearchX size={40} className="text-gray-300" aria-hidden />
             <p className="font-semibold text-gray-500">
               Nenhuma vaga encontrada

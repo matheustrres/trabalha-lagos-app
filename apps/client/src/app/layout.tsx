@@ -52,7 +52,9 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => (
     <body className="font-sans bg-surface text-gray-900 antialiased">
       <QueryProvider>
         <Header />
-        <main className="max-w-lg mx-auto pb-20">{children}</main>
+        <main className="mx-auto min-h-[calc(100dvh-57px)] max-w-lg bg-white pb-20 has-[>[data-panel-layout]]:pb-0">
+          {children}
+        </main>
         <BottomNav />
       </QueryProvider>
     </body>

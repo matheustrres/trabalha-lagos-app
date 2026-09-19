@@ -73,7 +73,7 @@ const PainelPage = () => {
   ] as const;
 
   return (
-    <div className="max-w-lg mx-auto">
+    <div className="mx-auto flex w-full max-w-lg flex-1 flex-col">
       <div>
         <h1 className="font-display text-xl font-bold text-gray-900">
           Olá, {firstName}!
@@ -105,7 +105,7 @@ const PainelPage = () => {
         })}
       </div>
 
-      <div className="mt-6 flex flex-col gap-3">
+      <div className="mt-auto flex flex-col gap-3 pt-6">
         <Button
           variant="primary"
           className="w-full"

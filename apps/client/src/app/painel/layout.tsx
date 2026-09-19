@@ -36,8 +36,11 @@ const PainelLayout = ({ children }: { children: React.ReactNode }) => {
   if (!isAuthenticated || !isEmployer) return null;
 
   return (
-    <>
-      <nav className="sticky top-[57px] z-30 flex border-b border-border bg-white overflow-x-auto">
+    <div
+      data-panel-layout
+      className="flex min-h-[calc(100dvh-57px)] flex-col bg-white"
+    >
+      <nav className="sticky top-[57px] z-30 flex overflow-x-auto border-b border-border bg-white">
         {PANEL_TABS.map(({ label, icon: Icon, href }) => {
           const isActive =
             href === "/painel"
@@ -62,8 +65,8 @@ const PainelLayout = ({ children }: { children: React.ReactNode }) => {
         })}
       </nav>
 
-      <main className="px-4 py-6">{children}</main>
-    </>
+      <main className="flex flex-1 flex-col px-4 py-6">{children}</main>
+    </div>
   );
 };
 
