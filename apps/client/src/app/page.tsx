@@ -9,7 +9,7 @@ import { HeroSection } from "./components/hero-section";
 import { CategoriesSection } from "./components/categories-section";
 import { CitiesSection } from "./components/cities-section";
 import { FeaturedSection } from "./components/featured-section";
-import { EmployerCta } from "./components/employer-cta";
+import { HomeCta } from "./components/home-cta";
 
 export const metadata: Metadata = {
   title: "TrabalhaLagos — Vagas de emprego na Região dos Lagos",
@@ -34,7 +34,7 @@ const HomePage = async () => {
         <CategoriesSection />
         <CitiesSection />
         <FeaturedSection />
-        <EmployerCta />
+        <HomeCta />
       </div>
     </div>
   );

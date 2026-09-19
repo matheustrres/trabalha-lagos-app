@@ -66,7 +66,7 @@ export const ProfileForm = () => {
     reset,
     watch,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors, isDirty, isSubmitting },
   } = useForm<UpdateProfileData>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues,
@@ -110,14 +110,21 @@ export const ProfileForm = () => {
     setNotification(null);
 
     try {
+      const normalizedData: UpdateProfileData = {
+        ...data,
+        experience: data.experience.trim(),
+        neighborhood: data.neighborhood.trim(),
+      };
+
       await mutation.mutateAsync({
-        interests: data.interests,
-        experience: data.experience.trim() || undefined,
-        availability: data.availability ?? undefined,
-        acceptedContractTypes: data.acceptedContractTypes,
-        neighborhood: data.neighborhood.trim() || undefined,
+        interests: normalizedData.interests,
+        experience: normalizedData.experience || undefined,
+        availability: normalizedData.availability ?? undefined,
+        acceptedContractTypes: normalizedData.acceptedContractTypes,
+        neighborhood: normalizedData.neighborhood || undefined,
       });
 
+      reset(normalizedData);
       setNotification({
         type: "success",
         message: "Perfil atualizado com sucesso.",
@@ -155,13 +162,13 @@ export const ProfileForm = () => {
   return (
     <div className="px-4 py-6">
       {notification && (
-        <div className="fixed inset-x-4 bottom-24 z-50 mx-auto w-auto max-w-lg">
+        <div className="fixed inset-x-4 top-16 z-50 mx-auto w-auto max-w-md">
           <div
             role={notification.type === "error" ? "alert" : "status"}
-            className={`rounded-xl border px-4 py-3 text-sm shadow-lg ${
+            className={`rounded-xl px-4 py-3 text-sm text-white shadow-lg ${
               notification.type === "success"
-                ? "border-success/30 bg-success/15 text-success"
-                : "border-error/30 bg-error/10 text-error"
+                ? "bg-primary"
+                : "bg-error"
             }`}
           >
             <div className="flex items-center justify-between gap-3">
@@ -169,7 +176,7 @@ export const ProfileForm = () => {
               <button
                 type="button"
                 onClick={() => setNotification(null)}
-                className="text-xs font-semibold opacity-70 hover:opacity-100"
+                className="text-xs font-semibold text-white/80 hover:text-white"
               >
                 Fechar
               </button>
@@ -288,7 +295,11 @@ export const ProfileForm = () => {
           />
         </section>
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isSubmitting || !isDirty}
+        >
           {isSubmitting ? "Salvando..." : "Salvar perfil"}
         </Button>
       </form>
