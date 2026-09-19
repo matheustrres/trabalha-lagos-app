@@ -1,12 +1,13 @@
 /* global caches, self */
 
-const CACHE_VERSION = 'v2'
+const CACHE_VERSION = 'v3'
 const PRECACHE = `tl-pwa-precache-${CACHE_VERSION}`
 const STATIC_CACHE = `tl-pwa-static-${CACHE_VERSION}`
 const PAGE_CACHE = `tl-pwa-pages-${CACHE_VERSION}`
 const OWN_CACHES = [PRECACHE, STATIC_CACHE, PAGE_CACHE]
 const PRECACHE_URLS = [
   '/offline',
+  '/vagas',
   '/manifest.json',
   '/apple-touch-icon.png',
   '/icons/icon-192.png',
@@ -14,17 +15,21 @@ const PRECACHE_URLS = [
   '/icons/icon-maskable-512.png',
 ]
 
-const precacheOfflineShell = async () => {
+const precacheAppShells = async () => {
   const cache = await caches.open(PRECACHE)
   await cache.addAll(PRECACHE_URLS)
 
-  const offlinePage = await cache.match('/offline')
-  if (!offlinePage) return
-
-  const html = await offlinePage.text()
-  const assetUrls = [
-    ...html.matchAll(/(?:src|href)="([^"?#]*\/_next\/static\/[^"?#]+)"/g),
-  ].map((match) => match[1])
+  const shellPages = await Promise.all(
+    ['/offline', '/vagas'].map((url) => cache.match(url)),
+  )
+  const shellHtml = await Promise.all(
+    shellPages.filter(Boolean).map((response) => response.text()),
+  )
+  const assetUrls = shellHtml.flatMap((html) =>
+    [
+      ...html.matchAll(/(?:src|href)="([^"?#]*\/_next\/static\/[^"?#]+)"/g),
+    ].map((match) => match[1]),
+  )
 
   await cache.addAll([...new Set(assetUrls)])
 }
@@ -43,6 +48,7 @@ const isAuthenticatedPath = (pathname) =>
 
 const isPublicCacheablePage = (pathname) =>
   pathname === '/' ||
+  pathname === '/vagas' ||
   /^\/vaga\/[^/]+\/?$/.test(pathname) ||
   /^\/vagas\/[^/]+\/?$/.test(pathname)
 
@@ -75,20 +81,18 @@ const networkFirstPage = async (request) => {
     if (response.ok) await cache.put(request, response.clone())
     return response
   } catch {
-    return (await cache.match(request)) || offlineRedirect()
-  }
-}
-
-const networkWithOfflineFallback = async (request) => {
-  try {
-    return await fetch(request)
-  } catch {
-    return offlineRedirect()
+    return (
+      (await cache.match(request)) ||
+      (new URL(request.url).pathname === '/vagas'
+        ? await caches.match('/vagas')
+        : null) ||
+      offlineRedirect()
+    )
   }
 }
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(precacheOfflineShell())
+  event.waitUntil(precacheAppShells())
 })
 
 self.addEventListener('activate', (event) => {
@@ -133,9 +137,5 @@ self.addEventListener('fetch', (event) => {
   if (isPublicCacheablePage(url.pathname)) {
     event.respondWith(networkFirstPage(request))
     return
-  }
-
-  if (url.pathname === '/vagas') {
-    event.respondWith(networkWithOfflineFallback(request))
   }
 })

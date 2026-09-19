@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Search, SearchX, SlidersHorizontal } from "lucide-react";
+import { Search, SearchX, SlidersHorizontal, WifiOff } from "lucide-react";
 import { JobCard } from "@/components/job-card";
 import { JobListSkeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce.hook";
@@ -14,6 +14,13 @@ import { jobsService } from "@/lib/services/jobs.service";
 import { cn } from "@/lib/utils/cn.utils";
 import { pluralizeVagas } from "@/lib/utils/pluralize.utils";
 import type { ContractType } from "@/types/job.types";
+import { useOnlineStatus } from "../hooks/use-online-status.hook";
+import {
+  readOfflineJobSearch,
+  saveOfflineJobSearch,
+  type OfflineJobSearchFilters,
+  type OfflineJobSearchSnapshot,
+} from "../services/offline-job-search.service";
 
 const CONTRACT_FILTER_OPTIONS: Array<{
   value: ContractType;
@@ -46,9 +53,14 @@ export const JobSearch = () => {
     () => searchParams.get("city"),
   );
   const [showFilters, setShowFilters] = useState(false);
+  const [offlineSnapshot, setOfflineSnapshot] =
+    useState<OfflineJobSearchSnapshot | null>(null);
+  const [isOfflineCacheLoading, setIsOfflineCacheLoading] = useState(true);
   const filtersPanelRef = useRef<HTMLDivElement | null>(null);
   const filtersButtonRef = useRef<HTMLButtonElement | null>(null);
   const page = Number(searchParams.get("page") ?? "1");
+  const isOnline = useOnlineStatus();
+  const isOffline = isOnline === false;
 
   const debouncedQuery = useDebounce(searchQuery, 300);
   const selectedCity = useMemo(
@@ -59,6 +71,16 @@ export const JobSearch = () => {
   const radiusLat = selectedCity?.lat ?? fallbackCenter.lat;
   const radiusLng = selectedCity?.lng ?? fallbackCenter.lng;
   const shouldApplyRadius = radius < 100;
+  const currentFilters = useMemo<OfflineJobSearchFilters>(
+    () => ({
+      query: debouncedQuery,
+      radius,
+      category,
+      contractType,
+      city,
+    }),
+    [debouncedQuery, radius, category, contractType, city],
+  );
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: [
@@ -84,9 +106,59 @@ export const JobSearch = () => {
         page: String(page),
         limit: "20",
       }),
+    enabled: isOnline === true,
   });
 
   useEffect(() => {
+    let isMounted = true;
+
+    readOfflineJobSearch()
+      .then((snapshot) => {
+        if (!isMounted) return;
+        setOfflineSnapshot(snapshot);
+      })
+      .catch(() => {
+        if (isMounted) setOfflineSnapshot(null);
+      })
+      .finally(() => {
+        if (isMounted) setIsOfflineCacheLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isOffline || !offlineSnapshot) return;
+
+    setSearchQuery(offlineSnapshot.filters.query);
+    setRadius(offlineSnapshot.filters.radius);
+    setCategory(offlineSnapshot.filters.category);
+    setContractType(offlineSnapshot.filters.contractType);
+    setCity(offlineSnapshot.filters.city);
+    setShowFilters(false);
+  }, [isOffline, offlineSnapshot]);
+
+  useEffect(() => {
+    if (isOnline !== true || !data) return;
+
+    const snapshot: OfflineJobSearchSnapshot = {
+      key: "latest",
+      savedAt: Date.now(),
+      filters: currentFilters,
+      response: data,
+    };
+
+    setOfflineSnapshot(snapshot);
+    void saveOfflineJobSearch({ filters: currentFilters, response: data }).catch(
+      () => undefined,
+    );
+  }, [currentFilters, data, isOnline]);
+
+  useEffect(() => {
+    if (isOnline !== true) return;
+
     const params = new URLSearchParams();
     if (debouncedQuery) params.set("q", debouncedQuery);
     if (radius !== 20) params.set("radius", String(radius));
@@ -96,7 +168,16 @@ export const JobSearch = () => {
     if (page > 1) params.set("page", String(page));
     const qs = params.toString();
     router.replace(qs ? `/vagas?${qs}` : "/vagas", { scroll: false });
-  }, [debouncedQuery, radius, category, contractType, city, page, router]);
+  }, [
+    debouncedQuery,
+    radius,
+    category,
+    contractType,
+    city,
+    page,
+    router,
+    isOnline,
+  ]);
 
   useEffect(() => {
     if (!showFilters) return;
@@ -123,8 +204,40 @@ export const JobSearch = () => {
     Boolean,
   ).length;
 
-  const jobs = data?.data ?? [];
-  const total = data?.meta.total ?? jobs.length;
+  const displayedData = isOffline ? offlineSnapshot?.response : data;
+  const jobs = displayedData?.data ?? [];
+  const total = displayedData?.meta.total ?? jobs.length;
+  const isResultsLoading =
+    isOnline === null || (isOffline && isOfflineCacheLoading) ||
+    (isOnline === true && isLoading);
+  const savedAtLabel = offlineSnapshot
+    ? new Intl.DateTimeFormat("pt-BR", {
+        dateStyle: "short",
+        timeStyle: "short",
+      }).format(offlineSnapshot.savedAt)
+    : null;
+  const offlineFilterLabels = useMemo(() => {
+    if (!offlineSnapshot) return [];
+
+    const filters = offlineSnapshot.filters;
+    const labels: string[] = [];
+    const savedCity = LAGOS_CITIES.find((item) => item.slug === filters.city);
+    const savedCategory = CATEGORIES.find(
+      (item) => item.slug === filters.category,
+    );
+
+    if (filters.query) labels.push(`Busca: ${filters.query}`);
+    if (savedCity) labels.push(savedCity.name);
+    if (savedCategory) labels.push(savedCategory.name);
+    if (filters.contractType) labels.push(filters.contractType);
+    labels.push(
+      filters.radius >= 100
+        ? "Todo o estado"
+        : `Raio de ${filters.radius} km`,
+    );
+
+    return labels;
+  }, [offlineSnapshot]);
 
   const queryErrorStatus =
     typeof error === "object" && error !== null && "status" in error
@@ -144,6 +257,30 @@ export const JobSearch = () => {
 
   return (
     <div className="px-4 py-6">
+      {isOffline && (
+        <div
+          role="status"
+          className="mb-4 rounded-2xl bg-primary/10 px-4 py-3 text-primary-dark"
+        >
+          <div className="flex items-start gap-3">
+            <WifiOff className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
+            <div className="min-w-0">
+              <p className="font-semibold">Você está offline</p>
+              <p className="mt-0.5 text-sm">
+                {offlineSnapshot
+                  ? `Exibindo a última busca salva em ${savedAtLabel}. Os dados podem estar desatualizados.`
+                  : "Nenhuma busca está salva neste dispositivo. Conecte-se para carregar vagas."}
+              </p>
+              {offlineFilterLabels.length > 0 && (
+                <p className="mt-2 text-xs font-medium">
+                  {offlineFilterLabels.join(" · ")}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center gap-2">
         <div
           className="flex-1 rounded-xl px-3 py-3 flex items-center gap-2"
@@ -161,17 +298,19 @@ export const JobSearch = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            disabled={isOnline !== true}
             placeholder="Buscar vagas, empresas..."
             aria-label="Buscar vagas ou empresas"
-            className="flex-1 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
+            className="flex-1 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none disabled:cursor-not-allowed disabled:text-gray-500"
           />
         </div>
 
         <button
           ref={filtersButtonRef}
           onClick={() => setShowFilters((v) => !v)}
+          disabled={isOnline !== true}
           className={cn(
-            "relative shrink-0 rounded-xl p-3",
+            "relative shrink-0 rounded-xl p-3 disabled:cursor-not-allowed disabled:opacity-50",
             activeFiltersCount > 0
               ? "bg-primary text-white"
               : "bg-surface text-gray-500",
@@ -194,8 +333,9 @@ export const JobSearch = () => {
             <button
               key={option.value}
               onClick={() => setRadius(option.value)}
+              disabled={isOnline !== true}
               className={cn(
-                "rounded-lg px-3 py-1.5 text-xs font-medium whitespace-nowrap",
+                "rounded-lg px-3 py-1.5 text-xs font-medium whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-60",
                 radius === option.value
                   ? "bg-primary text-white"
                   : "bg-surface text-gray-500",
@@ -232,8 +372,9 @@ export const JobSearch = () => {
                     onClick={() =>
                       setContractType(isActive ? null : option.value)
                     }
+                    disabled={isOnline !== true}
                     className={cn(
-                      "rounded-lg px-3 py-1.5 text-xs font-medium",
+                      "rounded-lg px-3 py-1.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-60",
                       !isActive && "bg-surface text-gray-500",
                     )}
                     style={
@@ -260,8 +401,9 @@ export const JobSearch = () => {
                   <button
                     key={cat.slug}
                     onClick={() => setCategory(isActive ? null : cat.slug)}
+                    disabled={isOnline !== true}
                     className={cn(
-                      "rounded-lg px-3 py-1.5 text-xs font-medium",
+                      "rounded-lg px-3 py-1.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-60",
                       isActive
                         ? "bg-primary text-white"
                         : "bg-surface text-gray-500",
@@ -283,8 +425,9 @@ export const JobSearch = () => {
                   <button
                     key={c.slug}
                     onClick={() => setCity(isActive ? null : c.slug)}
+                    disabled={isOnline !== true}
                     className={cn(
-                      "rounded-lg px-3 py-1.5 text-xs font-medium",
+                      "rounded-lg px-3 py-1.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-60",
                       isActive
                         ? "bg-primary text-white"
                         : "bg-surface text-gray-500",
@@ -300,7 +443,8 @@ export const JobSearch = () => {
           {activeFiltersCount > 0 && (
             <button
               onClick={clearFilters}
-              className="text-error text-sm font-medium"
+              disabled={isOnline !== true}
+              className="text-error text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60"
             >
               ✕ Limpar filtros
             </button>
@@ -315,7 +459,7 @@ export const JobSearch = () => {
         <span className="text-sm text-gray-500">Ordenado por distância</span>
       </div>
 
-      {isError && (
+      {isOnline === true && isError && (
         <div
           role="alert"
           className="mt-3 rounded-xl bg-error/10 px-4 py-2 text-sm text-error"
@@ -324,7 +468,7 @@ export const JobSearch = () => {
         </div>
       )}
 
-      {isLoading ? (
+      {isResultsLoading ? (
         <div className="mt-3">
           <JobListSkeleton count={4} />
         </div>
@@ -337,9 +481,13 @@ export const JobSearch = () => {
       ) : (
         <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
           <SearchX className="size-10 text-gray-300" aria-hidden="true" />
-          <p className="font-semibold text-gray-500">Nenhuma vaga encontrada</p>
+          <p className="font-semibold text-gray-500">
+            {isOffline ? "Nenhuma busca salva" : "Nenhuma vaga encontrada"}
+          </p>
           <p className="text-sm text-gray-400">
-            Tente ampliar o raio ou mudar a busca
+            {isOffline
+              ? "Conecte-se para buscar vagas neste dispositivo"
+              : "Tente ampliar o raio ou mudar a busca"}
           </p>
         </div>
       )}

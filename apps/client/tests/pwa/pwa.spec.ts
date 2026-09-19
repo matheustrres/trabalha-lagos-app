@@ -83,6 +83,86 @@ test('abre página pública visitada offline', async ({ page, context }) => {
   await expect(page.getByRole('heading', { name: 'Cabo Frio' })).toBeVisible()
 })
 
+test('abre a última busca de vagas offline em modo somente leitura', async ({
+  page,
+  context,
+}) => {
+  await page.route('**/api/v1/jobs?**', async (route) => {
+    await route.fulfill({
+      contentType: 'application/json',
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({
+        data: [
+          {
+            id: 'job-offline-1',
+            title: 'Recepcionista',
+            slug: 'recepcionista-offline',
+            description: 'Atendimento ao público',
+            requirements: [],
+            company: {
+              id: 'company-offline-1',
+              name: 'Empresa da Região',
+              verified: true,
+            },
+            category: {
+              id: 1,
+              name: 'Serviços Gerais',
+              slug: 'servicos-gerais',
+              icon: '🧹',
+            },
+            contractType: 'CLT',
+            city: 'Cabo Frio',
+            distanceKm: 2.4,
+            featured: false,
+            urgent: false,
+            status: 'ACTIVE',
+            createdAt: '2026-09-19T12:00:00.000Z',
+            expiresAt: '2026-10-19T12:00:00.000Z',
+          },
+        ],
+        meta: { total: 1, page: 1, limit: 20 },
+      }),
+    })
+  })
+
+  await waitForServiceWorker(page)
+  await page.goto('/vagas?city=cabo-frio')
+  await expect(page.getByText('Recepcionista')).toBeVisible()
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          new Promise<boolean>((resolve) => {
+            const request = indexedDB.open('tl-pwa', 1)
+            request.onsuccess = () => {
+              const database = request.result
+              const transaction = database.transaction(
+                'job-searches',
+                'readonly',
+              )
+              const storedSearch = transaction
+                .objectStore('job-searches')
+                .get('latest')
+              storedSearch.onsuccess = () => resolve(Boolean(storedSearch.result))
+              storedSearch.onerror = () => resolve(false)
+            }
+            request.onerror = () => resolve(false)
+          }),
+      ),
+    )
+    .toBe(true)
+
+  await context.setOffline(true)
+  await page.reload()
+
+  await expect(page.getByText('Você está offline')).toBeVisible()
+  await expect(page.getByText('Recepcionista')).toBeVisible()
+  await expect(page.getByLabel('Buscar vagas ou empresas')).toBeDisabled()
+  await expect(
+    page.getByRole('button', { name: 'Filtros avançados' }),
+  ).toBeDisabled()
+})
+
 test('usa o fallback para rota pública não armazenada', async ({ page, context }) => {
   await waitForServiceWorker(page)
   await context.setOffline(true)

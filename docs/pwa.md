@@ -4,10 +4,11 @@
 
 O frontend é uma Progressive Web App mobile-first, instalável e resiliente a
 falhas de rede. A primeira versão cobre instalação, atualização controlada,
-abertura offline e leitura offline de páginas públicas elegíveis já visitadas.
+abertura offline, leitura offline de páginas públicas elegíveis já visitadas e
+consulta da última busca pública realizada em `/vagas`.
 
-Busca dinâmica, autenticação, perfil, interesses e painel do empregador são
-sempre online. Push notifications não fazem parte desta entrega.
+Novas buscas, autenticação, perfil, interesses e painel do empregador são sempre
+online. Push notifications não fazem parte desta entrega.
 
 ## Configuração
 
@@ -32,19 +33,28 @@ viewport permite zoom do navegador.
 
 O arquivo `apps/client/public/sw.js` usa caches versionados:
 
-- precache: `/offline`, os chunks estáticos referenciados por essa tela,
-  manifesto, Apple Touch Icon e ícones PWA;
+- precache: `/offline`, o shell público de `/vagas`, os chunks estáticos
+  referenciados por essas telas, manifesto, Apple Touch Icon e ícones PWA;
 - Cache First: `/_next/static/**` e `/icons/**`;
-- Network First com fallback em cache: `/`, `/vaga/[slug]` e
-  `/vagas/[cidade]`;
-- somente rede com fallback `/offline`: `/vagas`, sem armazenar resultados.
+- Network First com fallback em cache: `/`, `/vagas`, `/vaga/[slug]` e
+  `/vagas/[cidade]`.
+
+O service worker armazena somente o shell HTML público de `/vagas`. A última
+resposta pública bem-sucedida da busca é salva separadamente no IndexedDB
+`tl-pwa`, store `job-searches`, chave `latest`, com validade máxima de 7 dias.
+Em modo offline, filtros e resultados são exibidos como somente leitura, com a
+data do salvamento. Ao reconectar, a busca volta a consultar a API normalmente.
 
 Não são interceptados nem armazenados:
 
 - métodos diferentes de `GET`;
 - requisições com `Authorization`;
 - `/login`, `/cadastro`, `/perfil` e `/painel/**`;
-- `/api/**`, origens externas e respostas JSON da API.
+- `/api/**`, origens externas e respostas JSON da API no Cache Storage.
+
+O snapshot no IndexedDB contém apenas a resposta do endpoint público de vagas e
+os filtros da busca. Tokens, headers, perfil e qualquer dado autenticado não são
+persistidos.
 
 No evento `activate`, caches `tl-pwa-*` de versões anteriores são removidos.
 Para invalidar conteúdo, altere `CACHE_VERSION` em `public/sw.js`.
@@ -100,8 +110,10 @@ Rollback:
 
 - Worker não registra: confirmar HTTPS (ou localhost), flag e build de produção.
 - Alteração não chega: verificar o header de `/sw.js` e aumentar `CACHE_VERSION`.
-- Página não abre offline: ela precisa ter sido visitada por navegação completa e
-  estar entre as rotas públicas elegíveis.
+- Página pública não abre offline: ela precisa ter sido visitada por navegação
+  completa e estar entre as rotas públicas elegíveis. `/vagas` é precacheada.
+- `/vagas` abre sem resultados: é necessário concluir ao menos uma busca online
+  neste dispositivo; snapshots com mais de 7 dias são descartados.
 - Convite não aparece: confirmar a segunda flag, aguardar 30 segundos, limpar as
   chaves locais e verificar se o app já é considerado instalado.
 - Estado inconsistente: DevTools → Application → Storage → Clear site data.

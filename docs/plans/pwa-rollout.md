@@ -18,6 +18,9 @@
 - [x] limpeza de caches antigos;
 - [x] aviso de atualização e protocolo `SKIP_WAITING`;
 - [x] reporte de falhas ao Sentry.
+- [x] shell de `/vagas` disponível offline;
+- [x] última busca pública salva no IndexedDB por até 7 dias;
+- [x] filtros bloqueados e resultados sinalizados como desatualizáveis offline.
 
 ## Fase 3 — Instalação
 
@@ -29,7 +32,8 @@
 ## Fase 4 — Validação e produção
 
 - [x] suíte Playwright e integração com CI adicionadas;
-- [ ] executar `pnpm run test:pwa`;
+- [x] suíte PWA original aprovada;
+- [x] executar `pnpm run test:pwa` com o novo cenário offline de `/vagas`;
 - [ ] validar Chrome Android e Safari iOS em staging;
 - [ ] validar portrait, landscape, zoom 200% e safe areas;
 - [ ] validar atualização entre duas versões publicadas;
@@ -42,6 +46,8 @@
 - manifesto e dimensões dos ícones válidos;
 - worker controla a aplicação após reload;
 - página pública visitada abre offline e rota não armazenada abre `/offline`;
+- `/vagas` abre a última busca salva, identifica a data e bloqueia novos filtros
+  offline;
 - conteúdo autenticado e API não aparecem nos caches;
 - instalação, dispensa e atualização exigem ação explícita;
 - app funciona normalmente com as flags desabilitadas;
