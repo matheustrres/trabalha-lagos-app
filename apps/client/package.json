@@ -9,7 +9,8 @@
     "start": "next start",
     "seed:jobs": "pnpm dlx tsx scripts/seed-jobs.ts",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "test:pwa": "playwright test --config=playwright.config.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

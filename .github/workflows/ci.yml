@@ -118,3 +118,12 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
           API_URL: http://localhost:3001/api/v1
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: PWA tests
+        run: pnpm run test:pwa
+        env:
+          NEXT_PUBLIC_PWA_ENABLED: 'true'
+          NEXT_PUBLIC_PWA_INSTALL_PROMPT_ENABLED: 'true'
