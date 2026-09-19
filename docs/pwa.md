@@ -32,7 +32,8 @@ viewport permite zoom do navegador.
 
 O arquivo `apps/client/public/sw.js` usa caches versionados:
 
-- precache: `/offline`, manifesto, Apple Touch Icon e ícones PWA;
+- precache: `/offline`, os chunks estáticos referenciados por essa tela,
+  manifesto, Apple Touch Icon e ícones PWA;
 - Cache First: `/_next/static/**` e `/icons/**`;
 - Network First com fallback em cache: `/`, `/vaga/[slug]` e
   `/vagas/[cidade]`;

@@ -15,7 +15,10 @@ const readPngDimensions = async (filePath: string) => {
 const waitForServiceWorker = async (page: Page) => {
   await page.goto('/')
   await page.evaluate(() => navigator.serviceWorker.ready)
-  await page.reload()
+  await expect
+    .poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller)))
+    .toBe(true)
+  await page.reload({ waitUntil: 'domcontentloaded' })
   await expect
     .poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller)))
     .toBe(true)
@@ -113,16 +116,23 @@ test('convite instala, respeita dispensa e some após appinstalled', async ({ pa
   await page.clock.install()
   await page.goto('/')
 
-  await page.evaluate(() => {
-    const installEvent = new Event('beforeinstallprompt', { cancelable: true })
-    Object.defineProperties(installEvent, {
-      prompt: { value: async () => undefined },
-      userChoice: {
-        value: Promise.resolve({ outcome: 'dismissed', platform: 'web' }),
-      },
-    })
-    window.dispatchEvent(installEvent)
-  })
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const installEvent = new Event('beforeinstallprompt', {
+          cancelable: true,
+        })
+        Object.defineProperties(installEvent, {
+          prompt: { value: async () => undefined },
+          userChoice: {
+            value: Promise.resolve({ outcome: 'dismissed', platform: 'web' }),
+          },
+        })
+        window.dispatchEvent(installEvent)
+        return installEvent.defaultPrevented
+      }),
+    )
+    .toBe(true)
   await page.clock.fastForward(30_000)
 
   const prompt = page.getByLabel('Instalar TrabalhaLagos')

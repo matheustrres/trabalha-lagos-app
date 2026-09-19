@@ -1,6 +1,6 @@
 /* global caches, self */
 
-const CACHE_VERSION = 'v1'
+const CACHE_VERSION = 'v2'
 const PRECACHE = `tl-pwa-precache-${CACHE_VERSION}`
 const STATIC_CACHE = `tl-pwa-static-${CACHE_VERSION}`
 const PAGE_CACHE = `tl-pwa-pages-${CACHE_VERSION}`
@@ -13,6 +13,21 @@ const PRECACHE_URLS = [
   '/icons/icon-512.png',
   '/icons/icon-maskable-512.png',
 ]
+
+const precacheOfflineShell = async () => {
+  const cache = await caches.open(PRECACHE)
+  await cache.addAll(PRECACHE_URLS)
+
+  const offlinePage = await cache.match('/offline')
+  if (!offlinePage) return
+
+  const html = await offlinePage.text()
+  const assetUrls = [
+    ...html.matchAll(/(?:src|href)="([^"?#]*\/_next\/static\/[^"?#]+)"/g),
+  ].map((match) => match[1])
+
+  await cache.addAll([...new Set(assetUrls)])
+}
 
 const AUTHENTICATED_PATHS = [
   '/login',
@@ -39,9 +54,12 @@ const offlineResponse = async () => {
   return cache.match('/offline')
 }
 
+const offlineRedirect = () =>
+  Response.redirect(new URL('/offline', self.location.origin).href, 302)
+
 const cacheFirst = async (request) => {
   const cache = await caches.open(STATIC_CACHE)
-  const cached = await cache.match(request)
+  const cached = await caches.match(request)
   if (cached) return cached
 
   const response = await fetch(request)
@@ -57,7 +75,7 @@ const networkFirstPage = async (request) => {
     if (response.ok) await cache.put(request, response.clone())
     return response
   } catch {
-    return (await cache.match(request)) || (await offlineResponse())
+    return (await cache.match(request)) || offlineRedirect()
   }
 }
 
@@ -65,14 +83,12 @@ const networkWithOfflineFallback = async (request) => {
   try {
     return await fetch(request)
   } catch {
-    return offlineResponse()
+    return offlineRedirect()
   }
 }
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(PRECACHE).then((cache) => cache.addAll(PRECACHE_URLS)),
-  )
+  event.waitUntil(precacheOfflineShell())
 })
 
 self.addEventListener('activate', (event) => {
@@ -108,6 +124,11 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (request.mode !== 'navigate') return
+
+  if (url.pathname === '/offline') {
+    event.respondWith(offlineResponse())
+    return
+  }
 
   if (isPublicCacheablePage(url.pathname)) {
     event.respondWith(networkFirstPage(request))

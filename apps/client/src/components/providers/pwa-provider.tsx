@@ -46,6 +46,7 @@ export const PwaProvider = () => {
   const [installDismissed, setInstallDismissed] = useState(true)
   const [installed, setInstalled] = useState(true)
   const reloadingRef = useRef(false)
+  const updateRequestedRef = useRef(false)
 
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return
@@ -72,7 +73,7 @@ export const PwaProvider = () => {
     }
 
     const handleControllerChange = () => {
-      if (reloadingRef.current) return
+      if (!updateRequestedRef.current || reloadingRef.current) return
       reloadingRef.current = true
       window.location.reload()
     }
@@ -126,7 +127,9 @@ export const PwaProvider = () => {
     const alreadyInstalled =
       localStorage.getItem(INSTALLED_KEY) === 'true' || isStandalone()
 
-    setInstallDismissed(Date.now() - dismissedAt < DISMISS_DURATION_MS)
+    setInstallDismissed(
+      dismissedAt > 0 && Date.now() - dismissedAt < DISMISS_DURATION_MS,
+    )
     setInstalled(alreadyInstalled)
 
     const timer = window.setTimeout(
@@ -182,6 +185,7 @@ export const PwaProvider = () => {
   }
 
   const updateApp = () => {
+    updateRequestedRef.current = true
     waitingWorker?.postMessage({ type: 'SKIP_WAITING' })
   }
 
