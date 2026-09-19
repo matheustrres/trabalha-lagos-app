@@ -24,7 +24,8 @@
 		"test:e2e:throttle": "dotenv -e .env.test -e .env.throttle-test -- vitest run --config vitest.e2e.throttle.config.mts",
 		"test:cov": "dotenv -e .env.test -- vitest run --config vitest.config.mts --coverage --pool=forks --poolOptions.forks.singleFork=true",
 		"db:migrate": "dotenv -e .env.dev -- drizzle-kit migrate --config drizzle.config.ts",
-		"db:seed": "dotenv -e .env.dev -- tsx src/shared/modules/database/seed.ts"
+		"db:seed": "dotenv -e .env.dev -- tsx src/shared/modules/database/seed.ts",
+		"adzuna:search": "dotenv -e .env.dev -- tsx src/modules/external-jobs/integrations/adzuna/adzuna-command.ts"
 	},
 	"dependencies": {
 		"@nest-lab/throttler-storage-redis": "^1.2.0",

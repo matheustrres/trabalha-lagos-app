@@ -11,6 +11,7 @@ import { UpdateJobDto } from './dto/update-job.dto';
 import { JobsRepository } from './jobs.repository';
 import { ViewCounterService } from './services/view-counter.service';
 
+import { LAGOS_REGION_BOUNDS } from '@/common/constants/cities';
 import { generateJobSlug } from '@/common/utils/slugify';
 
 import { CompaniesService } from '@/modules/companies/companies.service';
@@ -33,13 +34,6 @@ const PLAN_EXPIRY_DAYS: Record<string, number> = {
 	FREE: 30,
 	PRO: 60,
 	SEASON: 60,
-};
-
-const REGION_BOUNDS = {
-	latMin: -23.1,
-	latMax: -22.6,
-	lngMin: -42.6,
-	lngMax: -41.8,
 };
 
 @Injectable()
@@ -197,7 +191,7 @@ export class JobsService {
 	}
 
 	private validateCoordinates(lat: number, lng: number): void {
-		const { latMin, latMax, lngMin, lngMax } = REGION_BOUNDS;
+		const { latMin, latMax, lngMin, lngMax } = LAGOS_REGION_BOUNDS;
 		if (lat < latMin || lat > latMax || lng < lngMin || lng > lngMax) {
 			throw new BadRequestException(
 				'Coordenadas fora da Região dos Lagos. ' +

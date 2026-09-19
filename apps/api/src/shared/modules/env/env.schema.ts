@@ -86,6 +86,14 @@ export class EnvSchema {
 	@IsOptional()
 	SENTRY_DSN?: string;
 
+	@IsString()
+	@IsOptional()
+	ADZUNA_APP_ID?: string;
+
+	@IsString()
+	@IsOptional()
+	ADZUNA_APP_KEY?: string;
+
 	@IsBoolean()
 	@IsOptional()
 	@Transform(({ value }) => {
