@@ -3,6 +3,7 @@ import { DM_Sans, Playfair_Display } from "next/font/google";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { Header } from "@/components/layout/header";
 import { BottomNav } from "@/components/layout/bottom-nav";
+import { PwaProvider } from "@/components/providers/pwa-provider";
 import "@/styles/globals.css";
 
 const dmSans = DM_Sans({
@@ -40,7 +41,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   themeColor: "#0c7a5a",
 };
 
@@ -51,6 +51,7 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => (
   >
     <body className="font-sans bg-surface text-gray-900 antialiased">
       <QueryProvider>
+        <PwaProvider />
         <Header />
         <main className="mx-auto min-h-[calc(100dvh-57px)] max-w-lg bg-white pb-20 has-[>[data-panel-layout]]:pb-0">
           {children}
