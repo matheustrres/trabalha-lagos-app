@@ -48,7 +48,10 @@ docs/
 ├── queues.md            # BullMQ queues, processors
 ├── geo.md               # Cidades, coordenadas, raios, geocoding
 ├── testing.md           # Convenções de teste
-└── infrastructure.md    # Docker, deploy, env vars, CI/CD
+├── infrastructure.md    # Docker, deploy, env vars, CI/CD
+├── pwa.md               # Instalação, cache offline, segurança e rollout
+└── plans/
+    └── pwa-rollout.md   # Fases, critérios de aceite e rollback da PWA
 ```
 
 Leia o doc relevante **antes** de trabalhar em um domínio específico. Não confie apenas no que está neste arquivo.

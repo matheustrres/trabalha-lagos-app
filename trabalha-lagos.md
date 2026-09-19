@@ -77,7 +77,7 @@ root/
 | Data fetching | React Query (TanStack Query) |
 | Mapas | Leaflet / react-leaflet |
 | Ícones | Lucide React |
-| PWA | manifest.json + meta tags |
+| PWA | manifest + service worker próprio, cache público versionado e fallback offline |
 
 ### Infra (MVP)
 
@@ -193,3 +193,16 @@ Cada domínio tem documentação dedicada em `docs/`. Consultar antes de impleme
 | `geo.md` | Cidades, coordenadas, raios, geocoding |
 | `testing.md` | Convenções, fixtures, testcontainers |
 | `infrastructure.md` | Docker, deploy, env vars, CI/CD |
+| `pwa.md` | Instalação, atualização, cache offline e segurança do frontend |
+
+---
+
+## 9. PWA e operação offline
+
+A PWA é habilitada por feature flag em builds de produção e usa um service
+worker próprio, sem `next-pwa` ou Serwist, preservando o pipeline Turbopack.
+Somente `/`, `/vaga/[slug]` e `/vagas/[cidade]` podem ser armazenadas após visita.
+Busca interativa, autenticação, perfil, painel, mutações e API exigem conexão.
+
+O convite de instalação possui flag independente para rollout gradual. Push
+notifications ficam fora da primeira versão. Política completa em `docs/pwa.md`.
