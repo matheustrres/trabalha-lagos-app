@@ -18,6 +18,7 @@
     "prepare": "husky install"
   },
   "devDependencies": {
-    "husky": "^8.0.0"
+    "husky": "^8.0.0",
+    "railway": "^3.11.0"
   }
 }

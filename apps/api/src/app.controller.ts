@@ -9,6 +9,12 @@ import { Public } from '@/common/decorators/public.decorator';
 export class AppController {
 	constructor(private readonly appService: AppService) {}
 
+	@Get('health')
+	@Public()
+	getHealth(): { status: 'ok' } {
+		return { status: 'ok' };
+	}
+
 	@Get('app')
 	@Throttle({
 		medium: { limit: 60, ttl: 60000 },

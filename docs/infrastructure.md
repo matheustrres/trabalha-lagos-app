@@ -75,6 +75,36 @@ CORS_ORIGINS=http://localhost:3001
 
 ## Deploy
 
+### Railway
+
+O backend é descrito por `.railway/railway.ts` e publicado no projeto Railway
+`easygoing-freedom`, ambiente `production`.
+
+Serviços:
+
+- `@trabalha-lagos/api`: NestJS público na porta `3000`;
+- `PostGIS`: `postgis/postgis:16-3.4`, com volume em
+  `/var/lib/postgresql/data`;
+- `Redis`: privado, com persistência AOF.
+
+O domínio público da API é:
+
+```text
+https://trabalha-lagosapi-production.up.railway.app
+```
+
+O deploy executa, nesta ordem:
+
+```text
+pnpm --filter @trabalha-lagos/api build
+pnpm --filter @trabalha-lagos/api db:migrate:prod
+pnpm --filter @trabalha-lagos/api start:prod
+```
+
+O health check público é `/api/v1/health`. Banco e Redis são acessados somente
+pela rede privada da Railway. Secrets permanecem nas variáveis do ambiente e a
+IaC usa `preserve()` para não armazená-los no repositório.
+
 ### MVP (custo mínimo)
 
 | Componente | Opção                       | Custo     |
