@@ -39,6 +39,22 @@
 &sort=distance                 # distance | recent
 ```
 
+### Contrato da resposta de busca
+
+`GET /jobs` combina vagas próprias e externas em uma única paginação. Cada item
+possui o discriminador `sourceType`:
+
+- `INTERNAL`: mantém `slug`, `company`, `category`, destaque e acesso ao detalhe
+  local em `/vaga/:slug`;
+- `EXTERNAL`: fornece `externalSource`, `companyName`, `redirectUrl`,
+  `categoryName`, localização e data de publicação já sanitizados. Não possui
+  detalhe local.
+
+Durante o trial, somente registros externos com `externalSource: "SYNTHETIC"`
+são publicados. Registros importados da Adzuna continuam bloqueados. Quando um
+filtro de categoria interna é informado, vagas externas ficam fora do resultado
+até existir um mapeamento explícito entre taxonomias.
+
 ## Validação (DTOs com class-validator + class-transformer)
 
 Todo input usa class-validator + class-transformer.

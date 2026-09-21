@@ -6,7 +6,7 @@ import { LAGOS_CITIES } from "@/lib/constants/cities.constants";
 import { fetchServerJson, SERVER_API_URL } from "@/lib/server-api";
 import { pluralizeVagas } from "@/lib/utils/pluralize.utils";
 import { JobCard } from "@/components/job-card";
-import type { Job } from "@/types/job.types";
+import type { SearchJob } from "@/types/job.types";
 
 interface Props {
   params: Promise<{ cidade: string }>;
@@ -40,7 +40,7 @@ const CidadePage = async ({ params }: Props) => {
 
   if (!city) notFound();
 
-  const payload = await fetchServerJson<{ data?: Job[] } | Job[]>(
+  const payload = await fetchServerJson<{ data?: SearchJob[] } | SearchJob[]>(
     `${SERVER_API_URL}/jobs?city=${encodeURIComponent(city.name)}&limit=50`,
     { data: [] },
     { next: { revalidate: 600 } },
@@ -49,8 +49,10 @@ const CidadePage = async ({ params }: Props) => {
   const jobsData = Array.isArray(payload) ? payload : (payload.data ?? []);
 
   const jobs = jobsData.sort((a, b) => {
-    if (a.featured === b.featured) return 0;
-    return a.featured ? -1 : 1;
+    const aFeatured = a.sourceType !== "EXTERNAL" && a.featured;
+    const bFeatured = b.sourceType !== "EXTERNAL" && b.featured;
+    if (aFeatured === bFeatured) return 0;
+    return aFeatured ? -1 : 1;
   });
 
   return (

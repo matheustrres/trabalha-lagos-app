@@ -60,6 +60,7 @@ export class JobsRepository {
 
 	async findByRadius(
 		params: QueryJobsDto,
+		pagination?: { limit: number; offset: number },
 	): Promise<JobSchemaWithDetailsNoLocation[]> {
 		const {
 			lat,
@@ -137,8 +138,8 @@ export class JobsRepository {
 					: sql<number | null>`NULL`
 				).as('distance_km'),
 			},
-			limit,
-			offset: (page - 1) * limit,
+			limit: pagination?.limit ?? limit,
+			offset: pagination?.offset ?? (page - 1) * limit,
 			orderBy: orderExprs,
 		});
 	}

@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { JobResponseDto } from './job-response.dto';
+import {
+	ExternalJobResponseDto,
+	InternalJobSearchResponseDto,
+} from './job-response.dto';
 
 class SearchJobsMetaDto {
 	@ApiProperty({ example: 42 })
@@ -14,8 +17,17 @@ class SearchJobsMetaDto {
 }
 
 export class SearchJobsResponseDto {
-	@ApiProperty({ type: () => [JobResponseDto] })
-	data!: JobResponseDto[];
+	@ApiProperty({
+		type: 'array',
+		items: {
+			oneOf: [
+				{ $ref: '#/components/schemas/InternalJobSearchResponseDto' },
+				{ $ref: '#/components/schemas/ExternalJobResponseDto' },
+			],
+			discriminator: { propertyName: 'sourceType' },
+		},
+	})
+	data!: Array<InternalJobSearchResponseDto | ExternalJobResponseDto>;
 
 	@ApiProperty({ type: () => SearchJobsMetaDto })
 	meta!: SearchJobsMetaDto;

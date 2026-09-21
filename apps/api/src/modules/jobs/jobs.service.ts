@@ -8,6 +8,12 @@ import {
 import { CreateJobDto } from './dto/create-job.dto';
 import { QueryJobsDto } from './dto/query-jobs.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
+import { ExternalJobsRepository } from './external-jobs.repository';
+import {
+	type JobSearchResult,
+	mapExternalJobSearchResult,
+	mapInternalJobSearchResult,
+} from './job-search-result';
 import { JobsRepository } from './jobs.repository';
 import { ViewCounterService } from './services/view-counter.service';
 
@@ -19,7 +25,6 @@ import { CompaniesService } from '@/modules/companies/companies.service';
 import {
 	JobSchema,
 	JobSchemaWithCategoryNoLocation,
-	JobSchemaWithDetailsNoLocation,
 	JobSchemaWithRelations,
 	JobStatus,
 } from '@/shared/modules/database/schema';
@@ -40,23 +45,53 @@ const PLAN_EXPIRY_DAYS: Record<string, number> = {
 export class JobsService {
 	constructor(
 		private readonly jobsRepository: JobsRepository,
+		private readonly externalJobsRepository: ExternalJobsRepository,
 		private readonly companiesService: CompaniesService,
 		private readonly viewCounterService: ViewCounterService,
 	) {}
 
 	async search(params: QueryJobsDto): Promise<{
-		data: JobSchemaWithDetailsNoLocation[];
+		data: JobSearchResult[];
 		meta: { total: number; page: number; limit: number };
 	}> {
-		const [data, total] = await Promise.all([
-			this.jobsRepository.findByRadius(params),
-			this.jobsRepository.countByRadius(params),
-		]);
+		const candidateLimit = params.page * params.limit;
+		const [internalJobs, internalTotal, externalJobs, externalTotal] =
+			await Promise.all([
+				this.jobsRepository.findByRadius(params, {
+					limit: candidateLimit,
+					offset: 0,
+				}),
+				this.jobsRepository.countByRadius(params),
+				this.externalJobsRepository.findForPublicSearch(params, candidateLimit),
+				this.externalJobsRepository.countForPublicSearch(params),
+			]);
+
+		const offset = (params.page - 1) * params.limit;
+		const data = [
+			...internalJobs.map(mapInternalJobSearchResult),
+			...externalJobs.map(mapExternalJobSearchResult),
+		]
+			.sort((left, right) => {
+				const leftFeatured = left.sourceType === 'INTERNAL' && left.featured;
+				const rightFeatured = right.sourceType === 'INTERNAL' && right.featured;
+				if (leftFeatured !== rightFeatured) return leftFeatured ? -1 : 1;
+				if (params.sort !== 'recent' && left.distanceKm !== right.distanceKm) {
+					if (left.distanceKm === null) return 1;
+					if (right.distanceKm === null) return -1;
+					return left.distanceKm - right.distanceKm;
+				}
+				const leftDate =
+					left.sourceType === 'INTERNAL' ? left.createdAt : left.publishedAt;
+				const rightDate =
+					right.sourceType === 'INTERNAL' ? right.createdAt : right.publishedAt;
+				return rightDate.getTime() - leftDate.getTime();
+			})
+			.slice(offset, offset + params.limit);
 
 		return {
 			data,
 			meta: {
-				total,
+				total: internalTotal + externalTotal,
 				page: params.page,
 				limit: params.limit,
 			},

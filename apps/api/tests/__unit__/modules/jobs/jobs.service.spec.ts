@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mock, type MockProxy } from 'vitest-mock-extended';
 
 import { CompaniesService } from '@/modules/companies/companies.service';
+import { ExternalJobsRepository } from '@/modules/jobs/external-jobs.repository';
 import { JobsRepository } from '@/modules/jobs/jobs.repository';
 import { JobsService } from '@/modules/jobs/jobs.service';
 import { ViewCounterService } from '@/modules/jobs/services/view-counter.service';
@@ -18,15 +19,24 @@ import { makeJobsRepositoryMock } from '#/data/mocks/jobs.repository.mock';
 describe(JobsService.name, () => {
 	let SUT: JobsService;
 	let jobsRepository: MockProxy<JobsRepository>;
+	let externalJobsRepository: MockProxy<ExternalJobsRepository>;
 	let companiesService: MockProxy<CompaniesService>;
 	let viewCounterService: MockProxy<ViewCounterService>;
 
 	beforeEach(() => {
 		jobsRepository = makeJobsRepositoryMock();
+		externalJobsRepository = mock<ExternalJobsRepository>();
+		externalJobsRepository.findForPublicSearch.mockResolvedValue([]);
+		externalJobsRepository.countForPublicSearch.mockResolvedValue(0);
 		companiesService = mock<CompaniesService>();
 		viewCounterService = mock<ViewCounterService>();
 
-		SUT = new JobsService(jobsRepository, companiesService, viewCounterService);
+		SUT = new JobsService(
+			jobsRepository,
+			externalJobsRepository,
+			companiesService,
+			viewCounterService,
+		);
 	});
 
 	describe('search', () => {
@@ -44,9 +54,74 @@ describe(JobsService.name, () => {
 			const result = await SUT.search(query);
 
 			expect(result).toEqual({
-				data: [aJob().build()],
+				data: [{ sourceType: 'INTERNAL', ...aJob().build() }],
 				meta: { total: 1, page: 1, limit: 20 },
 			});
+		});
+
+		it('combines and paginates internal and synthetic external jobs', async () => {
+			const query = {
+				page: 1,
+				limit: 2,
+				radius: 20,
+				sort: 'recent',
+			} as any;
+			const internalJob = {
+				...aJob().build(),
+				featured: false,
+				createdAt: new Date('2026-09-20T10:00:00Z'),
+			};
+			const externalJob = {
+				id: '01999999-0000-7000-8000-000000000001',
+				source: 'SYNTHETIC',
+				externalId: 'synthetic-1',
+				title: '<b>Atendente</b>',
+				descriptionSnippet: 'Vaga\u0000 fictícia',
+				company: 'Empresa teste',
+				redirectUrl: 'javascript:alert(1)',
+				categoryOriginal: 'Comércio',
+				contractTypeOriginal: 'CLT',
+				salaryMin: 165000,
+				salaryMax: 210000,
+				salaryPredicted: false,
+				locationText: 'Cabo Frio, RJ',
+				locationArea: ['Cabo Frio'],
+				city: 'cabo-frio',
+				publishedAt: new Date('2026-09-21T10:00:00Z'),
+				status: 'ACTIVE' as const,
+				firstSeenAt: new Date(),
+				lastSeenAt: new Date(),
+				expiresAt: new Date('2026-10-21T10:00:00Z'),
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				distanceKm: 1,
+			};
+
+			jobsRepository.findByRadius.mockResolvedValue([internalJob] as any);
+			jobsRepository.countByRadius.mockResolvedValue(1);
+			externalJobsRepository.findForPublicSearch.mockResolvedValue([
+				externalJob,
+			]);
+			externalJobsRepository.countForPublicSearch.mockResolvedValue(1);
+
+			const result = await SUT.search(query);
+
+			expect(jobsRepository.findByRadius).toHaveBeenCalledWith(query, {
+				limit: 2,
+				offset: 0,
+			});
+			expect(result.meta.total).toBe(2);
+			expect(result.data.map((job) => job.sourceType)).toEqual([
+				'EXTERNAL',
+				'INTERNAL',
+			]);
+			expect(result.data[0]).toEqual(
+				expect.objectContaining({
+					title: 'Atendente',
+					description: 'Vaga fictícia',
+					redirectUrl: null,
+				}),
+			);
 		});
 	});
 

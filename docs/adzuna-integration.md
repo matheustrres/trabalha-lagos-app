@@ -4,7 +4,7 @@
 
 Prova técnica para medir cobertura, duplicação e qualidade geográfica das vagas da Adzuna nas sete cidades atendidas pelo TrabalhaLagos.
 
-Estado em 19/09/2026: **trial operacional, sem publicação**. O código consulta e gera relatório local; não persiste vagas, não cria endpoint, não agenda execução e não altera o frontend. Qualquer ativação comercial depende de licença escrita da Adzuna.
+Estado em 21/09/2026: **trial operacional, sem publicação de conteúdo Adzuna**. O código consulta e gera relatório local, mas não persiste dados da Adzuna nem agenda execução. A tabela `external_jobs` e o seed exclusivamente local permitem validar a busca pública com dados sintéticos sem utilizar conteúdo licenciado. Qualquer ativação comercial da fonte Adzuna depende de licença escrita.
 
 ## Evidência inicial
 
@@ -75,6 +75,35 @@ O relatório inclui configuração sanitizada, contadores de requisições, volu
 - `INVALID_RESPONSE`: contrato mínimo da resposta não foi atendido; preservar o payload apenas em investigação local segura.
 - `UPSTREAM_ERROR`/`NETWORK_ERROR`: indisponibilidade remota ou de rede.
 
+## Seed local sintético
+
+Para validar persistência e preparar a futura API sem utilizar dados licenciados, a migration cria a tabela separada `external_jobs`. O comando abaixo insere ou atualiza 14 vagas fictícias — duas para cada cidade:
+
+```bash
+pnpm --filter @trabalha-lagos/api db:migrate
+pnpm --filter @trabalha-lagos/api db:seed:external:local
+```
+
+O seed:
+
+- usa `source = SYNTHETIC` e IDs determinísticos;
+- é idempotente por `source + externalId`;
+- usa somente URLs sob `https://example.invalid/`;
+- contém texto explícito de que as vagas são fictícias;
+- rejeita `NODE_ENV=production` e bancos fora de `localhost`, `127.0.0.1` ou `::1`;
+- expõe somente esses registros sintéticos em desenvolvimento por `GET /jobs`, discriminados como `sourceType = EXTERNAL`; conteúdo Adzuna permanece excluído da consulta pública.
+
+O endpoint combina vagas próprias (`sourceType = INTERNAL`) e sintéticas externas (`sourceType = EXTERNAL`) com ordenação e paginação comuns. A interface não cria página de detalhe nem JSON-LD para vagas externas: vagas reais futuras usarão o link sanitizado da origem, enquanto registros `SYNTHETIC` são exibidos sem link clicável.
+
+Para inspecionar os dados após o seed:
+
+```sql
+SELECT source, city, count(*)
+FROM external_jobs
+GROUP BY source, city
+ORDER BY city;
+```
+
 ## Histórico de execuções
 
 | Data | Tipo | Resultado |
@@ -87,12 +116,12 @@ Adicionar aqui os totais das execuções reais relevantes, sem credenciais, URLs
 
 ## Roadmap pós-licença
 
-1. criar `external_jobs`, sem tornar `jobs.companyId` anulável;
+1. evoluir a tabela `external_jobs`, já criada para o seed sintético, sem tornar `jobs.companyId` anulável;
 2. sincronizar por BullMQ com orçamento explícito de requisições;
 3. persistir coordenadas e reaplicar o filtro com PostGIS;
 4. expirar vagas não vistas e verificar links;
 5. deduplicar contra vagas próprias;
-6. expor união discriminada `INTERNAL | EXTERNAL`;
+6. substituir a restrição atual a `SYNTHETIC` por feature flag e allowlist de fontes licenciadas;
 7. criar detalhe local `noindex`, inicialmente sem JSON-LD ou sitemap;
 8. substituir “Tenho interesse” por CTA externo;
 9. incluir atribuição visual obrigatória da Adzuna;

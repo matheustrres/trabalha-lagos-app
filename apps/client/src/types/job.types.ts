@@ -22,7 +22,8 @@ export interface JobCategory {
   icon?: string;
 }
 
-export interface Job {
+export interface InternalJob {
+  sourceType?: "INTERNAL";
   id: string;
   title: string;
   slug: string;
@@ -45,7 +46,30 @@ export interface Job {
   interestCount?: number;
 }
 
-export interface EmployerJob extends Job {
+export interface ExternalJob {
+	sourceType: "EXTERNAL";
+	id: string;
+	externalSource: string;
+	title: string;
+	description: string;
+	companyName: string;
+	redirectUrl: string | null;
+	categoryName: string | null;
+	contractType: string | null;
+	salaryMin: number | null;
+	salaryMax: number | null;
+	salaryPredicted: boolean;
+	locationText: string;
+	city: string;
+	distanceKm: number | null;
+	publishedAt: string;
+	expiresAt: string | null;
+}
+
+export type Job = InternalJob;
+export type SearchJob = InternalJob | ExternalJob;
+
+export interface EmployerJob extends InternalJob {
   viewCount: number;
   interestCount: number;
 }

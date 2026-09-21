@@ -10,12 +10,16 @@ import {
 	Req,
 	UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiExtraModels, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 
 import { CreateJobDto } from './dto/create-job.dto';
-import { JobResponseDto } from './dto/job-response.dto';
+import {
+	ExternalJobResponseDto,
+	InternalJobSearchResponseDto,
+	JobResponseDto,
+} from './dto/job-response.dto';
 import { QueryJobsDto } from './dto/query-jobs.dto';
 import { SearchJobsResponseDto } from './dto/search-jobs-response.dto';
 import { UpdateJobStatusDto } from './dto/update-job-status.dto';
@@ -34,6 +38,11 @@ import { SwaggerRoute } from '@/shared/docs/swagger';
 import { getUserTracker } from '@/shared/utils/get-user-tracker';
 
 @ApiTags('jobs')
+@ApiExtraModels(
+	JobResponseDto,
+	InternalJobSearchResponseDto,
+	ExternalJobResponseDto,
+)
 @Controller()
 export class JobsController {
 	constructor(private readonly jobsService: JobsService) {}

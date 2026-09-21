@@ -105,3 +105,61 @@ export class JobResponseDto {
 	@ApiProperty({ type: () => CategoryInJobDto })
 	category!: CategoryInJobDto;
 }
+
+export class InternalJobSearchResponseDto extends JobResponseDto {
+	@ApiProperty({ enum: ['INTERNAL'], example: 'INTERNAL' })
+	sourceType!: 'INTERNAL';
+}
+
+export class ExternalJobResponseDto {
+	@ApiProperty({ enum: ['EXTERNAL'], example: 'EXTERNAL' })
+	sourceType!: 'EXTERNAL';
+
+	@ApiProperty()
+	id!: string;
+
+	@ApiProperty({ example: 'SYNTHETIC' })
+	externalSource!: string;
+
+	@ApiProperty()
+	title!: string;
+
+	@ApiProperty()
+	description!: string;
+
+	@ApiProperty()
+	companyName!: string;
+
+	@ApiPropertyOptional({ nullable: true })
+	redirectUrl!: string | null;
+
+	@ApiPropertyOptional({ nullable: true })
+	categoryName!: string | null;
+
+	@ApiPropertyOptional({ nullable: true })
+	contractType!: string | null;
+
+	@ApiPropertyOptional({ nullable: true })
+	salaryMin!: number | null;
+
+	@ApiPropertyOptional({ nullable: true })
+	salaryMax!: number | null;
+
+	@ApiProperty()
+	salaryPredicted!: boolean;
+
+	@ApiProperty()
+	locationText!: string;
+
+	@ApiProperty()
+	city!: string;
+
+	@ApiPropertyOptional({ nullable: true })
+	distanceKm!: number | null;
+
+	@ApiProperty()
+	publishedAt!: Date;
+
+	@ApiPropertyOptional({ nullable: true })
+	expiresAt!: Date | null;
+}

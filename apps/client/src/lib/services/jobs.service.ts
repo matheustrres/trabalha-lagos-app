@@ -1,13 +1,17 @@
 import { api } from "@/lib/api";
-import type { EmployerJob, Job } from "@/types/job.types";
+import type {
+  EmployerJob,
+  InternalJob,
+  SearchJob,
+} from "@/types/job.types";
 
 interface JobsResponse {
-  data: Job[];
+  data: SearchJob[];
   meta: { total: number; page: number; limit: number };
 }
 
 const normalizeJobsResponse = (
-  payload: JobsResponse | Job[],
+  payload: JobsResponse | SearchJob[],
   page: number,
   limit: number,
 ): JobsResponse => {
@@ -35,14 +39,14 @@ const normalizeJobsResponse = (
 export const jobsService = {
   search: async (params: Record<string, string>) => {
     const query = new URLSearchParams(params).toString();
-    const payload = await api.get<JobsResponse | Job[]>(`/jobs?${query}`);
+    const payload = await api.get<JobsResponse | SearchJob[]>(`/jobs?${query}`);
     const page = Number(params.page ?? "1");
     const limit = Number(params.limit ?? "20");
 
     return normalizeJobsResponse(payload, page, limit);
   },
 
-  findBySlug: (slug: string) => api.get<Job>(`/jobs/${slug}`),
+  findBySlug: (slug: string) => api.get<InternalJob>(`/jobs/${slug}`),
 
   findByCompany: () => api.get<EmployerJob[]>("/employer/jobs"),
 };

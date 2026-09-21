@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { ExternalJobsRepository } from './external-jobs.repository';
 import { JobsController } from './jobs.controller';
 import { JobsRepository } from './jobs.repository';
 import { JobsService } from './jobs.service';
@@ -16,6 +17,7 @@ import { RedisModule } from '@/shared/modules/redis/redis.module';
 	providers: [
 		JobsService,
 		JobsRepository,
+		ExternalJobsRepository,
 		ViewCounterService,
 		ViewCounterProcessor,
 	],
