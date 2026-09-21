@@ -26,6 +26,7 @@
 		"db:migrate": "dotenv -e .env.dev -- drizzle-kit migrate --config drizzle.config.ts",
 		"db:migrate:prod": "drizzle-kit migrate --config drizzle.config.ts",
 		"db:seed": "dotenv -e .env.dev -- tsx src/shared/modules/database/seed.ts",
+		"db:seed:external:local": "dotenv -e .env.dev -- tsx src/shared/modules/database/seed-external-jobs.ts",
 		"adzuna:search": "dotenv -e .env.dev -- tsx src/modules/external-jobs/integrations/adzuna/adzuna-command.ts"
 	},
 	"dependencies": {

@@ -213,6 +213,7 @@ O `extensionsFilters: ['postgis']` evita que o drizzle-kit inclua tabelas intern
 - `users` — candidato ou empregador, discriminado por `role`. PK: `uuid v7`
 - `companies` — perfil da empresa, 1:1 com users (role=EMPLOYER). PK: `uuid v7`
 - `jobs` — vaga publicada, N:1 companies, N:1 categories, coluna `location` PostGIS. PK: `uuid v7`, FK categoryId: `integer`
+- `external_jobs` — vaga importada ou sintética, isolada de `jobs`, com identidade única por `source + externalId`, coordenadas PostGIS e URL de redirecionamento. O seed local usa somente `source = SYNTHETIC`.
 - `interests` — manifestação de interesse, unique constraint `[userId, jobId]`. PK: `uuid v7`
 - `categories` — lista fixa de categorias de vagas (seeded). PK: `serial`
 
