@@ -140,4 +140,32 @@ describe(UsersService.name, () => {
 			await expect(SUT.create(input)).rejects.toThrow(dbError);
 		});
 	});
+
+	describe('updateProfile', () => {
+		it('updates the candidate WhatsApp', async () => {
+			const user = aUser().withPhone('22988887777').build();
+			usersRepository.updateProfile.mockResolvedValue(user);
+
+			const result = await SUT.updateProfile(user.id, {
+				phone: '22988887777',
+			});
+
+			expect(result).toEqual(user);
+			expect(usersRepository.updateProfile).toHaveBeenCalledWith(user.id, {
+				phone: '22988887777',
+			});
+		});
+
+		it('allows removing the candidate WhatsApp', async () => {
+			const user = aUser().withPhone(null).build();
+			usersRepository.updateProfile.mockResolvedValue(user);
+
+			const result = await SUT.updateProfile(user.id, { phone: null });
+
+			expect(result.phone).toBeNull();
+			expect(usersRepository.updateProfile).toHaveBeenCalledWith(user.id, {
+				phone: null,
+			});
+		});
+	});
 });

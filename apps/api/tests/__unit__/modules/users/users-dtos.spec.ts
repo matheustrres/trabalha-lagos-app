@@ -1,6 +1,8 @@
 import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import { describe, expect, it } from 'vitest';
 
+import { UpdateUserProfileDto } from '@/modules/users/dto/update-user-profile.dto';
 import { UserResponseDto } from '@/modules/users/dto/user-response.dto';
 
 describe(UserResponseDto.name, () => {
@@ -36,5 +38,30 @@ describe(UserResponseDto.name, () => {
 
 		expect(dto.role).toBe('EMPLOYER');
 		expect(dto.email).toBe('ana@email.com');
+	});
+});
+
+describe(UpdateUserProfileDto.name, () => {
+	it('accepts a valid candidate WhatsApp', async () => {
+		const dto = plainToInstance(UpdateUserProfileDto, {
+			phone: '22988887777',
+		});
+
+		await expect(validate(dto)).resolves.toHaveLength(0);
+	});
+
+	it('accepts null to remove the candidate WhatsApp', async () => {
+		const dto = plainToInstance(UpdateUserProfileDto, { phone: null });
+
+		await expect(validate(dto)).resolves.toHaveLength(0);
+	});
+
+	it('rejects an invalid candidate WhatsApp', async () => {
+		const dto = plainToInstance(UpdateUserProfileDto, { phone: '12345' });
+
+		const errors = await validate(dto);
+
+		expect(errors).toHaveLength(1);
+		expect(errors[0]?.property).toBe('phone');
 	});
 });

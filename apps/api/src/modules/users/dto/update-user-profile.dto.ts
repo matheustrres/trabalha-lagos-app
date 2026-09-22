@@ -6,11 +6,26 @@ import {
 	IsOptional,
 	IsString,
 	MaxLength,
+	MinLength,
 } from 'class-validator';
+
+import { IsValidPhoneBR } from '@/common/decorators/validation.decorators';
 
 import { candidateAvailabilityEnum } from '@/shared/modules/database/schema';
 
 export class UpdateUserProfileDto {
+	@ApiPropertyOptional({
+		example: '22999999999',
+		description: 'WhatsApp pessoal opcional do candidato',
+		nullable: true,
+	})
+	@IsOptional()
+	@IsString()
+	@MinLength(10)
+	@MaxLength(15)
+	@IsValidPhoneBR()
+	phone?: string | null;
+
 	@ApiPropertyOptional({
 		type: [String],
 		example: ['turismo-hospitalidade', 'comercio-varejo'],

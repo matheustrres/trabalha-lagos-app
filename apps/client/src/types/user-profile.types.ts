@@ -17,6 +17,7 @@ export interface UserProfile {
 }
 
 export interface UpdateUserProfilePayload {
+  phone?: string | null;
   interests?: string[];
   experience?: string;
   availability?: CandidateAvailability;

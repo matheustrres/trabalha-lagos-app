@@ -17,6 +17,10 @@ export const CONTRACT_TYPE_OPTIONS = [
 ] as const;
 
 export const updateProfileSchema = z.object({
+  phone: z.union([
+    z.string().regex(/^\(\d{2}\) \d{4,5}-\d{4}$/, "WhatsApp inválido"),
+    z.literal(""),
+  ]),
   interests: z.array(z.string()).max(10),
   experience: z.string().max(200),
   availability: z.enum(AVAILABILITY_OPTIONS).nullable(),

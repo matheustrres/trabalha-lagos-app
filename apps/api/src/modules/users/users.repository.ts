@@ -12,6 +12,7 @@ import {
 } from '@/shared/modules/database/schema';
 
 type UpdateUserProfileData = {
+	phone?: string | null;
 	interests?: string[];
 	experience?: string;
 	availability?: 'IMMEDIATE' | 'IN_15_DAYS' | 'IN_30_DAYS' | 'NEGOTIABLE';
@@ -80,6 +81,7 @@ export class UsersRepository {
 		const [user] = await this.db
 			.update(users)
 			.set({
+				phone: data.phone,
 				interests: data.interests,
 				experience: data.experience,
 				availability: data.availability,

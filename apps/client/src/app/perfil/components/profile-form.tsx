@@ -31,6 +31,18 @@ const CONTRACT_LABELS: Record<(typeof CONTRACT_TYPE_OPTIONS)[number], string> = 
   OTHER: "Outro",
 };
 
+const formatPhone = (value: string): string => {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+
+  if (digits.length <= 2) return digits.length ? `(${digits}` : "";
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  }
+
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+};
+
 export const ProfileForm = () => {
   const [notification, setNotification] = useState<{
     type: "success" | "error";
@@ -48,6 +60,7 @@ export const ProfileForm = () => {
 
   const defaultValues = useMemo<UpdateProfileData>(
     () => ({
+      phone: formatPhone(profile?.phone ?? ""),
       interests: profile?.interests ?? [],
       experience: profile?.experience ?? "",
       availability: profile?.availability ?? null,
@@ -78,6 +91,7 @@ export const ProfileForm = () => {
 
   const interests = watch("interests");
   const acceptedContractTypes = watch("acceptedContractTypes");
+  const phoneField = register("phone");
 
   const mutation = useMutation({
     mutationFn: usersService.updateMyProfile,
@@ -112,11 +126,13 @@ export const ProfileForm = () => {
     try {
       const normalizedData: UpdateProfileData = {
         ...data,
+        phone: data.phone.trim(),
         experience: data.experience.trim(),
         neighborhood: data.neighborhood.trim(),
       };
 
       await mutation.mutateAsync({
+        phone: normalizedData.phone.replace(/\D/g, "") || null,
         interests: normalizedData.interests,
         experience: normalizedData.experience || undefined,
         availability: normalizedData.availability ?? undefined,
@@ -191,6 +207,26 @@ export const ProfileForm = () => {
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-6">
+        <section>
+          <Input
+            id="phone"
+            label="WhatsApp pessoal (opcional)"
+            type="tel"
+            placeholder="(22) 99999-9999"
+            autoComplete="tel"
+            inputMode="numeric"
+            error={errors.phone?.message}
+            {...phoneField}
+            onChange={(event) => {
+              event.target.value = formatPhone(event.target.value);
+              void phoneField.onChange(event);
+            }}
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Usado apenas como contato; seu acesso continuará sendo feito por e-mail.
+          </p>
+        </section>
+
         <section>
           <p className="text-sm font-medium text-gray-700 mb-2">Áreas de interesse</p>
           <div className="grid grid-cols-1 gap-2">
