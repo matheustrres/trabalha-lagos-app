@@ -26,12 +26,12 @@ const createRegisterPayload = (suffix: string) => ({
 
 const createEmployerPayload = (suffix: string, document: string) => ({
 	name: `Employer Tracker ${suffix}`,
-	phone: `2299${suffix.padStart(7, '0')}`,
 	email: `employer-${suffix}@trabalhalagos.com`,
 	password: 'Senha@123',
 	city: 'Cabo Frio',
 	role: 'EMPLOYER' as const,
 	document,
+	companyName: `Empresa Tracker ${suffix}`,
 });
 
 const hasHeaderWithPrefix = (
@@ -70,14 +70,20 @@ describe('Rate limiting (e2e)', () => {
 			await request(app.getHttpServer())
 				.post(LOGIN_URL)
 				.set('x-forwarded-for', ip)
-				.send({ phone: '22999900001', password: 'Senha@123' })
+				.send({
+					email: 'candidate-900001@trabalhalagos.com',
+					password: 'Senha@123',
+				})
 				.expect(200);
 		}
 
 		const limitedResponse = await request(app.getHttpServer())
 			.post(LOGIN_URL)
 			.set('x-forwarded-for', ip)
-			.send({ phone: '22999900001', password: 'Senha@123' })
+			.send({
+				email: 'candidate-900001@trabalhalagos.com',
+				password: 'Senha@123',
+			})
 			.expect(429);
 
 		expect(

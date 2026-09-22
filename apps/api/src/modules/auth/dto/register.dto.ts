@@ -1,8 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
 	IsEmail,
 	IsEnum,
 	IsNotEmpty,
+	IsOptional,
 	IsStrongPassword,
 	IsString,
 	MaxLength,
@@ -22,15 +24,21 @@ export class RegisterDto {
 	@MinLength(2)
 	name!: string;
 
-	@ApiProperty({ example: '21999999999', minLength: 10, maxLength: 15 })
+	@ApiPropertyOptional({
+		example: '21999999999',
+		description: 'WhatsApp opcional do candidato',
+	})
+	@ValidateIf((o: RegisterDto) => o.phone != null)
 	@IsString()
-	@IsNotEmpty()
 	@MinLength(10)
 	@MaxLength(15)
 	@IsValidPhoneBR()
-	phone!: string;
+	phone?: string;
 
 	@ApiProperty({ example: 'joao@email.com' })
+	@Transform(({ value }: { value: unknown }) =>
+		typeof value === 'string' ? value.trim().toLowerCase() : value,
+	)
 	@IsString()
 	@IsNotEmpty()
 	@IsEmail()
@@ -72,4 +80,46 @@ export class RegisterDto {
 	@IsNotEmpty()
 	@IsValidCNPJ()
 	document!: string;
+
+	@ApiPropertyOptional({
+		example: 'Restaurante Beira Mar',
+		description: 'Nome da empresa (obrigatório se role=EMPLOYER)',
+	})
+	@ValidateIf((o: RegisterDto) => o.role === 'EMPLOYER')
+	@IsString()
+	@IsNotEmpty()
+	@MinLength(2)
+	companyName?: string;
+
+	@ApiPropertyOptional({
+		enum: [
+			'RESTAURANT',
+			'HOTEL',
+			'RETAIL',
+			'CONSTRUCTION',
+			'SERVICES',
+			'TECHNOLOGY',
+			'OTHER',
+		],
+	})
+	@IsOptional()
+	@IsEnum([
+		'RESTAURANT',
+		'HOTEL',
+		'RETAIL',
+		'CONSTRUCTION',
+		'SERVICES',
+		'TECHNOLOGY',
+		'OTHER',
+	])
+	segment?: string;
+
+	@ApiPropertyOptional({
+		example: '22999999999',
+		description: 'WhatsApp opcional da empresa',
+	})
+	@IsOptional()
+	@IsString()
+	@IsValidPhoneBR()
+	companyWhatsapp?: string;
 }

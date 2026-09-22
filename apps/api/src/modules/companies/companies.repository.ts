@@ -17,6 +17,7 @@ type CreateCompanyData = {
 	document: string;
 	city: string;
 	whatsapp?: string;
+	segment?: string;
 };
 
 type UpdateCompanyData = {
@@ -61,6 +62,7 @@ export class CompaniesRepository {
 				document: data.document,
 				city: data.city,
 				whatsapp: data.whatsapp,
+				segment: data.segment,
 				plan: 'FREE',
 			})
 			.returning();

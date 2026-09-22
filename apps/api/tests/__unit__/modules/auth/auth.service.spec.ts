@@ -1,4 +1,8 @@
-import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import {
+	BadRequestException,
+	ConflictException,
+	UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -55,11 +59,11 @@ describe(AuthService.name, () => {
 	// ─── register ──────────────────────────────────────────────────────────────
 
 	describe('register', () => {
-		it('returns tokens and user data when phone is available', async () => {
+		it('returns tokens and user data when email is available', async () => {
 			const dto = aRegisterDto().build();
 			const userBuilder = aUser();
 
-			usersService.findByPhone.mockResolvedValue(null);
+			usersService.findByEmail.mockResolvedValue(null);
 			vi.mocked(argon2.hash).mockResolvedValue('$argon2id$mock-hash' as never);
 			usersService.create.mockResolvedValue(
 				asCreateReturn(userBuilder.buildCreated()),
@@ -72,6 +76,7 @@ describe(AuthService.name, () => {
 			expect(result.user).toEqual({
 				id: userBuilder.build().id,
 				name: userBuilder.build().name,
+				email: userBuilder.build().email,
 				phone: userBuilder.build().phone,
 				city: userBuilder.build().city,
 				role: userBuilder.build().role,
@@ -82,7 +87,7 @@ describe(AuthService.name, () => {
 			const dto = aRegisterDto().withPassword('senha@123').build();
 			const hash = '$argon2id$hashed';
 
-			usersService.findByPhone.mockResolvedValue(null);
+			usersService.findByEmail.mockResolvedValue(null);
 			vi.mocked(argon2.hash).mockResolvedValue(hash as never);
 			usersService.create.mockResolvedValue(
 				asCreateReturn(aUser().withPasswordHash(hash).buildCreated()),
@@ -99,7 +104,7 @@ describe(AuthService.name, () => {
 		it('generates both access and refresh tokens on success', async () => {
 			const dto = aRegisterDto().build();
 
-			usersService.findByPhone.mockResolvedValue(null);
+			usersService.findByEmail.mockResolvedValue(null);
 			vi.mocked(argon2.hash).mockResolvedValue('$argon2id$hash' as never);
 			usersService.create.mockResolvedValue(
 				asCreateReturn(aUser().buildCreated()),
@@ -113,14 +118,59 @@ describe(AuthService.name, () => {
 			expect(refreshCall?.[1]).toMatchObject({ secret: 'test-refresh-secret' });
 		});
 
-		it('throws ConflictException when phone is already registered', async () => {
+		it('throws ConflictException when email is already registered', async () => {
 			const dto = aRegisterDto().build();
 
-			usersService.findByPhone.mockResolvedValue(aUser().build());
+			usersService.findByEmail.mockResolvedValue(aUser().build());
 
 			await expect(SUT.register(dto)).rejects.toThrow(ConflictException);
 			expect(usersService.create).not.toHaveBeenCalled();
 			expect(argon2.hash).not.toHaveBeenCalled();
+		});
+
+		it('creates an employer without personal phone and maps company fields', async () => {
+			const dto = {
+				...aRegisterDto().withRole('EMPLOYER').build(),
+				phone: undefined,
+				document: '11222333000181',
+				companyName: 'Pousada Beira Mar',
+				segment: 'HOTEL',
+				companyWhatsapp: '22999990002',
+			};
+			const employer = aUser()
+				.withRole('EMPLOYER')
+				.withPhone(null)
+				.buildCreated();
+
+			usersService.findByEmail.mockResolvedValue(null);
+			vi.mocked(argon2.hash).mockResolvedValue('$argon2id$hash' as never);
+			usersService.create.mockResolvedValue(asCreateReturn(employer));
+
+			await SUT.register(dto);
+
+			expect(usersService.create).toHaveBeenCalledWith(
+				expect.objectContaining({ phone: undefined, role: 'EMPLOYER' }),
+			);
+			expect(companiesService.create).toHaveBeenCalledWith(employer.id, {
+				name: 'Pousada Beira Mar',
+				city: dto.city,
+				whatsapp: '22999990002',
+				document: '11222333000181',
+				segment: 'HOTEL',
+			});
+		});
+
+		it('rejects a personal phone for employers', async () => {
+			const dto = {
+				...aRegisterDto().withRole('EMPLOYER').build(),
+				document: '11222333000181',
+				companyName: 'Pousada Beira Mar',
+			};
+
+			usersService.findByEmail.mockResolvedValue(null);
+
+			await expect(SUT.register(dto)).rejects.toThrow(BadRequestException);
+			expect(usersService.create).not.toHaveBeenCalled();
 		});
 	});
 
@@ -131,7 +181,7 @@ describe(AuthService.name, () => {
 			const dto = aLoginDto().build();
 			const user = aUser().build();
 
-			usersService.findByPhone.mockResolvedValue(user);
+			usersService.findByEmail.mockResolvedValue(user);
 			vi.mocked(argon2.verify).mockResolvedValue(true as never);
 
 			const result = await SUT.login(dto);
@@ -142,10 +192,10 @@ describe(AuthService.name, () => {
 			expect(result.user.role).toBe(user.role);
 		});
 
-		it('throws UnauthorizedException when phone is not registered', async () => {
+		it('throws UnauthorizedException when email is not registered', async () => {
 			const dto = aLoginDto().build();
 
-			usersService.findByPhone.mockResolvedValue(null);
+			usersService.findByEmail.mockResolvedValue(null);
 
 			await expect(SUT.login(dto)).rejects.toThrow(UnauthorizedException);
 			expect(argon2.verify).not.toHaveBeenCalled();
@@ -154,7 +204,7 @@ describe(AuthService.name, () => {
 		it('throws UnauthorizedException when password is wrong', async () => {
 			const dto = aLoginDto().build();
 
-			usersService.findByPhone.mockResolvedValue(aUser().build());
+			usersService.findByEmail.mockResolvedValue(aUser().build());
 			vi.mocked(argon2.verify).mockResolvedValue(false as never);
 
 			await expect(SUT.login(dto)).rejects.toThrow(UnauthorizedException);
@@ -164,12 +214,12 @@ describe(AuthService.name, () => {
 		it('returns same error for missing user and wrong password (no user enumeration)', async () => {
 			const dto = aLoginDto().build();
 
-			usersService.findByPhone.mockResolvedValue(null);
+			usersService.findByEmail.mockResolvedValue(null);
 			const notFoundError = await SUT.login(dto).catch(
 				(e: UnauthorizedException) => e,
 			);
 
-			usersService.findByPhone.mockResolvedValue(aUser().build());
+			usersService.findByEmail.mockResolvedValue(aUser().build());
 			vi.mocked(argon2.verify).mockResolvedValue(false as never);
 			const wrongPwError = await SUT.login(dto).catch(
 				(e: UnauthorizedException) => e,

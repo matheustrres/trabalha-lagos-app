@@ -1,7 +1,11 @@
 import { z } from "zod";
 
 export const loginSchema = z.object({
-  phone: z.string().min(10, "WhatsApp inválido").max(15, "WhatsApp inválido"),
+  email: z
+    .string()
+    .trim()
+    .min(1, "E-mail obrigatório")
+    .email("E-mail inválido"),
   password: z.string().min(6, "Mínimo 6 caracteres"),
 });
 

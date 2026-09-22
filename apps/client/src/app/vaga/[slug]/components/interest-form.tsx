@@ -28,7 +28,7 @@ export function InterestForm({
 }: InterestFormProps) {
   const [candidateProfile, setCandidateProfile] = useState<{
     name: string;
-    phone: string;
+    phone: string | null;
     city?: string | null;
   } | null>(null);
   const isAuthenticatedCandidate = candidateProfile !== null;
@@ -68,7 +68,7 @@ export function InterestForm({
 
     reset({
       name: candidateProfile.name,
-      phone: candidateProfile.phone,
+      phone: candidateProfile.phone ?? "",
       city: candidateProfile.city ?? "São Pedro da Aldeia",
     });
   }, [candidateProfile, reset]);
@@ -80,7 +80,7 @@ export function InterestForm({
       const payload = isAuthenticatedCandidate
         ? {
             name: candidateProfile.name,
-            phone: candidateProfile.phone,
+            phone: candidateProfile.phone ?? data.phone,
             city: candidateProfile.city ?? data.city,
           }
         : data;
@@ -123,7 +123,7 @@ export function InterestForm({
         Seus dados serão enviados para <strong>{companyName}</strong>
       </p>
 
-      {isAuthenticatedCandidate && (
+      {isAuthenticatedCandidate && candidateProfile.phone && (
         <div className="bg-surface rounded-xl px-4 py-3 text-sm text-gray-600">
           Seus dados do perfil serão usados para enviar seu interesse.
         </div>
@@ -143,15 +143,6 @@ export function InterestForm({
             placeholder="Seu nome"
             error={errors.name?.message}
             {...register("name")}
-          />
-
-          <Input
-            id="phone"
-            label="WhatsApp"
-            placeholder="(22) 99999-9999"
-            type="tel"
-            error={errors.phone?.message}
-            {...register("phone")}
           />
 
           <div className="flex flex-col gap-1">
@@ -176,6 +167,19 @@ export function InterestForm({
             )}
           </div>
         </>
+      )}
+
+      {(!isAuthenticatedCandidate || !candidateProfile.phone) && (
+        <Input
+          id="phone"
+          label="WhatsApp"
+          placeholder="(22) 99999-9999"
+          type="tel"
+          autoComplete="tel"
+          inputMode="numeric"
+          error={errors.phone?.message}
+          {...register("phone")}
+        />
       )}
 
       <Button

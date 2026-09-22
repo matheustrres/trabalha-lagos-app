@@ -8,9 +8,6 @@ const REGISTER_URL = '/api/v1/auth/register';
 const LOGIN_URL = '/api/v1/auth/login';
 const REFRESH_URL = '/api/v1/auth/refresh';
 
-// CNPJ fixo válido para testes (usado para CANDIDATE que não precisa ter CNPJ real)
-const CNPJ_VALID = '11222333000181';
-
 const validRegisterPayload = {
 	name: 'Maria Souza',
 	phone: '22999990001',
@@ -18,7 +15,6 @@ const validRegisterPayload = {
 	password: 'Senha@123',
 	city: 'Cabo Frio',
 	role: 'CANDIDATE',
-	document: CNPJ_VALID,
 };
 
 describe('Auth (e2e)', () => {
@@ -47,6 +43,7 @@ describe('Auth (e2e)', () => {
 				user: {
 					id: expect.any(String),
 					name: 'Maria Souza',
+					email: 'maria@trabalhalagos.com',
 					phone: '22999990001',
 					role: 'CANDIDATE',
 				},
@@ -60,14 +57,14 @@ describe('Auth (e2e)', () => {
 		it('returns 200 with tokens when credentials are valid', async () => {
 			const res = await request(app.getHttpServer())
 				.post(LOGIN_URL)
-				.send({ phone: '22999990001', password: 'Senha@123' })
+				.send({ email: 'maria@trabalhalagos.com', password: 'Senha@123' })
 				.expect(200);
 
 			expect(res.body).toMatchObject({
 				accessToken: expect.any(String),
 				refreshToken: expect.any(String),
 				user: {
-					phone: '22999990001',
+					email: 'maria@trabalhalagos.com',
 					role: 'CANDIDATE',
 				},
 			});
@@ -80,7 +77,7 @@ describe('Auth (e2e)', () => {
 		it('returns 200 with a new token pair when refresh token is valid', async () => {
 			const loginRes = await request(app.getHttpServer())
 				.post(LOGIN_URL)
-				.send({ phone: '22999990001', password: 'Senha@123' })
+				.send({ email: 'maria@trabalhalagos.com', password: 'Senha@123' })
 				.expect(200);
 
 			const { refreshToken } = loginRes.body as {

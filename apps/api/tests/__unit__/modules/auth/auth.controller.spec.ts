@@ -14,6 +14,7 @@ const authResponse = {
 	user: {
 		id: 'user-uuid-1',
 		name: 'Maria Souza',
+		email: 'maria@email.com',
 		phone: '22999990001',
 		city: 'Cabo Frio',
 		role: 'CANDIDATE',

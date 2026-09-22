@@ -27,6 +27,16 @@
 | `GET` | `/companies/:id` | Público | Perfil público da empresa |
 | `PATCH` | `/companies/:id` | Employer (dono) | Editar perfil |
 
+### Contrato de autenticação
+
+- `POST /auth/login`: recebe `email` e `password` para ambas as roles.
+- `POST /auth/register`: `email` é obrigatório para `CANDIDATE` e `EMPLOYER`.
+- No cadastro de candidato, `phone` é opcional.
+- No cadastro de empregador, telefone pessoal não é aceito; `companyName` é
+  obrigatório e `companyWhatsapp` e `segment` são opcionais.
+- `segment`, quando informado, usa um dos códigos estáveis: `RESTAURANT`,
+  `HOTEL`, `RETAIL`, `CONSTRUCTION`, `SERVICES`, `TECHNOLOGY` ou `OTHER`.
+
 ## Query params de busca (GET /jobs)
 
 ```

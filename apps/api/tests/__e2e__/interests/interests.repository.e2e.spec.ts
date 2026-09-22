@@ -32,6 +32,7 @@ describe('InterestsRepository (integration)', () => {
 			.values({
 				name: `Employer ${suffix}`,
 				phone: `2299911${suffix}`,
+				email: `employer-${suffix}@email.com`,
 				passwordHash: '$argon2id$mock-hash',
 				role: 'EMPLOYER',
 				city: 'Cabo Frio',
@@ -59,6 +60,7 @@ describe('InterestsRepository (integration)', () => {
 			.values({
 				name: `Candidate ${suffix}`,
 				phone: `2299922${suffix}`,
+				email: `candidate-${suffix}@email.com`,
 				passwordHash: '$argon2id$mock-hash',
 				role: 'CANDIDATE',
 				city: 'Búzios',

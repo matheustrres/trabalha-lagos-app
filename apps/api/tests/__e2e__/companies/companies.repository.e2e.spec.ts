@@ -29,6 +29,7 @@ describe('CompaniesRepository (integration)', () => {
 			.values({
 				name: `Employer ${suffix}`,
 				phone: `2299999${suffix}`,
+				email: `employer-${suffix}@email.com`,
 				passwordHash: '$argon2id$mock-hash',
 				role: 'EMPLOYER',
 				city: 'Cabo Frio',

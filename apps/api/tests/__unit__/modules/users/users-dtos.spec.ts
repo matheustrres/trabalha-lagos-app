@@ -4,12 +4,12 @@ import { describe, expect, it } from 'vitest';
 import { UserResponseDto } from '@/modules/users/dto/user-response.dto';
 
 describe(UserResponseDto.name, () => {
-	it('maps payload with nullable email and city', () => {
+	it('maps payload with required email and nullable phone/city', () => {
 		const payload = {
 			id: 'user-uuid-1',
 			name: 'João Silva',
-			phone: '21999999999',
-			email: null,
+			phone: null,
+			email: 'joao@email.com',
 			city: null,
 			role: 'CANDIDATE',
 			createdAt: new Date('2026-01-01T00:00:00.000Z'),

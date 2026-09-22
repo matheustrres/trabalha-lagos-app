@@ -9,8 +9,8 @@ export class UserProfileResponseDto {
 	@ApiProperty({ example: 'João Silva' })
 	name!: string;
 
-	@ApiProperty({ example: '21999999999' })
-	phone!: string;
+	@ApiPropertyOptional({ example: '21999999999', nullable: true })
+	phone!: string | null;
 
 	@ApiPropertyOptional({ example: 'Cabo Frio' })
 	city!: string | null;

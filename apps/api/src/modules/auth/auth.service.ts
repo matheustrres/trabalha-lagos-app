@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	ConflictException,
 	Injectable,
 	UnauthorizedException,
@@ -23,7 +24,8 @@ type AuthResult = TokenPair & {
 	user: {
 		id: string;
 		name: string;
-		phone: string;
+		email: string;
+		phone: string | null;
 		city?: string | null;
 		role: string;
 	};
@@ -39,10 +41,26 @@ export class AuthService {
 	) {}
 
 	async register(dto: RegisterDto): Promise<AuthResult> {
-		const existingUser = await this.usersService.findByPhone(dto.phone);
+		const email = dto.email.trim().toLowerCase();
+		const existingUser = await this.usersService.findByEmail(email);
 
 		if (existingUser) {
-			throw new ConflictException('Telefone já cadastrado.');
+			throw new ConflictException('E-mail já cadastrado.');
+		}
+
+		if (dto.role === 'EMPLOYER' && dto.phone) {
+			throw new BadRequestException(
+				'Telefone pessoal não deve ser enviado por empregadores.',
+			);
+		}
+
+		if (
+			dto.role === 'CANDIDATE' &&
+			(dto.companyName || dto.document || dto.segment || dto.companyWhatsapp)
+		) {
+			throw new BadRequestException(
+				'Dados de empresa não devem ser enviados por candidatos.',
+			);
 		}
 
 		const passwordHash = await argon2.hash(dto.password);
@@ -50,7 +68,7 @@ export class AuthService {
 		const user = await this.usersService.create({
 			name: dto.name,
 			phone: dto.phone,
-			email: dto.email,
+			email,
 			passwordHash,
 			city: dto.city,
 			role: dto.role,
@@ -58,10 +76,11 @@ export class AuthService {
 
 		if (dto.role === 'EMPLOYER') {
 			await this.companiesService.create(user.id, {
-				name: dto.name,
+				name: dto.companyName!,
 				city: dto.city,
-				whatsapp: dto.phone,
+				whatsapp: dto.companyWhatsapp,
 				document: dto.document,
+				segment: dto.segment,
 			});
 		}
 
@@ -72,6 +91,7 @@ export class AuthService {
 			user: {
 				id: user.id,
 				name: user.name,
+				email: user.email,
 				phone: user.phone,
 				city: user.city,
 				role: user.role,
@@ -80,7 +100,9 @@ export class AuthService {
 	}
 
 	async login(dto: LoginDto): Promise<AuthResult> {
-		const user = await this.usersService.findByPhone(dto.phone);
+		const user = await this.usersService.findByEmail(
+			dto.email.trim().toLowerCase(),
+		);
 
 		if (!user) {
 			throw new UnauthorizedException('Credenciais inválidas.');
@@ -102,6 +124,7 @@ export class AuthService {
 			user: {
 				id: user.id,
 				name: user.name,
+				email: user.email,
 				phone: user.phone,
 				city: user.city,
 				role: user.role,
@@ -136,6 +159,7 @@ export class AuthService {
 			user: {
 				id: user.id,
 				name: user.name,
+				email: user.email,
 				phone: user.phone,
 				city: user.city,
 				role: user.role,

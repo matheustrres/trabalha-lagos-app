@@ -2,16 +2,19 @@ import { api } from "@/lib/api";
 
 export interface RegisterPayload {
   name: string;
-  phone: string;
   email: string;
   password: string;
   city: string;
   role: "CANDIDATE" | "EMPLOYER";
+  phone?: string;
   document?: string;
+  companyName?: string;
+  segment?: string;
+  companyWhatsapp?: string;
 }
 
 export interface LoginPayload {
-  phone: string;
+  email: string;
   password: string;
 }
 
@@ -21,7 +24,8 @@ export interface AuthResponse {
   user: {
     id: string;
     name: string;
-    phone: string;
+    email: string;
+    phone: string | null;
     city?: string | null;
     role: "CANDIDATE" | "EMPLOYER";
   };

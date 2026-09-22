@@ -41,6 +41,7 @@ export class CompaniesService {
 			document: dto.document,
 			city: dto.city,
 			whatsapp: dto.whatsapp,
+			segment: dto.segment,
 		});
 	}
 

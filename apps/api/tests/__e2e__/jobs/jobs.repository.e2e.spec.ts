@@ -37,6 +37,7 @@ describe('JobsRepository (integration)', () => {
 			.values({
 				name: `Employer ${suffix}`,
 				phone: `22994${suffix}00`,
+				email: `employer-${suffix}@email.com`,
 				passwordHash: '$argon2id$mock-hash',
 				role: 'EMPLOYER',
 				city: 'Cabo Frio',

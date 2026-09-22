@@ -8,8 +8,8 @@ type CandidateAvailability =
 export type User = {
 	id: string;
 	name: string;
-	phone: string;
-	email: string | null;
+	phone: string | null;
+	email: string;
 	passwordHash: string;
 	city: string | null;
 	interests: string[] | null;
@@ -34,7 +34,7 @@ const defaults: User = {
 	id: 'user-uuid-1',
 	name: 'João Silva',
 	phone: '21999999999',
-	email: null,
+	email: 'joao@trabalhalagos.com',
 	passwordHash: '$argon2id$mock-hash',
 	city: 'Cabo Frio',
 	interests: null,
@@ -63,12 +63,12 @@ export class UserBuilder {
 		return this;
 	}
 
-	withPhone(phone: string): this {
+	withPhone(phone: string | null): this {
 		this.props = { ...this.props, phone };
 		return this;
 	}
 
-	withEmail(email: string | null): this {
+	withEmail(email: string): this {
 		this.props = { ...this.props, email };
 		return this;
 	}

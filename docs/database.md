@@ -34,6 +34,13 @@ export const DatabaseProvider = {
 
 Repositórios injetam via `@Inject(DATABASE_TOKEN)`.
 
+### Identidade do usuário
+
+Na tabela `users`, `email` é obrigatório e único e representa a credencial de
+login. `phone` é anulável e não é único, pois é apenas um contato opcional do
+candidato. Empregadores não armazenam telefone pessoal em `users.phone`; o
+contato comercial opcional fica em `companies.whatsapp`.
+
 ### Schema — Organização
 
 ```

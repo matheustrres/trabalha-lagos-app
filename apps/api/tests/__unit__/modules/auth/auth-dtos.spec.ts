@@ -41,12 +41,12 @@ describe('Auth DTOs', () => {
 		it('accepts valid employer payload with CNPJ', () => {
 			const errors = getValidationErrors(RegisterDto, {
 				name: 'Empresa Teste',
-				phone: '22999990001',
 				email: 'contato@empresateste.com',
 				password: 'Senha@123',
 				city: 'Cabo Frio',
 				role: 'EMPLOYER',
 				document: CNPJ_VALID,
+				companyName: 'Empresa Teste',
 			});
 
 			expect(errors).toHaveLength(0);
@@ -55,7 +55,6 @@ describe('Auth DTOs', () => {
 		it('requires document when role is EMPLOYER', () => {
 			const errors = getValidationErrors(RegisterDto, {
 				name: 'Empresa Teste',
-				phone: '22999990001',
 				email: 'contato@empresateste.com',
 				password: 'Senha@123',
 				city: 'Cabo Frio',
@@ -92,7 +91,19 @@ describe('Auth DTOs', () => {
 			expect(hasPropertyError(errors, 'role')).toBe(true);
 		});
 
-		it('rejects invalid phone format', () => {
+		it('accepts candidate without phone', () => {
+			const errors = getValidationErrors(RegisterDto, {
+				name: 'Maria Souza',
+				email: 'maria@trabalhalagos.com',
+				password: 'Senha@123',
+				city: 'Cabo Frio',
+				role: 'CANDIDATE',
+			});
+
+			expect(errors).toHaveLength(0);
+		});
+
+		it('rejects invalid optional candidate phone', () => {
 			const errors = getValidationErrors(RegisterDto, {
 				name: 'Maria Souza',
 				phone: '11111111111',
@@ -134,25 +145,25 @@ describe('Auth DTOs', () => {
 	describe(LoginDto.name, () => {
 		it('accepts valid payload', () => {
 			const errors = getValidationErrors(LoginDto, {
-				phone: '22999990001',
+				email: 'maria@trabalhalagos.com',
 				password: 'senha@123',
 			});
 
 			expect(errors).toHaveLength(0);
 		});
 
-		it('rejects phone shorter than minimum length', () => {
+		it('rejects invalid email', () => {
 			const errors = getValidationErrors(LoginDto, {
-				phone: '2299999',
+				email: 'maria',
 				password: 'senha@123',
 			});
 
-			expect(hasPropertyError(errors, 'phone')).toBe(true);
+			expect(hasPropertyError(errors, 'email')).toBe(true);
 		});
 
 		it('rejects empty password', () => {
 			const errors = getValidationErrors(LoginDto, {
-				phone: '22999990001',
+				email: 'maria@trabalhalagos.com',
 				password: '',
 			});
 

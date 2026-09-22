@@ -55,11 +55,20 @@ getFullInterests() {}
 - Dashboard com dados completos: **plano PRO+**
 - Admin: **role ADMIN**
 
-## Cadastro Mínimo (MVP)
+## Credenciais e cadastro
 
-Candidato: telefone (WhatsApp) + nome + cidade. Login por telefone + senha.
-Empregador: email + telefone + nome da empresa + CNPJ/CPF + cidade.
+O login de candidatos e empregadores usa exclusivamente `email` + `password`.
+O e-mail é obrigatório, único e normalizado para minúsculas no cadastro e no
+login.
 
-Na v1.5: OTP via WhatsApp (Twilio ou WhatsApp Business API).
+- Candidato: nome, e-mail, senha e cidade. WhatsApp pessoal é opcional e serve
+  somente como contato.
+- Empregador: nome do responsável, e-mail, senha, cidade, nome da empresa e
+  CNPJ/CPF. O usuário não possui telefone pessoal; `companyWhatsapp` é opcional
+  e pertence à empresa.
+- Demonstrar interesse em uma vaga continua exigindo um WhatsApp específico
+  para aquela candidatura, mesmo quando a conta não possui telefone salvo.
+
+A autenticação por telefone e OTP via WhatsApp não faz parte do contrato atual.
 
 Referir a `src/modules/auth/` para implementação atual.

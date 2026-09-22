@@ -7,11 +7,11 @@ export class UserResponseDto {
 	@ApiProperty({ example: 'João Silva' })
 	name!: string;
 
-	@ApiProperty({ example: '21999999999' })
-	phone!: string;
+	@ApiProperty({ example: '21999999999', nullable: true })
+	phone!: string | null;
 
-	@ApiProperty({ example: 'joao@email.com', required: false })
-	email?: string | null;
+	@ApiProperty({ example: 'joao@email.com' })
+	email!: string;
 
 	@ApiProperty({ example: 'Cabo Frio' })
 	city?: string | null;

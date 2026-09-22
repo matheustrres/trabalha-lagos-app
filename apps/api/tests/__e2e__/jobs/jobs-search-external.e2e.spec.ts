@@ -47,6 +47,7 @@ describe('Combined jobs search (e2e)', () => {
 			.values({
 				name: 'Empregador da busca combinada',
 				phone: '22999991001',
+				email: 'empregador-busca-combinada@email.com',
 				passwordHash: '$argon2id$e2e-placeholder',
 				role: 'EMPLOYER',
 				city: 'Cabo Frio',

@@ -54,19 +54,22 @@ describe('UsersRepository (integration)', () => {
 			expect(byId?.phone).toBe('22970000001');
 		});
 
-		it('supports nullable email and still finds by phone/id', async () => {
+		it('supports nullable phone and requires email', async () => {
 			const created = await usersRepository.create({
 				name: 'Maria Employer',
-				phone: '22970000002',
+				email: 'maria.employer@email.com',
 				passwordHash: '$argon2id$mock-hash',
 				city: 'Búzios',
 				role: 'EMPLOYER',
 			});
 
-			expect(created.email).toBeNull();
+			expect(created.email).toBe('maria.employer@email.com');
+			expect(created.phone).toBeNull();
 
-			const byPhone = await usersRepository.findByPhone('22970000002');
-			expect(byPhone?.id).toBe(created.id);
+			const byEmail = await usersRepository.findByEmail(
+				'maria.employer@email.com',
+			);
+			expect(byEmail?.id).toBe(created.id);
 
 			const byId = await usersRepository.findById(created.id);
 			expect(byId?.city).toBe('Búzios');

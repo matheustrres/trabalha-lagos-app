@@ -29,10 +29,10 @@ describe(UsersService.name, () => {
 
 			usersRepository.findByPhone.mockResolvedValue(user);
 
-			const result = await SUT.findByPhone(user.phone);
+			const result = await SUT.findByPhone('22988887777');
 
 			expect(result).toEqual(user);
-			expect(usersRepository.findByPhone).toHaveBeenCalledWith(user.phone);
+			expect(usersRepository.findByPhone).toHaveBeenCalledWith('22988887777');
 		});
 
 		it('returns null when user does not exist', async () => {
@@ -104,6 +104,7 @@ describe(UsersService.name, () => {
 			const input = {
 				name: 'Ana Lima',
 				phone: '22988887777',
+				email: 'ana@email.com',
 				passwordHash: '$argon2id$mock',
 				city: 'Búzios',
 				role: 'CANDIDATE' as const,
@@ -127,6 +128,7 @@ describe(UsersService.name, () => {
 			const input = {
 				name: 'Ana Lima',
 				phone: '22988887777',
+				email: 'ana@email.com',
 				passwordHash: '$argon2id$mock',
 				city: 'Búzios',
 				role: 'CANDIDATE' as const,

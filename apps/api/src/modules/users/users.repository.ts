@@ -96,8 +96,8 @@ export class UsersRepository {
 
 type CreateUserData = {
 	name: string;
-	phone: string;
-	email?: string;
+	phone?: string;
+	email: string;
 	passwordHash: string;
 	city: string;
 	role: 'CANDIDATE' | 'EMPLOYER' | 'ADMIN';

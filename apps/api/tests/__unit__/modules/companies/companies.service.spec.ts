@@ -100,6 +100,7 @@ describe(CompaniesService.name, () => {
 				document: dto.document,
 				city: dto.city,
 				whatsapp: dto.whatsapp,
+				segment: undefined,
 			});
 		});
 

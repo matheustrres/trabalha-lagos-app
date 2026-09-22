@@ -33,7 +33,9 @@ const mapApiValidationMessageToField = (
   const normalizedMessage = message.toLowerCase();
 
   if (normalizedMessage.includes("telefone") || normalizedMessage.includes("whatsapp")) {
-    return "phone";
+    return role === "EMPLOYER"
+      ? ("whatsappBusiness" as Path<FormData>)
+      : "phone";
   }
 
   if (normalizedMessage.includes("e-mail") || normalizedMessage.includes("email")) {
@@ -140,14 +142,14 @@ const withPhoneFormat = withFormat(formatPhone);
 const withDocumentFormat = withFormat(formatDocument);
 
 const SEGMENTS = [
-  "Restaurante",
-  "Pousada/Hotel",
-  "Comércio",
-  "Construção",
-  "Serviços",
-  "Tecnologia",
-  "Outro",
-];
+  { value: "RESTAURANT", label: "Restaurante" },
+  { value: "HOTEL", label: "Pousada/Hotel" },
+  { value: "RETAIL", label: "Comércio" },
+  { value: "CONSTRUCTION", label: "Construção" },
+  { value: "SERVICES", label: "Serviços" },
+  { value: "TECHNOLOGY", label: "Tecnologia" },
+  { value: "OTHER", label: "Outro" },
+] as const;
 
 export const RegisterForm = () => {
   const router = useRouter();
@@ -189,13 +191,21 @@ export const RegisterForm = () => {
     try {
       const payload = {
         name: data.name,
-        phone: data.phone.replace(/\D/g, ""),
-        email: data.email,
+        email: data.email.trim().toLowerCase(),
         password: data.password,
         city: data.city,
         role,
+        ...(role === "CANDIDATE" &&
+          (data as CandidateFormData).phone && {
+            phone: (data as CandidateFormData).phone?.replace(/\D/g, ""),
+          }),
         ...(role === "EMPLOYER" && {
           document: (data as EmployerFormData).document.replace(/\D/g, ""),
+          companyName: (data as EmployerFormData).companyName,
+          segment: (data as EmployerFormData).segment || undefined,
+          companyWhatsapp:
+            (data as EmployerFormData).whatsappBusiness?.replace(/\D/g, "") ||
+            undefined,
         }),
       };
       const response = await authService.register(payload);
@@ -205,8 +215,8 @@ export const RegisterForm = () => {
     } catch (err) {
       const error = err as ApiRequestError;
       if (error.status === 409) {
-        const message = "Este telefone já está cadastrado.";
-        setError("phone", { type: "server", message });
+        const message = "Este e-mail já está cadastrado.";
+        setError("email", { type: "server", message }, { shouldFocus: true });
         setServerError(
           "Não foi possível concluir o cadastro. Confira os campos destacados.",
         );
@@ -273,17 +283,6 @@ export const RegisterForm = () => {
       />
 
       <Input
-        id="phone"
-        label="WhatsApp"
-        type="tel"
-        placeholder="(22) 99999-9999"
-        autoComplete="tel"
-        inputMode="numeric"
-        error={fieldErrors.phone?.message}
-        {...withPhoneFormat(register("phone"))}
-      />
-
-      <Input
         id="email"
         label="E-mail"
         type="email"
@@ -315,6 +314,24 @@ export const RegisterForm = () => {
           </p>
         )}
       </div>
+
+      {role === "CANDIDATE" && (
+        <div className="flex flex-col gap-1">
+          <Input
+            id="phone"
+            label="WhatsApp (opcional)"
+            type="tel"
+            placeholder="(22) 99999-9999"
+            autoComplete="tel"
+            inputMode="numeric"
+            error={fieldErrors.phone?.message}
+            {...withPhoneFormat(register("phone"))}
+          />
+          <p className="text-xs text-gray-500">
+            Usado apenas como contato; seu acesso será feito por e-mail.
+          </p>
+        </div>
+      )}
 
       <Input
         id="password"
@@ -411,9 +428,9 @@ export const RegisterForm = () => {
               {...register("segment")}
             >
               <option value="">Selecione um segmento</option>
-              {SEGMENTS.map((seg) => (
-                <option key={seg} value={seg}>
-                  {seg}
+              {SEGMENTS.map((segment) => (
+                <option key={segment.value} value={segment.value}>
+                  {segment.label}
                 </option>
               ))}
             </select>
@@ -421,7 +438,7 @@ export const RegisterForm = () => {
 
           <Input
             id="whatsappBusiness"
-            label="WhatsApp da empresa"
+            label="WhatsApp da empresa (opcional)"
             type="tel"
             placeholder="(22) 99999-9999"
             autoComplete="tel"

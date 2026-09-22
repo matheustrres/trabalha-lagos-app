@@ -4,7 +4,8 @@ export interface Session {
   user: {
     id: string;
     name: string;
-    phone: string;
+    email: string;
+    phone: string | null;
     city?: string | null;
     role: "CANDIDATE" | "EMPLOYER";
   };

@@ -7,7 +7,7 @@ export type CandidateAvailability =
 export interface UserProfile {
   id: string;
   name: string;
-  phone: string;
+  phone: string | null;
   city: string | null;
   interests: string[] | null;
   experience: string | null;

@@ -27,7 +27,7 @@ export const LoginForm = () => {
     setServerError(null);
     try {
       const response = await authService.login({
-        phone: data.phone.replace(/\D/g, ""),
+        email: data.email.trim().toLowerCase(),
         password: data.password,
       });
       setSession(response);
@@ -35,7 +35,7 @@ export const LoginForm = () => {
     } catch (err) {
       const error = err as { status?: number };
       if (error.status === 401) {
-        setServerError("Telefone ou senha incorretos.");
+        setServerError("E-mail ou senha incorretos.");
       } else if (error.status === 429) {
         setServerError(
           "Muitas requisições. Aguarde alguns segundos e tente novamente.",
@@ -62,13 +62,13 @@ export const LoginForm = () => {
       )}
 
       <Input
-        id="phone"
-        label="WhatsApp"
-        type="tel"
-        placeholder="(22) 99999-9999"
-        autoComplete="tel"
-        error={errors.phone?.message}
-        {...register("phone")}
+        id="email"
+        label="E-mail"
+        type="email"
+        placeholder="seuemail@exemplo.com"
+        autoComplete="email"
+        error={errors.email?.message}
+        {...register("email")}
       />
 
       <Input

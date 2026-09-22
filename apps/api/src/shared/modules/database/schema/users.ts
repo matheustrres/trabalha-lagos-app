@@ -15,8 +15,8 @@ export const users = pgTable('users', {
 		.primaryKey()
 		.$defaultFn(() => uuidv7()),
 	name: text('name').notNull(),
-	email: text('email').unique(),
-	phone: text('phone').notNull().unique(),
+	email: text('email').notNull().unique(),
+	phone: text('phone'),
 	passwordHash: text('password_hash').notNull(),
 	role: roleEnum('role').notNull(),
 	city: text('city'),
@@ -36,8 +36,8 @@ export type UserSchema = typeof users.$inferSelect;
 export type NewUserSchema = {
 	id: string;
 	name: string;
-	phone: string;
-	email: string | null;
+	phone: string | null;
+	email: string;
 	city: string | null;
 	role: 'CANDIDATE' | 'EMPLOYER' | 'ADMIN';
 	createdAt: Date;

@@ -18,7 +18,7 @@ export type CompanySchemaWithUser = CompanySchema & {
 	user: {
 		id: string;
 		name: string;
-		phone: string;
+		phone: string | null;
 		city: string | null;
 	};
 };

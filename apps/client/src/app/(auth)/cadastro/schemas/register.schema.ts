@@ -2,7 +2,6 @@ import { z } from "zod";
 
 const baseSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  phone: z.string().regex(/^\(\d{2}\) \d{4,5}-\d{4}$/, "WhatsApp inválido"),
   email: z
     .string()
     .min(1, "E-mail obrigatório")
@@ -18,10 +17,19 @@ const baseSchema = z.object({
   city: z.string().min(1, "Selecione uma cidade"),
 });
 
-export const candidateSchema = baseSchema.refine(
-  (data) => data.password === data.confirmPassword,
-  { message: "Senhas não coincidem", path: ["confirmPassword"] },
-);
+export const candidateSchema = baseSchema
+  .extend({
+    phone: z
+      .union([
+        z.string().regex(/^\(\d{2}\) \d{4,5}-\d{4}$/, "WhatsApp inválido"),
+        z.literal(""),
+      ])
+      .optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Senhas não coincidem",
+    path: ["confirmPassword"],
+  });
 
 export const employerSchema = baseSchema
   .extend({
@@ -30,10 +38,23 @@ export const employerSchema = baseSchema
       .string()
       .min(1, "CNPJ obrigatório")
       .regex(/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/, "CNPJ inválido"),
-    segment: z.string().optional().or(z.literal("")),
+    segment: z
+      .enum([
+        "RESTAURANT",
+        "HOTEL",
+        "RETAIL",
+        "CONSTRUCTION",
+        "SERVICES",
+        "TECHNOLOGY",
+        "OTHER",
+      ])
+      .optional(),
     whatsappBusiness: z
-      .string()
-      .regex(/^\(\d{2}\) \d{4,5}-\d{4}$/, "WhatsApp da empresa obrigatório"),
+      .union([
+        z.string().regex(/^\(\d{2}\) \d{4,5}-\d{4}$/, "WhatsApp inválido"),
+        z.literal(""),
+      ])
+      .optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Senhas não coincidem",
