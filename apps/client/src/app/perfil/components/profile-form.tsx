@@ -201,7 +201,7 @@ export const ProfileForm = () => {
         </div>
       )}
 
-      <h1 className="font-display text-xl font-bold text-gray-900">Meu perfil</h1>
+      <h2 className="font-display text-lg font-bold text-gray-900">Perfil profissional</h2>
       <p className="text-sm text-gray-500 mt-1">
         Complete seu perfil para se destacar para os empregadores.
       </p>

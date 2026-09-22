@@ -102,6 +102,7 @@ const request = async <T>(
     throw err;
   }
 
+  if (res.status === 204) return undefined as T;
   return res.json();
 };
 
@@ -130,5 +131,9 @@ export const api = {
   patch: <T>(path: string, body: unknown) =>
     request<T>(path, { method: "PATCH", body: JSON.stringify(body) }),
 
-  delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
+  delete: <T>(path: string, body?: unknown) =>
+    request<T>(path, {
+      method: "DELETE",
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    }),
 };

@@ -60,7 +60,7 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => (
         <Header />
         <main
           id="app-main"
-          className="mx-auto min-h-[calc(100dvh-57px)] max-w-lg bg-white pb-20 has-[>[data-panel-layout]]:pb-0"
+          className="mx-auto min-h-[calc(100dvh-57px)] max-w-lg bg-white pb-20 has-[>[data-panel-layout]]:pb-0 has-[>[data-profile-layout]]:min-h-0"
         >
           {children}
         </main>

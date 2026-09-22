@@ -269,6 +269,20 @@ describe(AuthService.name, () => {
 			);
 		});
 
+		it('rejects refresh tokens issued before the password change', async () => {
+			const user = aUser().build();
+			jwtService.verify.mockReturnValue({
+				sub: user.id,
+				role: user.role,
+				credentialsVersion: user.credentialsVersion - 1,
+			});
+			usersService.findById.mockResolvedValue(user);
+
+			await expect(SUT.refresh('old-refresh-token')).rejects.toThrow(
+				UnauthorizedException,
+			);
+		});
+
 		it('generates new tokens using the verified token payload', async () => {
 			const user = aUser().withId('user-uuid-1').withRole('EMPLOYER').build();
 
@@ -282,6 +296,51 @@ describe(AuthService.name, () => {
 				sub: user.id,
 				role: 'EMPLOYER',
 			});
+		});
+	});
+
+	describe('updatePassword', () => {
+		it('verifies and hashes the new password, then returns a rotated token pair', async () => {
+			const original = aUser().build();
+			const updated = {
+				...original,
+				credentialsVersion: original.credentialsVersion + 1,
+			};
+			usersService.findByIdOrFail.mockResolvedValue(original);
+			vi.mocked(argon2.verify).mockResolvedValue(true as never);
+			vi.mocked(argon2.hash).mockResolvedValue('$argon2id$new-hash' as never);
+			usersService.updateCredentials.mockResolvedValue(updated);
+
+			const result = await SUT.updatePassword(
+				original.id,
+				'old-pass',
+				'New-pass1!',
+			);
+
+			expect(argon2.verify).toHaveBeenCalledWith(
+				original.passwordHash,
+				'old-pass',
+			);
+			expect(argon2.hash).toHaveBeenCalledWith('New-pass1!');
+			expect(usersService.updateCredentials).toHaveBeenCalledWith(
+				original.id,
+				'$argon2id$new-hash',
+			);
+			expect(jwtService.signAsync.mock.calls[0]?.[0]).toMatchObject({
+				credentialsVersion: updated.credentialsVersion,
+			});
+			expect(result.user.id).toBe(original.id);
+		});
+
+		it('rejects an incorrect current password without changing credentials', async () => {
+			const user = aUser().build();
+			usersService.findByIdOrFail.mockResolvedValue(user);
+			vi.mocked(argon2.verify).mockResolvedValue(false as never);
+
+			await expect(
+				SUT.updatePassword(user.id, 'wrong', 'New-pass1!'),
+			).rejects.toThrow(BadRequestException);
+			expect(usersService.updateCredentials).not.toHaveBeenCalled();
 		});
 	});
 });

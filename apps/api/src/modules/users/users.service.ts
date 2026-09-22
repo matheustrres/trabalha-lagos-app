@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+	BadRequestException,
+	Injectable,
+	NotFoundException,
+} from '@nestjs/common';
+import * as argon2 from 'argon2';
 
 import { UsersRepository } from './users.repository';
 
@@ -45,5 +50,44 @@ export class UsersService {
 		}
 
 		return user;
+	}
+
+	async updateAccount(
+		userId: string,
+		data: Parameters<UsersRepository['updateAccount']>[1],
+	): Promise<UserSchema> {
+		const user = await this.usersRepository.updateAccount(userId, data);
+		if (!user) {
+			throw new NotFoundException('Usuário não encontrado.');
+		}
+
+		return user;
+	}
+
+	async updateCredentials(
+		userId: string,
+		passwordHash: string,
+	): Promise<UserSchema> {
+		const user = await this.usersRepository.updateCredentials(
+			userId,
+			passwordHash,
+		);
+		if (!user) {
+			throw new NotFoundException('Usuário não encontrado.');
+		}
+
+		return user;
+	}
+
+	async deleteAccount(userId: string, currentPassword: string): Promise<void> {
+		const user = await this.findByIdOrFail(userId);
+		if (!(await argon2.verify(user.passwordHash, currentPassword))) {
+			throw new BadRequestException('Senha atual inválida.');
+		}
+
+		const deleted = await this.usersRepository.deleteById(userId);
+		if (!deleted) {
+			throw new NotFoundException('Usuário não encontrado.');
+		}
 	}
 }

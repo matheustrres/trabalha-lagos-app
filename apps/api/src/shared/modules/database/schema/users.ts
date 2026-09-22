@@ -18,6 +18,7 @@ export const users = pgTable('users', {
 	email: text('email').notNull().unique(),
 	phone: text('phone'),
 	passwordHash: text('password_hash').notNull(),
+	credentialsVersion: integer('credentials_version').notNull().default(0),
 	role: roleEnum('role').notNull(),
 	city: text('city'),
 	interests: text('interests').array(),
@@ -40,5 +41,6 @@ export type NewUserSchema = {
 	email: string;
 	city: string | null;
 	role: 'CANDIDATE' | 'EMPLOYER' | 'ADMIN';
+	credentialsVersion: number;
 	createdAt: Date;
 };

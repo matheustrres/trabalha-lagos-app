@@ -31,6 +31,12 @@ type AuthResult = TokenPair & {
 	};
 };
 
+type JwtCredentialsPayload = {
+	sub: string;
+	role: string;
+	credentialsVersion?: number;
+};
+
 @Injectable()
 export class AuthService {
 	constructor(
@@ -84,7 +90,11 @@ export class AuthService {
 			});
 		}
 
-		const tokens = await this.generateTokens(user.id, user.role);
+		const tokens = await this.generateTokens(
+			user.id,
+			user.role,
+			user.credentialsVersion,
+		);
 
 		return {
 			...tokens,
@@ -117,7 +127,11 @@ export class AuthService {
 			throw new UnauthorizedException('Credenciais inválidas.');
 		}
 
-		const tokens = await this.generateTokens(user.id, user.role);
+		const tokens = await this.generateTokens(
+			user.id,
+			user.role,
+			user.credentialsVersion,
+		);
 
 		return {
 			...tokens,
@@ -133,15 +147,12 @@ export class AuthService {
 	}
 
 	async refresh(refreshToken: string): Promise<AuthResult> {
-		let payload: { sub: string; role: string };
+		let payload: JwtCredentialsPayload;
 
 		try {
-			payload = this.jwtService.verify<{ sub: string; role: string }>(
-				refreshToken,
-				{
-					secret: this.envService.getKeyOrThrow('JWT_REFRESH_SECRET'),
-				},
-			);
+			payload = this.jwtService.verify<JwtCredentialsPayload>(refreshToken, {
+				secret: this.envService.getKeyOrThrow('JWT_REFRESH_SECRET'),
+			});
 		} catch {
 			throw new UnauthorizedException('Refresh token inválido ou expirado.');
 		}
@@ -151,8 +162,15 @@ export class AuthService {
 		if (!user) {
 			throw new UnauthorizedException('Usuário não encontrado.');
 		}
+		if ((payload.credentialsVersion ?? 0) !== user.credentialsVersion) {
+			throw new UnauthorizedException('Refresh token inválido ou expirado.');
+		}
 
-		const tokens = await this.generateTokens(user.id, user.role);
+		const tokens = await this.generateTokens(
+			user.id,
+			user.role,
+			user.credentialsVersion,
+		);
 
 		return {
 			...tokens,
@@ -167,11 +185,50 @@ export class AuthService {
 		};
 	}
 
+	async updatePassword(
+		userId: string,
+		currentPassword: string,
+		newPassword: string,
+	): Promise<AuthResult> {
+		const user = await this.usersService.findByIdOrFail(userId);
+		const isCurrentPasswordValid = await argon2.verify(
+			user.passwordHash,
+			currentPassword,
+		);
+		if (!isCurrentPasswordValid) {
+			throw new BadRequestException('Senha atual inválida.');
+		}
+
+		const passwordHash = await argon2.hash(newPassword);
+		const updatedUser = await this.usersService.updateCredentials(
+			userId,
+			passwordHash,
+		);
+		const tokens = await this.generateTokens(
+			updatedUser.id,
+			updatedUser.role,
+			updatedUser.credentialsVersion,
+		);
+
+		return {
+			...tokens,
+			user: {
+				id: updatedUser.id,
+				name: updatedUser.name,
+				email: updatedUser.email,
+				phone: updatedUser.phone,
+				city: updatedUser.city,
+				role: updatedUser.role,
+			},
+		};
+	}
+
 	private async generateTokens(
 		userId: string,
 		role: string,
+		credentialsVersion: number,
 	): Promise<TokenPair> {
-		const payload = { sub: userId, role };
+		const payload = { sub: userId, role, credentialsVersion };
 
 		// expiresIn cast required: @nestjs/jwt v11 uses ms@3 StringValue branded type,
 		// but jsonwebtoken accepts plain strings like '15m' at runtime.

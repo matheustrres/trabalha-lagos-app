@@ -40,4 +40,7 @@ export const authService = {
 
   refresh: (refreshToken: string) =>
     api.post<AuthResponse>("/auth/refresh", { refreshToken }),
+
+  updatePassword: (data: { currentPassword: string; newPassword: string }) =>
+    api.patch<AuthResponse>("/auth/password", data),
 };

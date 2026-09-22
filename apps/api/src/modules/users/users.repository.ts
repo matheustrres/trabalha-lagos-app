@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 import {
 	DATABASE_TOKEN,
@@ -19,6 +19,8 @@ type UpdateUserProfileData = {
 	acceptedContractTypes?: string[];
 	neighborhood?: string;
 };
+
+type UpdateAccountData = { name: string; city: string };
 
 @Injectable()
 export class UsersRepository {
@@ -69,6 +71,7 @@ export class UsersRepository {
 				email: users.email,
 				city: users.city,
 				role: users.role,
+				credentialsVersion: users.credentialsVersion,
 				createdAt: users.createdAt,
 			});
 		return user!;
@@ -93,6 +96,45 @@ export class UsersRepository {
 			.returning();
 
 		return user ?? null;
+	}
+
+	async updateAccount(
+		userId: string,
+		data: UpdateAccountData,
+	): Promise<UserSchema | null> {
+		const [user] = await this.db
+			.update(users)
+			.set({ ...data, updatedAt: new Date() })
+			.where(eq(users.id, userId))
+			.returning();
+
+		return user ?? null;
+	}
+
+	async updateCredentials(
+		userId: string,
+		passwordHash: string,
+	): Promise<UserSchema | null> {
+		const [user] = await this.db
+			.update(users)
+			.set({
+				passwordHash,
+				credentialsVersion: sql`${users.credentialsVersion} + 1`,
+				updatedAt: new Date(),
+			})
+			.where(eq(users.id, userId))
+			.returning();
+
+		return user ?? null;
+	}
+
+	async deleteById(userId: string): Promise<boolean> {
+		const deleted = await this.db
+			.delete(users)
+			.where(eq(users.id, userId))
+			.returning({ id: users.id });
+
+		return deleted.length > 0;
 	}
 }
 

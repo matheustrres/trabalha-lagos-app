@@ -27,10 +27,13 @@ export const Header = () => {
         {!isLoading &&
           (isAuthenticated ? (
             <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1.5 text-sm text-gray-700">
+              <Link
+                href="/perfil?aba=conta"
+                className="flex items-center gap-1.5 rounded-lg text-sm text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
                 <UserCircle size={18} aria-hidden />
                 {firstName}
-              </span>
+              </Link>
               <button
                 onClick={logout}
                 className="text-sm text-gray-400 hover:text-gray-600 transition-colors"

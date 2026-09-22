@@ -11,6 +11,7 @@ export type User = {
 	phone: string | null;
 	email: string;
 	passwordHash: string;
+	credentialsVersion: number;
 	city: string | null;
 	interests: string[] | null;
 	experience: string | null;
@@ -27,7 +28,14 @@ export type User = {
 
 export type CreatedUser = Pick<
 	User,
-	'id' | 'name' | 'phone' | 'email' | 'city' | 'role' | 'createdAt'
+	| 'id'
+	| 'name'
+	| 'phone'
+	| 'email'
+	| 'city'
+	| 'role'
+	| 'credentialsVersion'
+	| 'createdAt'
 >;
 
 const defaults: User = {
@@ -36,6 +44,7 @@ const defaults: User = {
 	phone: '21999999999',
 	email: 'joao@trabalhalagos.com',
 	passwordHash: '$argon2id$mock-hash',
+	credentialsVersion: 0,
 	city: 'Cabo Frio',
 	interests: null,
 	experience: null,
@@ -102,6 +111,7 @@ export class UserBuilder {
 			email: this.props.email,
 			city: this.props.city,
 			role: this.props.role,
+			credentialsVersion: this.props.credentialsVersion,
 			createdAt: this.props.createdAt,
 		};
 	}

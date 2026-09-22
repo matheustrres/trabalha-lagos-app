@@ -23,6 +23,10 @@
 | `POST` | `/auth/register` | Público | Cadastro |
 | `POST` | `/auth/login` | Público | Login |
 | `POST` | `/auth/refresh` | Público | Refresh token |
+| `PATCH` | `/auth/password` | Autenticado | Alterar senha e invalidar refresh tokens anteriores |
+| `GET` | `/users/me` | Autenticado | Dados básicos da conta |
+| `PATCH` | `/users/me` | Autenticado | Atualizar nome e cidade |
+| `DELETE` | `/users/me` | Autenticado | Excluir permanentemente a conta |
 | `GET` | `/categories` | Público | Categorias com contagem de vagas |
 | `GET` | `/companies/:id` | Público | Perfil público da empresa |
 | `PATCH` | `/companies/:id` | Employer (dono) | Editar perfil |
@@ -36,6 +40,16 @@
   obrigatório e `companyWhatsapp` e `segment` são opcionais.
 - `segment`, quando informado, usa um dos códigos estáveis: `RESTAURANT`,
   `HOTEL`, `RETAIL`, `CONSTRUCTION`, `SERVICES`, `TECHNOLOGY` ou `OTHER`.
+
+### Conta e credenciais
+
+- `PATCH /users/me` recebe `{ "name": string, "city": string }`; cidade deve
+  ser uma das cidades disponíveis na Região dos Lagos. E-mail não é editável.
+- `PATCH /auth/password` recebe `{ "currentPassword": string,
+  "newPassword": string }` e retorna `AuthResponseDto` com novos tokens.
+- `DELETE /users/me` recebe `{ "currentPassword": string, "confirmation":
+  "EXCLUIR MINHA CONTA" }` e retorna `204 No Content` após apagar a conta e
+  seus dados relacionados.
 
 ## Query params de busca (GET /jobs)
 

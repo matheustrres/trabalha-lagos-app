@@ -2,14 +2,21 @@
 
 ## Estratégia
 
-JWT com access token (15 min) + refresh token (7 dias em httpOnly cookie).
+JWT com access token (15 min) + refresh token (7 dias). O cliente armazena o
+par de tokens na sessão local.
 
 ### Fluxo
 
 1. `POST /auth/register` → cria user, retorna access + refresh
 2. `POST /auth/login` → valida credenciais, retorna access + refresh
 3. `POST /auth/refresh` → troca refresh por novo par
-4. Requests autenticados: header `Authorization: Bearer <access_token>`
+4. `PATCH /auth/password` → valida a senha atual, atualiza o hash, incrementa
+   `credentials_version` e emite novo par para o dispositivo atual
+5. Requests autenticados: header `Authorization: Bearer <access_token>`
+
+Refresh tokens incluem `credentialsVersion`. Após a troca de senha, tokens com
+versão anterior são rejeitados. Access tokens já emitidos ainda podem funcionar
+até expirarem (15 minutos).
 
 ## Guards e Decorators
 
@@ -70,5 +77,14 @@ login.
   para aquela candidatura, mesmo quando a conta não possui telefone salvo.
 
 A autenticação por telefone e OTP via WhatsApp não faz parte do contrato atual.
+
+## Gerenciamento de conta
+
+- `GET /users/me` retorna `id`, `name`, `email`, `city` e `role` para qualquer
+  usuário autenticado.
+- `PATCH /users/me` altera somente `name` e `city`; e-mail é somente leitura.
+- `DELETE /users/me` exige senha atual e a confirmação literal
+  `EXCLUIR MINHA CONTA`. A exclusão é permanente e executa os cascades definidos
+  no banco para dados da conta, empresa, vagas e interesses.
 
 Referir a `src/modules/auth/` para implementação atual.

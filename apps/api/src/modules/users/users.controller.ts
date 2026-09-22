@@ -2,13 +2,18 @@ import {
 	Body,
 	Controller,
 	Get,
+	Delete,
 	HttpStatus,
+	HttpCode,
 	Patch,
 	UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 
+import { AccountResponseDto } from './dto/account-response.dto';
+import { DeleteAccountDto } from './dto/delete-account.dto';
+import { UpdateAccountDto } from './dto/update-account.dto';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 import { UserProfileResponseDto } from './dto/user-profile-response.dto';
 import { UsersService } from './users.service';
@@ -28,6 +33,50 @@ import { getUserTracker } from '@/shared/utils/get-user-tracker';
 @Controller('users')
 export class UsersController {
 	constructor(private readonly usersService: UsersService) {}
+
+	@Get('me')
+	@SwaggerRoute({
+		operation: 'Retornar dados da conta do usuário autenticado',
+		responses: [{ status: HttpStatus.OK, type: AccountResponseDto }],
+		authName: 'jwt',
+	})
+	async getMyAccount(@CurrentUser() user: CurrentUserPayload) {
+		const account = await this.usersService.findByIdOrFail(user.userId);
+		return this.serializeAccount(account);
+	}
+
+	@Patch('me')
+	@Throttle({ medium: { limit: 20, ttl: 60000, getTracker: getUserTracker } })
+	@SwaggerRoute({
+		operation: 'Atualizar nome e cidade da conta do usuário autenticado',
+		responses: [{ status: HttpStatus.OK, type: AccountResponseDto }],
+		authName: 'jwt',
+		body: UpdateAccountDto,
+	})
+	async updateMyAccount(
+		@CurrentUser() user: CurrentUserPayload,
+		@Body() dto: UpdateAccountDto,
+	) {
+		return this.serializeAccount(
+			await this.usersService.updateAccount(user.userId, dto),
+		);
+	}
+
+	@Delete('me')
+	@Throttle({ medium: { limit: 3, ttl: 60000, getTracker: getUserTracker } })
+	@SwaggerRoute({
+		operation: 'Excluir permanentemente a conta do usuário autenticado',
+		responses: [{ status: HttpStatus.NO_CONTENT }],
+		authName: 'jwt',
+		body: DeleteAccountDto,
+	})
+	@HttpCode(HttpStatus.NO_CONTENT)
+	async deleteMyAccount(
+		@CurrentUser() user: CurrentUserPayload,
+		@Body() dto: DeleteAccountDto,
+	): Promise<void> {
+		await this.usersService.deleteAccount(user.userId, dto.currentPassword);
+	}
 
 	@UseGuards(RolesGuard)
 	@Roles('CANDIDATE')
@@ -84,6 +133,16 @@ export class UsersController {
 			availability: user.availability,
 			acceptedContractTypes: user.acceptedContractTypes,
 			neighborhood: user.neighborhood,
+		};
+	}
+
+	private serializeAccount(user: UserSchema): AccountResponseDto {
+		return {
+			id: user.id,
+			name: user.name,
+			email: user.email,
+			city: user.city,
+			role: user.role,
 		};
 	}
 }
