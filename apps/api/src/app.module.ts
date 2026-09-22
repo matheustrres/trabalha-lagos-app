@@ -1,11 +1,9 @@
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
-import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, HttpAdapterHost } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
-import type Redis from 'ioredis';
 import { LoggerModule } from 'nestjs-pino';
 import { uuidv7 } from 'uuidv7';
 
@@ -27,7 +25,6 @@ import { DatabaseModule } from '@/shared/modules/database/database.module';
 import { EnvModule } from '@/shared/modules/env/env.module';
 import { EnvService } from '@/shared/modules/env/env.service';
 import { RedisModule } from '@/shared/modules/redis/redis.module';
-import { REDIS_TOKEN } from '@/shared/modules/redis/redis.provider';
 import { getIpTracker } from '@/shared/utils/get-ip-tracker';
 
 @Module({
@@ -37,26 +34,20 @@ import { getIpTracker } from '@/shared/utils/get-ip-tracker';
 		SentryModule.forRoot(),
 		RedisModule,
 		ScheduleModule.forRoot(),
-		BullModule.forRootAsync({
-			imports: [EnvModule],
-			useFactory: (envService: EnvService) => ({
-				connection: {
-					host: envService.getKey('REDIS_HOST') ?? 'localhost',
-					port: envService.getKey('REDIS_PORT') ?? 6379,
-					password: envService.getKey('REDIS_PASSWORD'),
-				},
-			}),
-			inject: [EnvService],
-		}),
 		ThrottlerModule.forRootAsync({
-			imports: [EnvModule, RedisModule],
-			inject: [EnvService, REDIS_TOKEN],
-			useFactory: (envService: EnvService, redis: Redis) => ({
+			imports: [EnvModule],
+			inject: [EnvService],
+			useFactory: (envService: EnvService) => ({
 				throttlers: [
 					{ name: 'short', ttl: 1000, limit: 3 },
 					{ name: 'medium', ttl: 60000, limit: 60 },
 				],
-				storage: new ThrottlerStorageRedisService(redis),
+				storage: new ThrottlerStorageRedisService({
+					host: envService.getKey('REDIS_HOST') ?? 'localhost',
+					port: envService.getKey('REDIS_PORT') ?? 6379,
+					password: envService.getKey('REDIS_PASSWORD'),
+					lazyConnect: true,
+				}),
 				setHeaders: true,
 				skipIf: (context) => {
 					if (!envService.getKey('THROTTLE_ENABLED')) {

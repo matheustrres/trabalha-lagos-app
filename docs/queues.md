@@ -6,7 +6,7 @@
 |-------|------|-----------|
 | `job-expiration` | Cron (1h) | Marca vagas com `expiresAt < NOW()` como EXPIRED |
 | `notifications` | Event-driven | Email/push quando candidato demonstra interesse |
-| `view-counter` | Cron (5 min) | Batch update de contadores de visualização |
+| `view-counter` | Cron local (5 min) | Batch update de contadores de visualização; ainda não usa BullMQ |
 | `sitemap` | Cron (24h) | Regenera sitemap.xml para SEO |
 
 ## Padrão
@@ -26,4 +26,4 @@ export class JobExpirationProcessor extends WorkerHost {
 
 ## Conexão
 
-BullMQ conecta ao mesmo Redis da aplicação. Configurado via `BullModule.forRoot()` no `app.module.ts`.
+BullMQ deverá conectar ao mesmo Redis da aplicação quando as filas forem ativadas. A configuração e o registro das filas ainda não fazem parte da implementação atual.

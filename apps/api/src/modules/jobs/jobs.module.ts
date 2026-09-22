@@ -4,7 +4,7 @@ import { ExternalJobsRepository } from './external-jobs.repository';
 import { JobsController } from './jobs.controller';
 import { JobsRepository } from './jobs.repository';
 import { JobsService } from './jobs.service';
-import { ViewCounterProcessor } from './processors/view-counter.processor';
+import { ViewCounterScheduler } from './schedulers/view-counter.scheduler';
 import { ViewCounterService } from './services/view-counter.service';
 
 import { CompaniesModule } from '@/modules/companies/companies.module';
@@ -19,7 +19,7 @@ import { RedisModule } from '@/shared/modules/redis/redis.module';
 		JobsRepository,
 		ExternalJobsRepository,
 		ViewCounterService,
-		ViewCounterProcessor,
+		ViewCounterScheduler,
 	],
 	exports: [JobsService],
 })

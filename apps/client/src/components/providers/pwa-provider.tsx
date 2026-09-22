@@ -250,7 +250,7 @@ export const PwaProvider = () => {
             <div className="min-w-0 flex-1">
               <p className="text-sm leading-5 font-semibold">
                 {isIos
-                  ? 'Adicione à Tela de Início'
+                  ? 'Adicione à Tela de Inicio'
                   : 'Instale o TrabalhaLagos'}
               </p>
               <p className="text-xs leading-4 text-gray-600">
