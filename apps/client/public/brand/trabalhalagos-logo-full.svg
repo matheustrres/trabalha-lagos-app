@@ -1,0 +1,26 @@
+<svg width="240" height="60" viewBox="0 0 280 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Símbolo Monograma TL + GeoPin + Radar -->
+  <g transform="translate(10, 6)">
+    <!-- Arcos de Raio KM -->
+    <path d="M52 14 C59 21 59 33 52 40" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 1" opacity="0.8"/>
+    <path d="M58 8 C68 18 68 36 58 46" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+    <!-- Pin Geoespacial -->
+    <path d="M30 4C18.954 4 10 12.954 10 24C10 36 30 56 30 56C30 56 50 36 50 24C50 12.954 41.046 4 30 4Z" fill="url(#grad-tl-pin)"/>
+    <!-- Monograma T (Oportunidade Solar) -->
+    <path d="M21 16H39C40.1 16 41 16.9 41 18C41 19.1 40.1 20 39 20H32.5V26.5H27.5V20H21C19.9 20 19 19.1 19 18C19 16.9 19.9 16 21 16Z" fill="#fbbf24"/>
+    <!-- Tronco e Base L (Trabalho Local) -->
+    <path d="M27.5 20V32C27.5 33.1 28.4 34 29.5 34H38C39.1 34 40 34.9 40 36C40 37.1 39.1 38 38 38H28C25.79 38 24 36.21 24 34V20H27.5Z" fill="#ffffff"/>
+    <circle cx="30" cy="27" r="2.2" fill="#fbbf24"/>
+  </g>
+  <!-- Tipografia TrabalhaLagos -->
+  <g transform="translate(82, 45)">
+    <text font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="25" fill="#0f172a" letter-spacing="-0.03em">Trabalha<tspan fill="#14532d" font-weight="900">Lagos</tspan></text>
+    <text x="2" y="14" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="8.5" fill="#0d9488" letter-spacing="0.16em">EMPREGOS • GEO RAIO KM</text>
+  </g>
+  <defs>
+    <linearGradient id="grad-tl-pin" x1="10" y1="4" x2="50" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#166534"/>
+      <stop offset="1" stop-color="#0c3b29"/>
+    </linearGradient>
+  </defs>
+</svg>

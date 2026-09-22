@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserCircle } from "lucide-react";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { useAuth } from "@/hooks/use-auth.hook";
 
 export const Header = () => {
@@ -16,11 +17,11 @@ export const Header = () => {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-white px-4 py-3">
       <div className="max-w-lg mx-auto flex items-center justify-between">
-        <Link href="/" className="inline-flex items-center gap-1.5">
-          <span aria-hidden>⚡</span>
-          <span className="font-display text-lg font-bold text-gray-900">
-            TrabalhaLagos
-          </span>
+        <Link
+          href="/"
+          className="rounded-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+        >
+          <BrandLogo priority />
         </Link>
 
         {!isLoading &&
