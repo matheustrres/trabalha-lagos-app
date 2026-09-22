@@ -111,6 +111,7 @@ ORDER BY city;
 | 19/09/2026 | CURL manual sanitizado | Endpoint brasileiro respondeu; observada anomalia `Pavuna`/coordenadas regionais. |
 | 19/09/2026 | Suíte automatizada | Sem rede; transporte, normalização, geografia, deduplicação, relatório e códigos cobertos. |
 | 19/09/2026 | Comando, sete cidades | 7/7 consultas concluídas; 140 registros brutos, 46 únicos, 29 IDs repetidos, 1 grupo heurístico, 100% com coordenadas e 1 divergência geográfica (`Pavuna` próxima a Cabo Frio). |
+| 21/09/2026 | Seed e busca pública local | 14 vagas sintéticas exibidas nas sete cidades; união `INTERNAL \| EXTERNAL`, sanitização, ordenação, paginação, filtros geográficos e bloqueio das fontes não licenciadas validados por E2E. |
 
 Adicionar aqui os totais das execuções reais relevantes, sem credenciais, URLs completas ou dados de query.
 
