@@ -43,10 +43,8 @@ const hasHeaderWithPrefix = (
 
 describe('Rate limiting (e2e)', () => {
 	let app: INestApplication;
-	const previousThrottleEnv = process.env['THROTTLE_ENABLED'];
 
 	beforeAll(async () => {
-		process.env['THROTTLE_ENABLED'] = 'true';
 		({ app } = await createAppFixture({
 			shouldClearAllDb: true,
 			useInMemoryThrottleStorage: true,
@@ -57,13 +55,6 @@ describe('Rate limiting (e2e)', () => {
 		if (app) {
 			await app.close();
 		}
-
-		if (previousThrottleEnv === undefined) {
-			delete process.env['THROTTLE_ENABLED'];
-			return;
-		}
-
-		process.env['THROTTLE_ENABLED'] = previousThrottleEnv;
 	});
 
 	it('limits POST /auth/login to 5 req/min per IP', async () => {

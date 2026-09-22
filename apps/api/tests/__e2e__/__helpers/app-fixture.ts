@@ -1,4 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { HttpAdapterHost } from '@nestjs/core';
+import { ExpressAdapter } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import {
 	getOptionsToken,
@@ -6,17 +8,18 @@ import {
 	ThrottlerStorageService,
 	type ThrottlerModuleOptions,
 } from '@nestjs/throttler';
-import { mock } from 'vitest-mock-extended';
 
 import { cleanDatabase } from './database-cleaner';
 
 import { AppModule } from '@/app.module';
 
+import { GlobalThrottlerGuard } from '@/common/guards/global-throttler.guard';
+
 import {
 	DATABASE_TOKEN,
 	type Database,
 } from '@/shared/modules/database/database.provider';
-import { EnvService } from '@/shared/modules/env/env.service';
+import type { EnvService } from '@/shared/modules/env/env.service';
 import { getIpTracker } from '@/shared/utils/get-ip-tracker';
 
 type CreateAppFixtureOptions = {
@@ -31,42 +34,14 @@ export async function createAppFixture({
 	app: INestApplication;
 	db: Database;
 }> {
-	const resolveEnvValue = (key: string) => {
-		if (key === 'THROTTLE_ENABLED') {
-			const value = process.env['THROTTLE_ENABLED'];
-
-			if (!value) return false;
-
-			return !['false', '0', 'off', 'no'].includes(value.toLowerCase());
-		}
-
-		if (key === 'REDIS_HOST') return process.env['REDIS_HOST'] || 'localhost';
-		if (key === 'REDIS_PORT')
-			return parseInt(process.env['REDIS_PORT'] || '6379', 10);
-		if (key === 'REDIS_PASSWORD')
-			return process.env['REDIS_PASSWORD'] || undefined;
-
-		return process.env[key];
-	};
-
-	const envServiceMock = mock<EnvService>({
-		getKey: (key: string) => resolveEnvValue(key) as never,
-		getKeyOrThrow: (key: string) => {
-			const value = resolveEnvValue(key);
-
-			if (value === undefined || value === null || value === '') {
-				throw new Error(`Missing env key: ${key}`);
-			}
-
-			return value as never;
-		},
-	});
-
+	const httpAdapter = new ExpressAdapter();
+	const httpAdapterHost = new HttpAdapterHost();
+	httpAdapterHost.httpAdapter = httpAdapter;
 	const moduleBuilder = Test.createTestingModule({
 		imports: [AppModule],
 	})
-		.overrideProvider(EnvService)
-		.useValue(envServiceMock);
+		.overrideProvider(HttpAdapterHost)
+		.useValue(httpAdapterHost);
 
 	if (useInMemoryThrottleStorage) {
 		const throttlerOptions: ThrottlerModuleOptions = {
@@ -77,17 +52,29 @@ export async function createAppFixture({
 			setHeaders: true,
 			getTracker: getIpTracker,
 		};
+		const throttleStorage = new ThrottlerStorageService();
+		const throttleEnabledEnv = {
+			getKey: (key: string) => key === 'THROTTLE_ENABLED',
+		};
 
 		moduleBuilder
 			.overrideProvider(getStorageToken())
-			.useValue(new ThrottlerStorageService())
+			.useValue(throttleStorage)
 			.overrideProvider(getOptionsToken())
-			.useValue(throttlerOptions);
+			.useValue(throttlerOptions)
+			.overrideProvider(GlobalThrottlerGuard)
+			.useValue(
+				new GlobalThrottlerGuard(
+					throttlerOptions,
+					throttleStorage,
+					throttleEnabledEnv as unknown as EnvService,
+				),
+			);
 	}
 
 	const module = await moduleBuilder.compile();
 
-	const app = module.createNestApplication();
+	const app = module.createNestApplication(httpAdapter);
 
 	app.useGlobalPipes(
 		new ValidationPipe({

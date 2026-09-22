@@ -165,6 +165,7 @@ import { getIpTracker } from '@/shared/utils/get-ip-tracker';
 	controllers: [AppController],
 	providers: [
 		AppService,
+		GlobalThrottlerGuard,
 		{
 			provide: APP_FILTER,
 			useClass: GlobalExceptionFilter,
@@ -181,7 +182,7 @@ import { getIpTracker } from '@/shared/utils/get-ip-tracker';
 		},
 		{
 			provide: APP_GUARD,
-			useClass: GlobalThrottlerGuard,
+			useExisting: GlobalThrottlerGuard,
 		},
 	],
 })

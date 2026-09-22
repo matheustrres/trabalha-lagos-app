@@ -6,10 +6,12 @@ import {
 } from '@testcontainers/postgresql';
 import { RedisContainer, StartedRedisContainer } from '@testcontainers/redis';
 
+import type { E2eEnvironment } from './e2e-context';
+
 let pgContainer: StartedPostgreSqlContainer;
 let redisContainer: StartedRedisContainer;
 
-export async function setup(): Promise<void> {
+export async function setup(): Promise<E2eEnvironment> {
 	console.log('\n[e2e] Starting containers...');
 
 	[pgContainer, redisContainer] = await Promise.all([
@@ -22,16 +24,21 @@ export async function setup(): Promise<void> {
 	]);
 
 	const databaseUrl = pgContainer.getConnectionUri();
+	const redisHost = redisContainer.getHost();
 
-	process.env['DATABASE_URL'] = databaseUrl;
-	process.env['PG_USER'] = pgContainer.getUsername();
-	process.env['PG_PASSWORD'] = pgContainer.getPassword();
-	process.env['PG_HOST'] = pgContainer.getHost();
-	process.env['PG_PORT'] = String(pgContainer.getFirstMappedPort());
-	process.env['PG_DATABASE'] = pgContainer.getDatabase();
-	process.env['REDIS_HOST'] = redisContainer.getHost();
-	process.env['REDIS_PORT'] = String(redisContainer.getMappedPort(6379));
-	process.env['REDIS_PASSWORD'] = '';
+	const environment: E2eEnvironment = {
+		DATABASE_URL: databaseUrl,
+		PG_USER: pgContainer.getUsername(),
+		PG_PASSWORD: pgContainer.getPassword(),
+		PG_HOST: pgContainer.getHost(),
+		PG_PORT: String(pgContainer.getFirstMappedPort()),
+		PG_DATABASE: pgContainer.getDatabase(),
+		REDIS_HOST: redisHost === 'localhost' ? '127.0.0.1' : redisHost,
+		REDIS_PORT: String(redisContainer.getMappedPort(6379)),
+		REDIS_PASSWORD: '',
+	};
+
+	Object.assign(process.env, environment);
 
 	console.log('[e2e] Running drizzle-kit migrate...');
 
@@ -42,8 +49,12 @@ export async function setup(): Promise<void> {
 	});
 
 	console.log('[e2e] Environment ready.\n');
+
+	return environment;
 }
 
 export async function teardown(): Promise<void> {
+	console.log('\n[e2e] Stopping containers...');
 	await Promise.all([pgContainer?.stop(), redisContainer?.stop()]);
+	console.log('[e2e] Containers stopped.');
 }

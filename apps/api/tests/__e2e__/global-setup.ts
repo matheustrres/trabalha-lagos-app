@@ -1,4 +1,5 @@
 import { Client } from 'pg';
+import type { TestProject } from 'vitest/node';
 
 import {
 	setup as testContainersSetup,
@@ -33,7 +34,7 @@ const categories = [
 	{ name: 'Outros', slug: 'outros', icon: '📦', order: 10 },
 ];
 
-export async function setup(): Promise<void> {
+export async function setup(project: TestProject): Promise<void> {
 	// Ensure JWT secrets are set for tests
 	process.env['JWT_SECRET'] =
 		process.env['JWT_SECRET'] || 'test-jwt-secret-long-enough-32-chars!!';
@@ -42,7 +43,8 @@ export async function setup(): Promise<void> {
 		'test-jwt-refresh-secret-long-enough-32!!';
 
 	// Start containers and run migrations
-	await testContainersSetup();
+	const environment = await testContainersSetup();
+	project.provide('e2eEnvironment', environment);
 
 	// Seed categories after containers are ready
 	const databaseUrl = process.env['DATABASE_URL'];

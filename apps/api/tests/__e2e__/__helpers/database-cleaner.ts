@@ -11,8 +11,11 @@ export async function cleanDatabase(db: Database): Promise<void> {
 	const tables = result.rows.map((r) => r.tablename);
 	if (tables.length === 0) return;
 
-	// Exclude categories from truncate (it's seeded in global-setup)
-	const tablesToTruncate = tables.filter((t) => t !== 'categories');
+	// Preserve globally seeded fixtures and PostGIS extension metadata.
+	const preservedTables = new Set(['categories', 'spatial_ref_sys']);
+	const tablesToTruncate = tables.filter(
+		(table) => !preservedTables.has(table),
+	);
 	if (tablesToTruncate.length === 0) return;
 
 	const tableList = tablesToTruncate.map((t) => `"public"."${t}"`).join(', ');
