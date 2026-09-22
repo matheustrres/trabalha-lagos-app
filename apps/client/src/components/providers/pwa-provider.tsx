@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 
 const INSTALL_DISMISSED_KEY = 'tl:pwa-install-dismissed-at'
 const INSTALLED_KEY = 'tl:pwa-installed'
+const INSTALL_PROMPT_BODY_CLASS = 'pwa-install-prompt-visible'
 const DISMISS_DURATION_MS = 30 * 24 * 60 * 60 * 1000
 const INSTALL_DELAY_MS = 30_000
 const PWA_ENABLED = process.env.NEXT_PUBLIC_PWA_ENABLED === 'true'
@@ -201,6 +202,15 @@ export const PwaProvider = () => {
     isEligiblePublicRoute(pathname) &&
     (Boolean(deferredPrompt) || isIos)
 
+  useEffect(() => {
+    document.body.classList.toggle(
+      INSTALL_PROMPT_BODY_CLASS,
+      showInstallPrompt,
+    )
+
+    return () => document.body.classList.remove(INSTALL_PROMPT_BODY_CLASS)
+  }, [showInstallPrompt])
+
   return (
     <>
       {waitingWorker && (
@@ -225,49 +235,47 @@ export const PwaProvider = () => {
 
       {showInstallPrompt && (
         <aside
+          data-pwa-install-prompt
           aria-label="Instalar TrabalhaLagos"
-          className="fixed right-3 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-3 z-50 mx-auto max-w-md rounded-2xl bg-gray-900 p-4 text-white shadow-[0_12px_32px_rgba(17,24,39,0.24)]"
+          className="fixed right-3 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-3 z-50 mx-auto max-w-md rounded-2xl bg-white p-3 text-gray-900 shadow-[0_12px_32px_rgba(17,24,39,0.2)] md:right-6 md:bottom-6 md:left-auto md:mx-0 md:w-88"
         >
-          <div className="flex items-start gap-3">
-            <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
-              <Download size={20} aria-hidden />
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
+              {isIos ? (
+                <Share size={18} aria-hidden />
+              ) : (
+                <Download size={18} aria-hidden />
+              )}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="font-semibold">Tenha as vagas sempre à mão</p>
-              <p className="mt-1 text-sm leading-5 text-gray-300">
+              <p className="text-sm leading-5 font-semibold">
                 {isIos
-                  ? 'Toque em Compartilhar e depois em “Adicionar à Tela de Início”.'
-                  : 'Instale o TrabalhaLagos para abrir mais rápido, até quando a conexão falhar.'}
+                  ? 'Adicione à Tela de Início'
+                  : 'Instale o TrabalhaLagos'}
               </p>
-              <div className="mt-3 flex items-center gap-2">
-                {isIos ? (
-                  <Button type="button" size="sm" onClick={dismissInstallPrompt}>
-                    <Share size={15} aria-hidden />
-                    Entendi
-                  </Button>
-                ) : (
-                  <Button type="button" size="sm" onClick={installApp}>
-                    Instalar
-                  </Button>
-                )}
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={dismissInstallPrompt}
-                  className="text-gray-300 hover:bg-white/10 hover:text-white"
-                >
-                  Agora não
-                </Button>
-              </div>
+              <p className="text-xs leading-4 text-gray-600">
+                {isIos
+                  ? 'Compartilhar → Adicionar à Tela de Início'
+                  : 'Acesse suas vagas mesmo sem conexão.'}
+              </p>
             </div>
+            {!isIos && (
+              <Button
+                type="button"
+                size="sm"
+                onClick={installApp}
+                className="shrink-0"
+              >
+                Instalar
+              </Button>
+            )}
             <Button
               type="button"
               size="sm"
               variant="ghost"
               aria-label="Fechar convite de instalação"
               onClick={dismissInstallPrompt}
-              className="-mt-2 -mr-2 h-9 w-9 shrink-0 px-0 text-gray-300 hover:bg-white/10 hover:text-white"
+              className="-mr-1 h-11 w-11 shrink-0 px-0 text-gray-500 hover:bg-surface hover:text-gray-900"
             >
               <X size={18} aria-hidden />
             </Button>

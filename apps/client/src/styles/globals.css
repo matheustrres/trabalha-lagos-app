@@ -4,6 +4,22 @@ html {
   scroll-behavior: smooth;
 }
 
+#app-main {
+  transition: padding-bottom 200ms ease-out;
+}
+
+@media (max-width: 767px) {
+  body.pwa-install-prompt-visible #app-main {
+    padding-bottom: calc(11rem + env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app-main {
+    transition: none;
+  }
+}
+
 @theme {
   --color-primary: #0c7a5a;
   --color-primary-dark: #085a42;

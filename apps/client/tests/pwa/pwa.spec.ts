@@ -217,7 +217,9 @@ test('convite instala, respeita dispensa e some após appinstalled', async ({ pa
 
   const prompt = page.getByLabel('Instalar TrabalhaLagos')
   await expect(prompt).toBeVisible()
-  await prompt.getByRole('button', { name: 'Agora não' }).click()
+  await prompt
+    .getByRole('button', { name: 'Fechar convite de instalação' })
+    .click()
   await expect(prompt).toBeHidden()
 
   await page.reload()

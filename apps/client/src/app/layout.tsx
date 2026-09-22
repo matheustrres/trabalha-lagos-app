@@ -53,7 +53,10 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => (
       <QueryProvider>
         <PwaProvider />
         <Header />
-        <main className="mx-auto min-h-[calc(100dvh-57px)] max-w-lg bg-white pb-20 has-[>[data-panel-layout]]:pb-0">
+        <main
+          id="app-main"
+          className="mx-auto min-h-[calc(100dvh-57px)] max-w-lg bg-white pb-20 has-[>[data-panel-layout]]:pb-0"
+        >
           {children}
         </main>
         <BottomNav />
