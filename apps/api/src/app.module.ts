@@ -159,13 +159,13 @@ import { getIpTracker } from '@/shared/utils/get-ip-tracker';
 		GlobalThrottlerGuard,
 		{
 			provide: APP_FILTER,
-			useClass: GlobalExceptionFilter,
-		},
-		{
-			provide: APP_FILTER,
 			inject: [HttpAdapterHost],
 			useFactory: ({ httpAdapter }: HttpAdapterHost) =>
 				new SentryGlobalFilter(httpAdapter),
+		},
+		{
+			provide: APP_FILTER,
+			useClass: GlobalExceptionFilter,
 		},
 		{
 			provide: APP_GUARD,
