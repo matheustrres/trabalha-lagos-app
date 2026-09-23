@@ -51,7 +51,11 @@ const request = async <T>(
     },
   });
 
-  if (res.status === 401 && retry) {
+  if (
+    res.status === 401 &&
+    retry &&
+    !["/auth/login", "/auth/register", "/auth/refresh"].includes(path)
+  ) {
     if (!refreshPromise) {
       refreshPromise = refreshAccessToken().finally(() => {
         refreshPromise = null;
