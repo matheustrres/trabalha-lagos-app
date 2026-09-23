@@ -17,10 +17,17 @@ export interface UpdateAccountPayload {
   city: string;
 }
 
+export interface UpdateEmailPayload {
+  email: string;
+  currentPassword: string;
+}
+
 export const usersService = {
   getMyAccount: () => api.get<UserAccount>("/users/me"),
   updateMyAccount: (data: UpdateAccountPayload) =>
     api.patch<UserAccount>("/users/me", data),
+  updateMyEmail: (data: UpdateEmailPayload) =>
+    api.patch<UserAccount>("/users/me/email", data),
   deleteMyAccount: (data: { currentPassword: string; confirmation: string }) =>
     api.delete<void>("/users/me", data),
   getMyProfile: () => api.get<UserProfile>("/users/me/profile"),

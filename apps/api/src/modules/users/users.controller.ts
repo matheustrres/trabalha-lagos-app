@@ -14,6 +14,7 @@ import { Throttle } from '@nestjs/throttler';
 import { AccountResponseDto } from './dto/account-response.dto';
 import { DeleteAccountDto } from './dto/delete-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
+import { UpdateEmailDto } from './dto/update-email.dto';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 import { UserProfileResponseDto } from './dto/user-profile-response.dto';
 import { UsersService } from './users.service';
@@ -59,6 +60,27 @@ export class UsersController {
 	) {
 		return this.serializeAccount(
 			await this.usersService.updateAccount(user.userId, dto),
+		);
+	}
+
+	@Patch('me/email')
+	@Throttle({ medium: { limit: 5, ttl: 60000, getTracker: getUserTracker } })
+	@SwaggerRoute({
+		operation: 'Alterar e-mail da conta após confirmação da senha atual',
+		responses: [{ status: HttpStatus.OK, type: AccountResponseDto }],
+		authName: 'jwt',
+		body: UpdateEmailDto,
+	})
+	async updateMyEmail(
+		@CurrentUser() user: CurrentUserPayload,
+		@Body() dto: UpdateEmailDto,
+	) {
+		return this.serializeAccount(
+			await this.usersService.updateEmail(
+				user.userId,
+				dto.email,
+				dto.currentPassword,
+			),
 		);
 	}
 

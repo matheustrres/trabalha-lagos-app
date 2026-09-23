@@ -58,6 +58,37 @@ test('empregador tem apenas configurações de conta', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Excluir minha conta' })).toBeVisible()
 })
 
+test('alterar e-mail exige a senha da conta e atualiza o acesso', async ({ page }) => {
+  await page.addInitScript((value) => localStorage.setItem('session', JSON.stringify(value)), session('CANDIDATE'))
+  await page.route('**/api/v1/users/me', (route) => route.fulfill({ json: mockAccount('CANDIDATE') }))
+
+  let submittedPayload: unknown
+  await page.route('**/api/v1/users/me/email', async (route) => {
+    submittedPayload = route.request().postDataJSON()
+    await route.fulfill({ json: { ...mockAccount('CANDIDATE'), email: 'ana.nova@example.com' } })
+  })
+
+  await page.goto('/perfil')
+  await page.getByRole('button', { name: 'Alterar e-mail' }).click()
+  await expect(page.getByRole('dialog', { name: 'Alterar e-mail de acesso' })).toBeVisible()
+  const confirmEmailButton = page.getByRole('button', { name: 'Confirmar e-mail' })
+  await expect(confirmEmailButton).toBeDisabled()
+  await expect(page.getByRole('status')).toHaveText('Digite um e-mail diferente do atual.')
+  await page.getByLabel('Novo e-mail').fill('ana@example.com')
+  await page.getByLabel('Senha da conta').fill('SenhaAtual1!')
+  await expect(confirmEmailButton).toBeDisabled()
+  await expect(page.getByRole('status')).toHaveText('Digite um e-mail diferente do atual.')
+  await page.getByLabel('Novo e-mail').fill('ana.nova@example.com')
+  await expect(page.getByRole('status')).toHaveCount(0)
+  await expect(confirmEmailButton).toBeEnabled()
+  await confirmEmailButton.click()
+
+  await expect.poll(() => submittedPayload).toEqual({ email: 'ana.nova@example.com', currentPassword: 'SenhaAtual1!' })
+  await expect(page.getByRole('dialog', { name: 'Alterar e-mail de acesso' })).toBeHidden()
+  await expect(page.getByLabel('E-mail de acesso')).toHaveValue('ana.nova@example.com')
+  await expect(page.getByRole('status')).toHaveText('E-mail atualizado. Use o novo endereço nos próximos acessos.')
+})
+
 test('mensagem de sucesso expira e a troca de senha exige campos válidos', async ({ page }) => {
   await page.addInitScript((value) => localStorage.setItem('session', JSON.stringify(value)), session('CANDIDATE'))
 

@@ -82,7 +82,9 @@ A autenticação por telefone e OTP via WhatsApp não faz parte do contrato atua
 
 - `GET /users/me` retorna `id`, `name`, `email`, `city` e `role` para qualquer
   usuário autenticado.
-- `PATCH /users/me` altera somente `name` e `city`; e-mail é somente leitura.
+- `PATCH /users/me` altera somente `name` e `city`.
+- `PATCH /users/me/email` altera o e-mail após validar a senha atual; o e-mail
+  é normalizado para minúsculas e deve ser único.
 - `DELETE /users/me` exige senha atual e a confirmação literal
   `EXCLUIR MINHA CONTA`. A exclusão é permanente e executa os cascades definidos
   no banco para dados da conta, empresa, vagas e interesses.

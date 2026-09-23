@@ -111,6 +111,16 @@ export class UsersRepository {
 		return user ?? null;
 	}
 
+	async updateEmail(userId: string, email: string): Promise<UserSchema | null> {
+		const [user] = await this.db
+			.update(users)
+			.set({ email, updatedAt: new Date() })
+			.where(eq(users.id, userId))
+			.returning();
+
+		return user ?? null;
+	}
+
 	async updateCredentials(
 		userId: string,
 		passwordHash: string,

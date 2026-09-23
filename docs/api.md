@@ -26,6 +26,7 @@
 | `PATCH` | `/auth/password` | Autenticado | Alterar senha e invalidar refresh tokens anteriores |
 | `GET` | `/users/me` | Autenticado | Dados básicos da conta |
 | `PATCH` | `/users/me` | Autenticado | Atualizar nome e cidade |
+| `PATCH` | `/users/me/email` | Autenticado | Alterar e-mail após confirmação da senha atual |
 | `DELETE` | `/users/me` | Autenticado | Excluir permanentemente a conta |
 | `GET` | `/categories` | Público | Categorias com contagem de vagas |
 | `GET` | `/companies/:id` | Público | Perfil público da empresa |
@@ -44,7 +45,9 @@
 ### Conta e credenciais
 
 - `PATCH /users/me` recebe `{ "name": string, "city": string }`; cidade deve
-  ser uma das cidades disponíveis na Região dos Lagos. E-mail não é editável.
+  ser uma das cidades disponíveis na Região dos Lagos.
+- `PATCH /users/me/email` recebe `{ "email": string, "currentPassword": string }`;
+  valida a senha atual e exige que o novo e-mail ainda não esteja cadastrado.
 - `PATCH /auth/password` recebe `{ "currentPassword": string,
   "newPassword": string }` e retorna `AuthResponseDto` com novos tokens.
 - `DELETE /users/me` recebe `{ "currentPassword": string, "confirmation":

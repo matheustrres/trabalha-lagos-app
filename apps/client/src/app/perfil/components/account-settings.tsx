@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,11 @@ const passwordSchema = z
     path: ["confirmPassword"],
   });
 
+const emailSchema = z.object({
+  email: z.string().trim().email("Informe um e-mail válido."),
+  currentPassword: z.string().min(1, "Informe sua senha atual."),
+});
+
 const PASSWORD_REQUIREMENTS = [
   { id: "length", label: "Mínimo de 8 caracteres", test: (value: string) => value.length >= 8 },
   { id: "uppercase", label: "Pelo menos 1 letra maiúscula", test: (value: string) => /[A-Z]/.test(value) },
@@ -49,6 +54,7 @@ const PASSWORD_REQUIREMENTS = [
 
 type AccountFormValues = z.infer<typeof accountSchema>;
 type PasswordFormValues = z.infer<typeof passwordSchema>;
+type EmailFormValues = z.infer<typeof emailSchema>;
 type PasswordField = "current" | "new" | "confirm";
 const DELETE_CONFIRMATION = "EXCLUIR MINHA CONTA";
 
@@ -79,6 +85,9 @@ export const AccountSettings = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [emailNotice, setEmailNotice] = useState<string | null>(null);
+  const [emailPasswordVisible, setEmailPasswordVisible] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [accountNotice, setAccountNotice] = useState<string | null>(null);
@@ -121,6 +130,13 @@ export const AccountSettings = () => {
     return () => window.clearTimeout(timeoutId);
   }, [passwordNotice]);
 
+  useEffect(() => {
+    if (!emailNotice) return;
+
+    const timeoutId = window.setTimeout(() => setEmailNotice(null), 4000);
+    return () => window.clearTimeout(timeoutId);
+  }, [emailNotice]);
+
   const accountMutation = useMutation({
     mutationFn: usersService.updateMyAccount,
     onSuccess: (updated) => {
@@ -133,6 +149,30 @@ export const AccountSettings = () => {
       setAccountNotice("Dados da conta atualizados.");
     },
     onError: () => setAccountNotice("Não foi possível salvar. Revise os dados e tente novamente."),
+  });
+
+  const emailForm = useForm<EmailFormValues>({
+    resolver: zodResolver(emailSchema),
+    mode: "onChange",
+    defaultValues: { email: "", currentPassword: "" },
+  });
+  const newEmailValue = emailForm.watch("email", "");
+  const emailCurrentPasswordValue = emailForm.watch("currentPassword", "");
+  const isEmailChanged = newEmailValue.trim().toLowerCase() !== account?.email.trim().toLowerCase();
+
+  const emailMutation = useMutation({
+    mutationFn: usersService.updateMyEmail,
+    onSuccess: (updated) => {
+      queryClient.setQueryData(["account", "me"], updated);
+      const stored = getSession();
+      if (stored) {
+        setSession({ ...stored, user: { ...stored.user, email: updated.email } });
+      }
+      emailForm.reset();
+      setEmailPasswordVisible(false);
+      setEmailOpen(false);
+      setEmailNotice("E-mail atualizado. Use o novo endereço nos próximos acessos.");
+    },
   });
 
   const passwordForm = useForm<PasswordFormValues>({
@@ -188,8 +228,33 @@ export const AccountSettings = () => {
           accountMutation.mutate(data);
         })}>
           <Input id="account-name" label="Nome" autoComplete="name" maxLength={100} error={accountForm.formState.errors.name?.message} {...accountForm.register("name")} />
-          <Input id="account-email" label="E-mail de acesso" type="email" value={account.email} readOnly className="bg-surface text-gray-500" />
-          <p className="-mt-2 text-xs text-gray-500">O e-mail não pode ser alterado nesta tela.</p>
+          <Input
+            id="account-email"
+            label="E-mail de acesso"
+            type="email"
+            value={account.email}
+            readOnly
+            className="bg-surface text-gray-500"
+            endAdornment={(
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                className="size-8 p-0"
+                aria-label="Alterar e-mail"
+                title="Alterar e-mail"
+                onClick={() => {
+                  emailForm.reset({ email: account.email, currentPassword: "" });
+                  emailMutation.reset();
+                  setEmailPasswordVisible(false);
+                  setEmailOpen(true);
+                }}
+              >
+                <Pencil aria-hidden="true" size={13} />
+              </Button>
+            )}
+          />
+          {emailNotice && <p role="status" className="-mt-2 text-sm text-gray-600">{emailNotice}</p>}
           <div className="flex flex-col gap-1">
             <label htmlFor="account-city" className="text-sm font-medium text-gray-700">Cidade</label>
             <select id="account-city" className="h-10 w-full rounded-xl border border-border bg-white px-3 text-base text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary" {...accountForm.register("city")}>
@@ -319,6 +384,65 @@ export const AccountSettings = () => {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      <Modal
+        isOpen={emailOpen}
+        onClose={() => {
+          if (emailMutation.isPending) return;
+          setEmailOpen(false);
+          emailForm.reset();
+        }}
+        title="Alterar e-mail de acesso"
+      >
+        <form className="space-y-4" onSubmit={emailForm.handleSubmit((data) => emailMutation.mutate(data))}>
+          <p className="text-sm text-gray-600">Confirme sua senha para trocar o e-mail usado para entrar na plataforma.</p>
+          <Input
+            id="new-account-email"
+            label="Novo e-mail"
+            type="email"
+            autoComplete="email"
+            error={emailForm.formState.errors.email?.message}
+            {...emailForm.register("email")}
+          />
+          {newEmailValue.trim() && !isEmailChanged && (
+            <p role="status" className="-mt-2 text-sm text-gray-500">
+              Digite um e-mail diferente do atual.
+            </p>
+          )}
+          <Input
+            id="confirm-email-password"
+            label="Senha da conta"
+            type={emailPasswordVisible ? "text" : "password"}
+            autoComplete="current-password"
+            error={emailForm.formState.errors.currentPassword?.message}
+            endAdornment={(
+              <PasswordVisibilityToggle
+                fieldId="confirm-email-password"
+                label="senha da conta"
+                visible={emailPasswordVisible}
+                disabled={!emailForm.watch("currentPassword") || emailMutation.isPending}
+                onToggle={() => setEmailPasswordVisible((visible) => !visible)}
+              />
+            )}
+            {...emailForm.register("currentPassword")}
+          />
+          {emailMutation.isError && <p role="alert" className="text-sm text-error">{emailMutation.error.message || "Não foi possível alterar o e-mail."}</p>}
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button type="button" variant="secondary" disabled={emailMutation.isPending} onClick={() => {
+              setEmailOpen(false);
+              emailForm.reset();
+            }}>
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              disabled={!emailForm.formState.isValid || !isEmailChanged || !emailCurrentPasswordValue || emailMutation.isPending}
+            >
+              {emailMutation.isPending ? "Salvando..." : "Confirmar e-mail"}
+            </Button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

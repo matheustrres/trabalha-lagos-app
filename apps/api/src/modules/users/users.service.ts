@@ -64,6 +64,35 @@ export class UsersService {
 		return user;
 	}
 
+	async updateEmail(
+		userId: string,
+		email: string,
+		currentPassword: string,
+	): Promise<UserSchema> {
+		const user = await this.findByIdOrFail(userId);
+		if (!(await argon2.verify(user.passwordHash, currentPassword))) {
+			throw new BadRequestException('Senha atual inválida.');
+		}
+
+		const normalizedEmail = email.trim().toLowerCase();
+		if (normalizedEmail === user.email) return user;
+
+		const existingUser = await this.findByEmail(normalizedEmail);
+		if (existingUser) {
+			throw new BadRequestException('Este e-mail já está em uso.');
+		}
+
+		const updatedUser = await this.usersRepository.updateEmail(
+			userId,
+			normalizedEmail,
+		);
+		if (!updatedUser) {
+			throw new NotFoundException('Usuário não encontrado.');
+		}
+
+		return updatedUser;
+	}
+
 	async updateCredentials(
 		userId: string,
 		passwordHash: string,

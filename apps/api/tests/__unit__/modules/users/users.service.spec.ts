@@ -1,5 +1,8 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import * as argon2 from 'argon2';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { type MockProxy } from 'vitest-mock-extended';
+
+vi.mock('argon2', () => ({ verify: vi.fn() }));
 
 import { UsersRepository } from '@/modules/users/users.repository';
 import { UsersService } from '@/modules/users/users.service';
@@ -17,8 +20,57 @@ describe(UsersService.name, () => {
 	let usersRepository: MockProxy<UsersRepository>;
 
 	beforeEach(() => {
+		vi.mocked(argon2.verify).mockReset();
 		usersRepository = makeUsersRepositoryMock();
 		SUT = new UsersService(usersRepository);
+	});
+
+	describe('updateEmail', () => {
+		it('validates the current password and stores a normalized email', async () => {
+			const user = aUser().withEmail('ana@email.com').build();
+			const updated = { ...user, email: 'novo@email.com' };
+			usersRepository.findById.mockResolvedValue(user);
+			usersRepository.findByEmail.mockResolvedValue(null);
+			usersRepository.updateEmail.mockResolvedValue(updated);
+			vi.mocked(argon2.verify).mockResolvedValue(true);
+
+			const result = await SUT.updateEmail(
+				user.id,
+				' Novo@Email.com ',
+				'senha',
+			);
+
+			expect(result.email).toBe('novo@email.com');
+			expect(usersRepository.updateEmail).toHaveBeenCalledWith(
+				user.id,
+				'novo@email.com',
+			);
+		});
+
+		it('rejects an invalid current password', async () => {
+			const user = aUser().build();
+			usersRepository.findById.mockResolvedValue(user);
+			vi.mocked(argon2.verify).mockResolvedValue(false);
+
+			await expect(
+				SUT.updateEmail(user.id, 'novo@email.com', 'errada'),
+			).rejects.toThrow('Senha atual inválida.');
+			expect(usersRepository.updateEmail).not.toHaveBeenCalled();
+		});
+
+		it('rejects an email already used by another account', async () => {
+			const user = aUser().withEmail('ana@email.com').build();
+			usersRepository.findById.mockResolvedValue(user);
+			usersRepository.findByEmail.mockResolvedValue(
+				aUser().withEmail('outro@email.com').build(),
+			);
+			vi.mocked(argon2.verify).mockResolvedValue(true);
+
+			await expect(
+				SUT.updateEmail(user.id, 'outro@email.com', 'senha'),
+			).rejects.toThrow('Este e-mail já está em uso.');
+			expect(usersRepository.updateEmail).not.toHaveBeenCalled();
+		});
 	});
 
 	// ─── findByPhone ───────────────────────────────────────────────────────────
