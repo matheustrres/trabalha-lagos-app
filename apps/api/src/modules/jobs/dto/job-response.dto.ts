@@ -47,6 +47,12 @@ export class JobResponseDto {
 	@ApiProperty({ example: 'Descrição detalhada da vaga...' })
 	description!: string;
 
+	@ApiPropertyOptional({
+		type: [String],
+		description: 'Requisitos informados pelo empregador',
+	})
+	requirements?: string[];
+
 	@ApiProperty({ example: 'CLT' })
 	contractType!: string;
 
@@ -68,6 +74,9 @@ export class JobResponseDto {
 	@ApiPropertyOptional({ example: '22999999999', nullable: true })
 	whatsappContact!: string | null;
 
+	@ApiPropertyOptional({ example: 'contato@empresa.com.br', nullable: true })
+	contactEmail!: string | null;
+
 	@ApiProperty({ example: 'WHATSAPP' })
 	contactMethod!: string;
 
@@ -83,11 +92,17 @@ export class JobResponseDto {
 	@ApiProperty()
 	expiresAt!: Date;
 
-	@ApiProperty({ example: 0 })
-	viewCount!: number;
+	@ApiPropertyOptional({
+		example: 0,
+		description: 'Disponível apenas no contexto autorizado do plano SEASON',
+	})
+	viewCount?: number;
 
-	@ApiProperty({ example: 0 })
-	interestCount!: number;
+	@ApiPropertyOptional({
+		example: 0,
+		description: 'Contagem operacional disponível para o empregador',
+	})
+	interestCount?: number;
 
 	@ApiProperty()
 	createdAt!: Date;

@@ -109,6 +109,83 @@ export class InterestsService {
 		};
 	}
 
+	async getDashboard(userId: string) {
+		const [company, jobs, interests] = await Promise.all([
+			this.companiesService.findByUserId(userId),
+			this.jobsService.findByCompanyForDashboard(userId),
+			this.findByCompany(userId),
+		]);
+		const today = new Date();
+		const isSeason = company.plan === 'SEASON';
+		const canSeeViews = company.plan !== 'FREE';
+		const recentJobs = jobs.slice(0, 5).map((job) => ({
+			id: job.id,
+			title: job.title,
+			city: job.city,
+			status: job.status,
+			createdAt: job.createdAt,
+			expiresAt: job.expiresAt,
+			interestCount: job.interestCount,
+			...(isSeason ? { viewCount: job.viewCount } : {}),
+		}));
+		const recentInterests = interests.data
+			.slice()
+			.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+			.slice(0, 5)
+			.map((interest) => ({
+				id: interest.id,
+				candidateName: interest.candidateName,
+				candidateCity: interest.candidateCity,
+				jobId: interest.jobId,
+				jobTitle: interest.jobTitle,
+				status: interest.status,
+				createdAt: interest.createdAt,
+			}));
+		return {
+			plan: company.plan,
+			permissions: {
+				totalViews: canSeeViews,
+				jobViews: isSeason,
+				comparison: isSeason,
+			},
+			metrics: {
+				activeJobs: jobs.filter(
+					(job) => job.status === 'ACTIVE' && job.expiresAt > today,
+				).length,
+				expiredJobs: jobs.filter(
+					(job) =>
+						job.status === 'EXPIRED' ||
+						(job.status === 'ACTIVE' && job.expiresAt <= today),
+				).length,
+				interestsCount: interests.meta.total,
+				newInterestsCount: interests.data.filter(
+					(interest) => interest.status === 'SENT',
+				).length,
+				...(canSeeViews
+					? { totalViews: jobs.reduce((sum, job) => sum + job.viewCount, 0) }
+					: {}),
+			},
+			recentJobs,
+			recentInterests,
+			...(isSeason
+				? {
+						comparison: jobs
+							.map((job) => ({
+								jobId: job.id,
+								title: job.title,
+								viewCount: job.viewCount,
+								interestCount: job.interestCount,
+								interestViewRatio:
+									job.viewCount > 0
+										? Math.round((job.interestCount / job.viewCount) * 100)
+										: null,
+							}))
+							.sort((a, b) => b.viewCount - a.viewCount),
+					}
+				: {}),
+		};
+	}
+
 	async updateStatus(
 		interestId: string,
 		userId: string,

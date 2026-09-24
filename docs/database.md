@@ -79,7 +79,7 @@ export const roleEnum = pgEnum('role', ['CANDIDATE', 'EMPLOYER', 'ADMIN']);
 export const contractTypeEnum = pgEnum('contract_type', ['CLT', 'PJ', 'FREELANCER', 'TEMPORARY', 'INTERNSHIP', 'OTHER']);
 export const jobStatusEnum = pgEnum('job_status', ['ACTIVE', 'PAUSED', 'CLOSED', 'EXPIRED']);
 export const planEnum = pgEnum('plan', ['FREE', 'PRO', 'SEASON']);
-export const contactMethodEnum = pgEnum('contact_method', ['WHATSAPP', 'PLATFORM', 'BOTH']);
+export const contactMethodEnum = pgEnum('contact_method', ['WHATSAPP', 'EMAIL']);
 export const interestStatusEnum = pgEnum('interest_status', ['SENT', 'VIEWED', 'CONTACTED', 'REJECTED']);
 ```
 
@@ -111,6 +111,7 @@ export const jobs = pgTable('jobs', {
   address: text('address'),
   location: geometry('location', { type: 'point', mode: 'xy', srid: 4326 }).notNull(),
   whatsappContact: text('whatsapp_contact'),
+  contactEmail: text('contact_email'),
   contactMethod: contactMethodEnum('contact_method').default('WHATSAPP').notNull(),
   status: jobStatusEnum('status').default('ACTIVE').notNull(),
   featured: boolean('featured').default(false).notNull(),

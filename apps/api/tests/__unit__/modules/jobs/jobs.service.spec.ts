@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mock, type MockProxy } from 'vitest-mock-extended';
 
 import { CompaniesService } from '@/modules/companies/companies.service';
+import { ContactMethod } from '@/modules/jobs/dto/create-job.dto';
 import { ExternalJobsRepository } from '@/modules/jobs/external-jobs.repository';
 import { JobsRepository } from '@/modules/jobs/jobs.repository';
 import { JobsService } from '@/modules/jobs/jobs.service';
@@ -53,8 +54,13 @@ describe(JobsService.name, () => {
 
 			const result = await SUT.search(query);
 
+			const {
+				viewCount: _viewCount,
+				interestCount: _interestCount,
+				...publicJob
+			} = aJob().build();
 			expect(result).toEqual({
-				data: [{ sourceType: 'INTERNAL', ...aJob().build() }],
+				data: [{ sourceType: 'INTERNAL', ...publicJob }],
 				meta: { total: 1, page: 1, limit: 20 },
 			});
 		});
@@ -274,6 +280,17 @@ describe(JobsService.name, () => {
 				}),
 			).rejects.toThrow(BadRequestException);
 		});
+
+		it('requires an email when the method is EMAIL', async () => {
+			await expect(
+				SUT.create('user-uuid-1', {
+					...createDto,
+					contactMethod: ContactMethod.EMAIL,
+					whatsappContact: null,
+					contactEmail: null,
+				}),
+			).rejects.toThrow('Email para contato obrigatório.');
+		});
 	});
 
 	describe('update', () => {
@@ -339,6 +356,24 @@ describe(JobsService.name, () => {
 			} as any);
 
 			expect(result?.title).toBe('Título Atualizado');
+		});
+
+		it('rejects switching to email without an email address', async () => {
+			companiesService.findByUserId.mockResolvedValue(
+				aCompany().withId('company-uuid-1').build() as never,
+			);
+			jobsRepository.findById.mockResolvedValue({
+				...aJob().withCompanyId('company-uuid-1').build(),
+				contactEmail: null,
+				location: { x: -42.0187, y: -22.8789 },
+			} as any);
+
+			await expect(
+				SUT.update('job-1', 'user-uuid-1', {
+					contactMethod: ContactMethod.EMAIL,
+					whatsappContact: null,
+				}),
+			).rejects.toThrow('Email para contato obrigatório.');
 		});
 	});
 
@@ -407,7 +442,30 @@ describe(JobsService.name, () => {
 			expect(jobsRepository.findByCompanyId).toHaveBeenCalledWith(
 				'company-uuid-1',
 			);
-			expect(result).toEqual(jobs);
+			const { viewCount: _viewCount, ...visibleJob } = jobs[0]!;
+			expect(result).toEqual([visibleJob]);
+		});
+
+		it('includes views only for SEASON', async () => {
+			const job = aJob().build();
+			companiesService.findByUserId.mockResolvedValue(
+				aCompany().withPlan('SEASON').build() as never,
+			);
+			jobsRepository.findByCompanyId.mockResolvedValue([job] as any);
+			expect(await SUT.findByCompany('user-uuid-1')).toEqual([job]);
+		});
+	});
+
+	describe('findOwnedById', () => {
+		it('does not read or count a job belonging to another company', async () => {
+			companiesService.findByUserId.mockResolvedValue(
+				aCompany().build() as never,
+			);
+			jobsRepository.findByCompanyId.mockResolvedValue([aJob().build()] as any);
+			await expect(
+				SUT.findOwnedById('user-uuid-1', 'other-id'),
+			).rejects.toThrow(NotFoundException);
+			expect(viewCounterService.increment).not.toHaveBeenCalled();
 		});
 	});
 });

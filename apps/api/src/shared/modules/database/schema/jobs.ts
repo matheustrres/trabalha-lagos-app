@@ -14,7 +14,7 @@ import { categories } from './categories';
 import { companies } from './companies';
 import { contractTypeEnum, jobStatusEnum, contactMethodEnum } from './enums';
 
-export type JobStatus = 'ACTIVE' | 'PAUSED' | 'CLOSED';
+export type JobStatus = 'ACTIVE' | 'PAUSED' | 'CLOSED' | 'EXPIRED';
 
 export const jobs = pgTable(
 	'jobs',
@@ -28,6 +28,7 @@ export const jobs = pgTable(
 		title: text('title').notNull(),
 		slug: text('slug').notNull().unique(),
 		description: text('description').notNull(),
+		requirements: text('requirements').array().default([]).notNull(),
 		categoryId: integer('category_id')
 			.notNull()
 			.references(() => categories.id),
@@ -43,6 +44,7 @@ export const jobs = pgTable(
 			srid: 4326,
 		}).notNull(),
 		whatsappContact: text('whatsapp_contact'),
+		contactEmail: text('contact_email'),
 		contactMethod: contactMethodEnum('contact_method')
 			.default('WHATSAPP')
 			.notNull(),

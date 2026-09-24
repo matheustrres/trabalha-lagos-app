@@ -19,7 +19,9 @@
 | `PATCH` | `/jobs/:id/status` | Employer (dono) | Alterar status (pausar, fechar) |
 | `POST` | `/jobs/:id/interest` | Candidate | Demonstrar interesse |
 | `GET` | `/employer/jobs` | Employer | Minhas vagas |
-| `GET` | `/employer/interests` | Employer (PRO+) | Interesses recebidos com dados completos |
+| `GET` | `/employer/jobs/:id` | Employer (dono) | Dados da vaga para edição, sem contabilizar visualização |
+| `GET` | `/employer/dashboard` | Employer | Resumo operacional; visualizações totais para PRO/SEASON e comparativo por vaga apenas para SEASON |
+| `GET` | `/employer/interests` | Employer | Interesses recebidos; telefone oculto no plano FREE |
 | `POST` | `/auth/register` | Público | Cadastro |
 | `POST` | `/auth/login` | Público | Login |
 | `POST` | `/auth/refresh` | Público | Refresh token |
@@ -100,8 +102,7 @@ export enum ContractType {
 
 export enum ContactMethod {
 	WHATSAPP = 'WHATSAPP',
-	PLATFORM = 'PLATFORM',
-	BOTH = 'BOTH',
+	EMAIL = 'EMAIL',
 }
 
 export class CreateJobDto {
@@ -178,12 +179,18 @@ export class CreateJobDto {
 	@IsOptional()
 	salaryHidden?: boolean;
 
-	@ApiProperty({ example: '22999999999' })
+	@ApiPropertyOptional({ example: '22999999999', nullable: true })
 	@IsString()
 	@MinLength(10)
 	@MaxLength(15)
 	@IsValidPhoneBR()
-	whatsappContact!: string;
+	@IsOptional()
+	whatsappContact?: string | null;
+
+	@ApiPropertyOptional({ example: 'contato@empresa.com.br', nullable: true })
+	@IsEmail()
+	@IsOptional()
+	contactEmail?: string | null;
 
 	@ApiPropertyOptional({ enum: ContactMethod, example: ContactMethod.WHATSAPP })
 	@IsEnum(ContactMethod)
@@ -210,6 +217,8 @@ export class CreateJobDto {
 	urgent?: boolean;
 }
 ```
+
+O contato exige `whatsappContact` quando `contactMethod` é `WHATSAPP` (padrão), ou `contactEmail` quando é `EMAIL`. A atualização pode trocar o método e limpa o contato do método anterior.
 
 Os valores válidos de enums vêm diretamente do schema Drizzle via `.enumValues` — single source of truth.
 

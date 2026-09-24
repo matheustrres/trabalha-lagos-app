@@ -22,6 +22,7 @@ type CreateJobData = {
 	title: string;
 	slug: string;
 	description: string;
+	requirements?: string[];
 	categoryId: number;
 	contractType: string;
 	city: string;
@@ -30,7 +31,8 @@ type CreateJobData = {
 	salaryMin?: number;
 	salaryMax?: number;
 	salaryHidden?: boolean;
-	whatsappContact: string;
+	whatsappContact?: string | null;
+	contactEmail?: string | null;
 	contactMethod?: string;
 	featured: boolean;
 	urgent: boolean;
@@ -40,15 +42,17 @@ type CreateJobData = {
 type UpdateJobData = {
 	title?: string;
 	description?: string;
+	requirements?: string[];
 	categoryId?: number;
 	contractType?: string;
 	city?: string;
-	address?: string;
+	address?: string | null;
 	location?: { x: number; y: number };
-	salaryMin?: number;
-	salaryMax?: number;
+	salaryMin?: number | null;
+	salaryMax?: number | null;
 	salaryHidden?: boolean;
-	whatsappContact?: string;
+	whatsappContact?: string | null;
+	contactEmail?: string | null;
 	contactMethod?: string;
 	featured?: boolean;
 	urgent?: boolean;
@@ -238,6 +242,7 @@ export class JobsRepository {
 				title: data.title,
 				slug: data.slug,
 				description: data.description,
+				requirements: data.requirements ?? [],
 				categoryId: data.categoryId,
 				contractType: data.contractType as typeof jobs.contractType._.data,
 				city: data.city,
@@ -247,6 +252,7 @@ export class JobsRepository {
 				salaryMax: data.salaryMax,
 				salaryHidden: data.salaryHidden ?? false,
 				whatsappContact: data.whatsappContact,
+				contactEmail: data.contactEmail,
 				contactMethod: (data.contactMethod ??
 					'WHATSAPP') as typeof jobs.contactMethod._.data,
 				featured: data.featured,
@@ -262,6 +268,7 @@ export class JobsRepository {
 
 		if (data.title !== undefined) set.title = data.title;
 		if (data.description !== undefined) set.description = data.description;
+		if (data.requirements !== undefined) set.requirements = data.requirements;
 		if (data.categoryId !== undefined) set.categoryId = data.categoryId;
 		if (data.contractType !== undefined)
 			set.contractType = data.contractType as typeof jobs.contractType._.data;
@@ -273,6 +280,7 @@ export class JobsRepository {
 		if (data.salaryHidden !== undefined) set.salaryHidden = data.salaryHidden;
 		if (data.whatsappContact !== undefined)
 			set.whatsappContact = data.whatsappContact;
+		if (data.contactEmail !== undefined) set.contactEmail = data.contactEmail;
 		if (data.contactMethod !== undefined)
 			set.contactMethod =
 				data.contactMethod as typeof jobs.contactMethod._.data;

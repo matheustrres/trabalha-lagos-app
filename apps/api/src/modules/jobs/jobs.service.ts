@@ -119,6 +119,8 @@ export class JobsService {
 	}
 
 	async create(userId: string, dto: CreateJobDto): Promise<JobSchema> {
+		const contactMethod = dto.contactMethod ?? 'WHATSAPP';
+		this.validateContact(contactMethod, dto.whatsappContact, dto.contactEmail);
 		const company = await this.companiesService.findByUserId(userId);
 
 		const activeCount = await this.jobsRepository.countActiveByCompanyId(
@@ -150,6 +152,7 @@ export class JobsService {
 			slug,
 			title: dto.title,
 			description: dto.description,
+			requirements: dto.requirements,
 			categoryId: dto.categoryId,
 			contractType: dto.contractType,
 			city: dto.city,
@@ -158,8 +161,10 @@ export class JobsService {
 			salaryMin: dto.salaryMin,
 			salaryMax: dto.salaryMax,
 			salaryHidden: dto.salaryHidden,
-			whatsappContact: dto.whatsappContact,
-			contactMethod: dto.contactMethod,
+			whatsappContact:
+				contactMethod === 'WHATSAPP' ? dto.whatsappContact : null,
+			contactEmail: contactMethod === 'EMAIL' ? dto.contactEmail : null,
+			contactMethod,
 			featured,
 			urgent,
 			expiresAt,
@@ -177,6 +182,14 @@ export class JobsService {
 		if (!job) throw new NotFoundException('Vaga não encontrada.');
 		if (job.companyId !== company.id)
 			throw new ForbiddenException('Acesso negado.');
+		const contactMethod = dto.contactMethod ?? job.contactMethod;
+		this.validateContact(
+			contactMethod,
+			dto.whatsappContact === undefined
+				? job.whatsappContact
+				: dto.whatsappContact,
+			dto.contactEmail === undefined ? job.contactEmail : dto.contactEmail,
+		);
 
 		if (dto.locationLat !== undefined || dto.locationLng !== undefined) {
 			const lat = dto.locationLat ?? job.location.y;
@@ -186,10 +199,19 @@ export class JobsService {
 
 		const canFeatureUrgent = company.plan === 'SEASON';
 
-		const { locationLat, locationLng, requirements: _req, ...rest } = dto;
+		const { locationLat, locationLng, ...rest } = dto;
 
 		return this.jobsRepository.update(id, {
 			...rest,
+			contactMethod,
+			whatsappContact:
+				contactMethod === 'WHATSAPP'
+					? (dto.whatsappContact ?? job.whatsappContact)
+					: null,
+			contactEmail:
+				contactMethod === 'EMAIL'
+					? (dto.contactEmail ?? job.contactEmail)
+					: null,
 			...(dto.featured !== undefined && {
 				featured: canFeatureUrgent ? dto.featured : false,
 			}),
@@ -220,9 +242,26 @@ export class JobsService {
 
 	async findByCompany(
 		userId: string,
-	): Promise<JobSchemaWithCategoryNoLocation[]> {
+	): Promise<Omit<JobSchemaWithCategoryNoLocation, 'viewCount'>[]> {
+		const company = await this.companiesService.findByUserId(userId);
+		const rows = await this.jobsRepository.findByCompanyId(company.id);
+		if (company.plan === 'SEASON') return rows;
+		return rows.map(({ viewCount: _viewCount, ...job }) => job);
+	}
+
+	async findByCompanyForDashboard(userId: string) {
 		const company = await this.companiesService.findByUserId(userId);
 		return this.jobsRepository.findByCompanyId(company.id);
+	}
+
+	async findOwnedById(userId: string, id: string) {
+		const company = await this.companiesService.findByUserId(userId);
+		const rows = await this.jobsRepository.findByCompanyId(company.id);
+		const job = rows.find((row) => row.id === id);
+		if (!job) throw new NotFoundException('Vaga não encontrada.');
+		if (company.plan === 'SEASON') return job;
+		const { viewCount: _viewCount, ...visibleJob } = job;
+		return visibleJob;
 	}
 
 	private validateCoordinates(lat: number, lng: number): void {
@@ -233,6 +272,19 @@ export class JobsService {
 					`Latitude deve estar entre ${latMin} e ${latMax}, ` +
 					`longitude entre ${lngMin} e ${lngMax}.`,
 			);
+		}
+	}
+
+	private validateContact(
+		method: 'WHATSAPP' | 'EMAIL',
+		whatsapp: string | null | undefined,
+		email: string | null | undefined,
+	): void {
+		if (method === 'EMAIL' && !email?.trim()) {
+			throw new BadRequestException('Email para contato obrigatório.');
+		}
+		if (method === 'WHATSAPP' && !whatsapp?.trim()) {
+			throw new BadRequestException('WhatsApp para contato obrigatório.');
 		}
 	}
 }

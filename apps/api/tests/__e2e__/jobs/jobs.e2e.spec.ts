@@ -89,7 +89,9 @@ describe('Jobs (e2e)', () => {
 				id: expect.any(String),
 				title: 'Atendente de Turismo',
 				status: 'ACTIVE',
+				requirements: validJobPayload.requirements,
 			});
+			expect(res.body).not.toHaveProperty('viewCount');
 		});
 	});
 
@@ -127,6 +129,31 @@ describe('Jobs (e2e)', () => {
 				.expect(200);
 
 			expect(Array.isArray(res.body)).toBe(true);
+			expect(res.body[0]).not.toHaveProperty('viewCount');
+			expect(res.body[0].requirements).toEqual(validJobPayload.requirements);
+		});
+	});
+
+	describe('Employer dashboard and editing read', () => {
+		it('returns operational counts without restricted views for FREE', async () => {
+			const dashboard = await request(app.getHttpServer())
+				.get('/api/v1/employer/dashboard')
+				.set('Authorization', `Bearer ${employerToken}`)
+				.expect(200);
+			expect(dashboard.body.plan).toBe('FREE');
+			expect(dashboard.body.metrics.activeJobs).toBeGreaterThan(0);
+			expect(dashboard.body.metrics).not.toHaveProperty('totalViews');
+			expect(dashboard.body).not.toHaveProperty('comparison');
+			const jobs = await request(app.getHttpServer())
+				.get(EMPLOYER_JOBS_URL)
+				.set('Authorization', `Bearer ${employerToken}`)
+				.expect(200);
+			const owned = await request(app.getHttpServer())
+				.get(`${EMPLOYER_JOBS_URL}/${jobs.body[0].id}`)
+				.set('Authorization', `Bearer ${employerToken}`)
+				.expect(200);
+			expect(owned.body.requirements).toEqual(validJobPayload.requirements);
+			expect(owned.body).not.toHaveProperty('viewCount');
 		});
 	});
 
@@ -153,11 +180,23 @@ describe('Jobs (e2e)', () => {
 					title: 'Título Atualizado',
 					description:
 						'Descrição atualizada da vaga com novos requisitos e benefícios.',
+					requirements: ['Disponibilidade para finais de semana'],
+					address: null,
+					salaryMin: null,
+					contactMethod: 'EMAIL',
+					contactEmail: 'contato@empresa.com.br',
+					whatsappContact: null,
 				})
 				.expect(200);
 
 			expect(res.body).toMatchObject({
 				id: jobId,
+				requirements: ['Disponibilidade para finais de semana'],
+				address: null,
+				salaryMin: null,
+				contactMethod: 'EMAIL',
+				contactEmail: 'contato@empresa.com.br',
+				whatsappContact: null,
 				title: 'Título Atualizado',
 				description:
 					'Descrição atualizada da vaga com novos requisitos e benefícios.',

@@ -239,6 +239,57 @@ describe(InterestsService.name, () => {
 		});
 	});
 
+	describe('getDashboard', () => {
+		it('counts expired jobs without including closed jobs', async () => {
+			companiesService.findByUserId.mockResolvedValue(
+				aCompany().withPlan('FREE').build(),
+			);
+			jobsService.findByCompanyForDashboard.mockResolvedValue([
+				{ ...aJob().build(), status: 'EXPIRED' },
+				{
+					...aJob().build(),
+					status: 'ACTIVE',
+					expiresAt: new Date('2020-01-01'),
+				},
+				{
+					...aJob().build(),
+					status: 'CLOSED',
+					expiresAt: new Date('2020-01-01'),
+				},
+			] as any);
+			interestsRepository.findByCompanyJobs.mockResolvedValue([]);
+
+			const result = await SUT.getDashboard('user-uuid-1');
+			expect(result.metrics.expiredJobs).toBe(2);
+		});
+
+		it.each(['FREE', 'PRO', 'SEASON'] as const)(
+			'scopes view metrics for %s',
+			async (plan) => {
+				companiesService.findByUserId.mockResolvedValue(
+					aCompany().withPlan(plan).build(),
+				);
+				jobsService.findByCompanyForDashboard.mockResolvedValue([
+					{
+						...aJob().build(),
+						viewCount: 12,
+						interestCount: 3,
+						expiresAt: new Date('2099-01-01'),
+					},
+				] as any);
+				interestsRepository.findByCompanyJobs.mockResolvedValue([
+					anInterest().withStatus('SENT').buildWithJobTitle() as any,
+				]);
+				const result = await SUT.getDashboard('user-uuid-1');
+				expect(result.metrics.interestsCount).toBe(1);
+				expect(result.metrics.newInterestsCount).toBe(1);
+				expect('totalViews' in result.metrics).toBe(plan !== 'FREE');
+				expect('viewCount' in result.recentJobs[0]!).toBe(plan === 'SEASON');
+				expect('comparison' in result).toBe(plan === 'SEASON');
+			},
+		);
+	});
+
 	// ─── updateStatus ────────────────────────────────────────────────────────────
 
 	describe('updateStatus', () => {

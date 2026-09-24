@@ -38,6 +38,18 @@ import { getUserTracker } from '@/shared/utils/get-user-tracker';
 export class InterestsController {
 	constructor(private readonly interestsService: InterestsService) {}
 
+	@UseGuards(RolesGuard)
+	@Roles('EMPLOYER')
+	@Get('employer/dashboard')
+	@SwaggerRoute({
+		operation: 'Resumo operacional do painel do empregador conforme o plano',
+		responses: [{ status: HttpStatus.OK }],
+		authName: 'jwt',
+	})
+	async getDashboard(@CurrentUser() user: CurrentUserPayload) {
+		return this.interestsService.getDashboard(user.userId);
+	}
+
 	@Public()
 	@UseGuards(OptionalJwtAuthGuard)
 	@Post('jobs/:jobId/interest')

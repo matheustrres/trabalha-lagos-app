@@ -10,7 +10,7 @@
 | Badge "Verificada" | Não | Sim | Sim |
 | Vaga em destaque (`featured`) | Não | Não | Sim |
 | Vaga urgente (`urgent`) | Não | Não | Sim |
-| Dashboard de métricas | Não | Básico | Completo |
+| Dashboard de métricas | Vagas e interesses | Inclui visualizações totais | Inclui visualizações por vaga, ranking e taxa de interesses/visualizações |
 | Push para candidatos | Não | Não | Sim |
 
 ## Regras Críticas

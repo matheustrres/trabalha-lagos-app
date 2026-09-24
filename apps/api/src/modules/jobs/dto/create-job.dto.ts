@@ -4,6 +4,7 @@ import {
 	IsArray,
 	IsBoolean,
 	IsEnum,
+	IsEmail,
 	IsInt,
 	IsNotEmpty,
 	IsNumber,
@@ -28,8 +29,7 @@ export enum ContractType {
 
 export enum ContactMethod {
 	WHATSAPP = 'WHATSAPP',
-	PLATFORM = 'PLATFORM',
-	BOTH = 'BOTH',
+	EMAIL = 'EMAIL',
 }
 
 export class CreateJobDto {
@@ -106,12 +106,18 @@ export class CreateJobDto {
 	@IsOptional()
 	salaryHidden?: boolean;
 
-	@ApiProperty({ example: '22999999999' })
+	@ApiPropertyOptional({ example: '22999999999', nullable: true })
 	@IsString()
 	@MinLength(10)
 	@MaxLength(15)
 	@IsValidPhoneBR()
-	whatsappContact!: string;
+	@IsOptional()
+	whatsappContact?: string | null;
+
+	@ApiPropertyOptional({ example: 'contato@empresa.com.br', nullable: true })
+	@IsEmail()
+	@IsOptional()
+	contactEmail?: string | null;
 
 	@ApiPropertyOptional({ enum: ContactMethod, example: ContactMethod.WHATSAPP })
 	@IsEnum(ContactMethod)

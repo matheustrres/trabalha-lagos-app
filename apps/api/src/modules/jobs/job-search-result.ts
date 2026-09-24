@@ -2,7 +2,10 @@ import type { SearchableExternalJob } from './external-jobs.repository';
 
 import type { JobSchemaWithDetailsNoLocation } from '@/shared/modules/database/schema';
 
-export type InternalJobSearchResult = JobSchemaWithDetailsNoLocation & {
+export type InternalJobSearchResult = Omit<
+	JobSchemaWithDetailsNoLocation,
+	'viewCount' | 'interestCount'
+> & {
 	sourceType: 'INTERNAL';
 };
 
@@ -55,7 +58,14 @@ const sanitizeRedirectUrl = (value: string): string | null => {
 
 export const mapInternalJobSearchResult = (
 	job: JobSchemaWithDetailsNoLocation,
-): InternalJobSearchResult => ({ sourceType: 'INTERNAL', ...job });
+): InternalJobSearchResult => {
+	const {
+		viewCount: _viewCount,
+		interestCount: _interestCount,
+		...publicJob
+	} = job;
+	return { sourceType: 'INTERNAL', ...publicJob };
+};
 
 export const mapExternalJobSearchResult = (
 	job: SearchableExternalJob,

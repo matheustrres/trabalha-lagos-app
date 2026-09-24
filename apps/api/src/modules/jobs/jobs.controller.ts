@@ -89,6 +89,23 @@ export class JobsController {
 		return this.jobsService.findByCompany(user.userId);
 	}
 
+	@UseGuards(RolesGuard)
+	@Roles('EMPLOYER')
+	@Get('employer/jobs/:id')
+	@SwaggerRoute({
+		operation:
+			'Consultar vaga própria para edição sem contabilizar visualização',
+		responses: [{ status: HttpStatus.OK, type: JobResponseDto }],
+		authName: 'jwt',
+		params: [{ name: 'id' }],
+	})
+	async findMyJob(
+		@Param('id') id: string,
+		@CurrentUser() user: CurrentUserPayload,
+	) {
+		return this.jobsService.findOwnedById(user.userId, id);
+	}
+
 	@Public()
 	@Get('jobs/:slug')
 	@Throttle({
@@ -105,7 +122,14 @@ export class JobsController {
 			req.ip ||
 			'';
 		const userAgent = req.headers['user-agent'] || '';
-		return this.jobsService.findBySlug(slug, ip, userAgent);
+		const job = await this.jobsService.findBySlug(slug, ip, userAgent);
+		if (!job) return job;
+		const {
+			viewCount: _viewCount,
+			interestCount: _interestCount,
+			...publicJob
+		} = job;
+		return publicJob;
 	}
 
 	@UseGuards(RolesGuard)
@@ -128,7 +152,11 @@ export class JobsController {
 		@Body() dto: CreateJobDto,
 		@CurrentUser() user: CurrentUserPayload,
 	) {
-		return this.jobsService.create(user.userId, dto);
+		const { viewCount: _viewCount, ...job } = await this.jobsService.create(
+			user.userId,
+			dto,
+		);
+		return job;
 	}
 
 	@UseGuards(RolesGuard)
@@ -153,7 +181,10 @@ export class JobsController {
 		@Body() dto: UpdateJobDto,
 		@CurrentUser() user: CurrentUserPayload,
 	) {
-		return this.jobsService.update(id, user.userId, dto);
+		const updated = await this.jobsService.update(id, user.userId, dto);
+		if (!updated) return updated;
+		const { viewCount: _viewCount, ...job } = updated;
+		return job;
 	}
 
 	@UseGuards(RolesGuard)
@@ -178,6 +209,13 @@ export class JobsController {
 		@Body() dto: UpdateJobStatusDto,
 		@CurrentUser() user: CurrentUserPayload,
 	) {
-		return this.jobsService.updateStatus(id, user.userId, dto.status);
+		const updated = await this.jobsService.updateStatus(
+			id,
+			user.userId,
+			dto.status,
+		);
+		if (!updated) return updated;
+		const { viewCount: _viewCount, ...job } = updated;
+		return job;
 	}
 }

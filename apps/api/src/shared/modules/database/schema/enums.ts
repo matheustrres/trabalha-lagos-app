@@ -18,8 +18,7 @@ export const jobStatusEnum = pgEnum('job_status', [
 export const planEnum = pgEnum('plan', ['FREE', 'PRO', 'SEASON']);
 export const contactMethodEnum = pgEnum('contact_method', [
 	'WHATSAPP',
-	'PLATFORM',
-	'BOTH',
+	'EMAIL',
 ]);
 export const interestStatusEnum = pgEnum('interest_status', [
 	'SENT',

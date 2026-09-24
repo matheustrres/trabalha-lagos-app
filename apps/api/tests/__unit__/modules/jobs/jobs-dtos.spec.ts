@@ -45,6 +45,40 @@ describe('Jobs DTOs', () => {
 			expect(errors).toHaveLength(0);
 		});
 
+		it('accepts email contact and rejects retired contact methods', () => {
+			const payload = {
+				title: 'Atendente de Turismo',
+				description: 'Descrição detalhada da vaga com requisitos e benefícios.',
+				categoryId: 1,
+				contractType: ContractType.CLT,
+				city: 'Cabo Frio',
+				locationLng: -42.0187,
+				locationLat: -22.8789,
+				contactEmail: 'contato@empresa.com.br',
+				contactMethod: ContactMethod.EMAIL,
+			};
+
+			expect(getValidationErrors(CreateJobDto, payload)).toHaveLength(0);
+			expect(
+				hasPropertyError(
+					getValidationErrors(CreateJobDto, {
+						...payload,
+						contactMethod: 'PLATFORM' as ContactMethod,
+					}),
+					'contactMethod',
+				),
+			).toBe(true);
+			expect(
+				hasPropertyError(
+					getValidationErrors(CreateJobDto, {
+						...payload,
+						contactEmail: 'email-invalido',
+					}),
+					'contactEmail',
+				),
+			).toBe(true);
+		});
+
 		it('rejects invalid contractType and short description', () => {
 			const errors = getValidationErrors(CreateJobDto, {
 				title: 'Atendente',
