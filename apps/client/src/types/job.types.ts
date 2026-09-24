@@ -71,7 +71,8 @@ export interface ExternalJob {
 export type Job = InternalJob;
 export type SearchJob = InternalJob | ExternalJob;
 
-export interface EmployerJob extends InternalJob {
+export interface EmployerJob extends Omit<InternalJob, "company"> {
+  companyId: string;
   viewCount?: number;
   interestCount: number;
   address?: string | null;

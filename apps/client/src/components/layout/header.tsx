@@ -20,7 +20,7 @@ export const Header = () => {
         className={`${pathname.startsWith("/painel") ? "max-w-7xl" : "max-w-lg"} mx-auto flex items-center justify-between`}
       >
         <Link
-          href="/"
+          href={session?.user.role === "EMPLOYER" ? "/painel" : "/"}
           className="rounded-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           <BrandLogo priority />

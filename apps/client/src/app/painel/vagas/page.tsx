@@ -9,6 +9,7 @@ import { JobListSkeleton } from "@/components/ui/skeleton";
 import { employerService } from "@/lib/services/employer.service";
 import type { JobStatus } from "@/types/job.types";
 import { EmployerJobCard } from "./components/employer-job-card";
+import { EmployerJobDetailsModal } from "./components/employer-job-details-modal";
 
 type FilterStatus = "ALL" | JobStatus;
 
@@ -44,6 +45,7 @@ const MinhasVagasPage = () => {
 
   const jobs = data ?? [];
   const [filter, setFilter] = useState<FilterStatus>("ALL");
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 
   const handleStatusChange = (id: string, status: JobStatus) => {
     statusMutation.mutate({ id, status });
@@ -158,6 +160,7 @@ const MinhasVagasPage = () => {
             <EmployerJobCard
               key={job.id}
               job={job}
+              onView={setSelectedJobId}
               onStatusChange={handleStatusChange}
               isUpdating={
                 statusMutation.isPending &&
@@ -167,6 +170,10 @@ const MinhasVagasPage = () => {
           ))
         )}
       </div>
+      <EmployerJobDetailsModal
+        jobId={selectedJobId}
+        onClose={() => setSelectedJobId(null)}
+      />
     </div>
   );
 };

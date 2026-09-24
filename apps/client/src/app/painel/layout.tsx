@@ -20,8 +20,8 @@ const PainelLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!isLoading && (!isAuthenticated || !isEmployer)) {
-      router.replace("/login");
+    if (!isLoading && !isEmployer) {
+      router.replace(isAuthenticated ? "/vagas" : "/login");
     }
   }, [isLoading, isAuthenticated, isEmployer, router]);
 

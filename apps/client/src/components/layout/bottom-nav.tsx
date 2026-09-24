@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Briefcase, Building2, User } from "lucide-react";
 import { cn } from "@/lib/utils/cn.utils";
+import { useAuth } from "@/hooks/use-auth.hook";
 
 const NAV_ITEMS = [
   { label: "Início", icon: Home, href: "/" },
@@ -14,7 +15,9 @@ const NAV_ITEMS = [
 
 export const BottomNav = () => {
   const pathname = usePathname();
+  const { isEmployer, isLoading } = useAuth();
 
+  if (isLoading || isEmployer) return null;
   if (pathname.startsWith("/vaga/")) return null;
   if (pathname === "/login" || pathname === "/cadastro") return null;
   if (pathname.startsWith("/painel")) return null;

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth.hook";
 import { ProfileForm } from "./components/profile-form";
 import { AccountSettings } from "./components/account-settings";
@@ -54,6 +55,7 @@ export const ProfilePageClient = () => {
 
   return (
     <div data-profile-layout className="mx-auto w-full max-w-lg px-4 py-6">
+      {!isCandidate && <Link href="/painel" className="mb-5 inline-flex rounded-lg text-sm font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary">Voltar ao painel</Link>}
       <div className="flex items-center gap-3">
         <div aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
           {initials}

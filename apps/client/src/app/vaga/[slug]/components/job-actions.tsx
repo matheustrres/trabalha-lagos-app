@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { getSession } from "@/lib/auth";
+import { useAuth } from "@/hooks/use-auth.hook";
 import { InterestForm } from "./interest-form";
 
 interface JobActionsProps {
@@ -29,6 +30,7 @@ export function JobActions({
   const [showInterestSheet, setShowInterestSheet] = useState(false);
   const [interestSent, setInterestSent] = useState(false);
   const [showProfileCta, setShowProfileCta] = useState(false);
+  const { isEmployer, isLoading } = useAuth();
   const hasWhatsapp = Boolean(whatsappContact);
   const useEmail = contactMethod === "EMAIL";
   const hasContact = useEmail ? Boolean(contactEmail) : hasWhatsapp;
@@ -41,6 +43,8 @@ export function JobActions({
     const savedInterest = localStorage.getItem(interestStorageKey);
     setInterestSent(savedInterest === "true");
   }, [interestStorageKey]);
+
+  if (isLoading || isEmployer) return null;
 
   return (
     <>

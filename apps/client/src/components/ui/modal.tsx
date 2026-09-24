@@ -89,15 +89,15 @@ export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
     <>
       <div
         className={`fixed inset-0 z-50 bg-black/50 transition-opacity duration-200 ${
-          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          isOpen ? "visible opacity-100 pointer-events-auto" : "invisible opacity-0 pointer-events-none"
         }`}
         onClick={onClose}
         aria-hidden="true"
       />
 
       <div
-        className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-200 ${
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        className={`pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-200 ${
+          isOpen ? "visible opacity-100" : "invisible opacity-0"
         }`}
       >
         <div
@@ -106,7 +106,7 @@ export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
           role="dialog"
           aria-modal="true"
           aria-label={title}
-          className={`flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl bg-white shadow-xl transition-all duration-200 focus:outline-none ${
+          className={`pointer-events-auto flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl bg-white shadow-xl transition-all duration-200 focus:outline-none ${
             isOpen ? "scale-100 translate-y-0" : "scale-95 translate-y-2"
           }`}
         >

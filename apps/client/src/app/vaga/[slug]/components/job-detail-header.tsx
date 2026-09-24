@@ -3,6 +3,8 @@
 import { Check, Share2 } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useAuth } from "@/hooks/use-auth.hook";
 
 interface JobDetailHeaderProps {
   jobSlug: string;
@@ -10,6 +12,7 @@ interface JobDetailHeaderProps {
 
 export function JobDetailHeader({ jobSlug }: JobDetailHeaderProps) {
   const router = useRouter();
+  const { isEmployer } = useAuth();
   const [copied, setCopied] = useState(false);
 
   const handleShare = async () => {
@@ -27,13 +30,13 @@ export function JobDetailHeader({ jobSlug }: JobDetailHeaderProps) {
   return (
     <>
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-        <button
+        {isEmployer ? <Link href="/painel" className="text-sm font-semibold text-primary hover:underline">Voltar ao painel</Link> : <button
           onClick={() => router.back()}
           aria-label="Voltar"
           className="text-gray-600 hover:text-gray-900 transition-colors text-lg"
         >
           ←
-        </button>
+        </button>}
         <span className="text-sm font-semibold text-gray-800">
           Detalhes da vaga
         </span>

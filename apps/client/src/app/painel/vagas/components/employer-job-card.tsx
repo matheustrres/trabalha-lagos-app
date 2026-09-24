@@ -31,12 +31,14 @@ const formatDate = (iso: string) =>
 
 interface EmployerJobCardProps {
   job: EmployerJob;
+  onView: (id: string) => void;
   onStatusChange: (id: string, status: JobStatus) => void;
   isUpdating?: boolean;
 }
 
 export const EmployerJobCard = ({
   job,
+  onView,
   onStatusChange,
   isUpdating = false,
 }: EmployerJobCardProps) => {
@@ -64,8 +66,9 @@ export const EmployerJobCard = ({
     <article
       className={`group relative rounded-2xl border border-border bg-white p-4 transition-[border-color,box-shadow,opacity] duration-150 hover:border-primary/40 hover:shadow-sm lg:flex lg:items-center lg:justify-between lg:gap-5 ${flashing ? "opacity-50" : "opacity-100"}`}
     >
-      <Link
-        href={`/vaga/${job.slug}`}
+      <button
+        type="button"
+        onClick={() => onView(job.id)}
         aria-label={`Visualizar vaga: ${job.title}`}
         className="absolute inset-0 rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       />
