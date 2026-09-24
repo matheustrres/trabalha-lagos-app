@@ -10,7 +10,9 @@ import { InterestCard } from "./components/interest-card";
 import { InterestDetailsSheet } from "./components/interest-details-sheet";
 
 type FilterStatus = "ALL" | Interest["status"];
-type FilterAvailability = "ALL" | NonNullable<Interest["candidateAvailability"]>;
+type FilterAvailability =
+  | "ALL"
+  | NonNullable<Interest["candidateAvailability"]>;
 
 const STATUS_FILTERS: { label: string; value: FilterStatus }[] = [
   { label: "Todos", value: "ALL" },
@@ -39,7 +41,9 @@ const InteressesPage = () => {
   const [availabilityFilter, setAvailabilityFilter] =
     useState<FilterAvailability>("ALL");
   const [areaFilter, setAreaFilter] = useState<string>("ALL");
-  const [selectedInterest, setSelectedInterest] = useState<Interest | null>(null);
+  const [selectedInterest, setSelectedInterest] = useState<Interest | null>(
+    null,
+  );
 
   const filters = {
     ...(statusFilter !== "ALL" && { status: statusFilter }),
@@ -48,7 +52,12 @@ const InteressesPage = () => {
     ...(areaFilter !== "ALL" && { area: areaFilter }),
   };
 
-  const { data: interestsResponse, isLoading } = useQuery({
+  const {
+    data: interestsResponse,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["employer", "interests", filters],
     queryFn: () => employerService.getInterests(filters),
   });
@@ -57,8 +66,12 @@ const InteressesPage = () => {
     mutationFn: ({ id, status }: { id: string; status: Interest["status"] }) =>
       employerService.updateInterestStatus(id, status),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["employer", "interests"] });
-      await queryClient.invalidateQueries({ queryKey: ["employer", "dashboard"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["employer", "interests"],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["employer", "dashboard"],
+      });
     },
   });
 
@@ -69,16 +82,14 @@ const InteressesPage = () => {
     statusMutation.mutate({ id, status });
   };
 
-  const filtered = interests
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
+  const filtered = interests.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 
   return (
-    <div className="max-w-lg mx-auto">
+    <div className="w-full">
       <div>
-        <h1 className="font-display text-xl font-bold text-gray-900">
+        <h1 className="font-sans text-2xl font-bold text-gray-900">
           Interesses recebidos
         </h1>
         <p className="text-sm text-gray-500">
@@ -89,8 +100,8 @@ const InteressesPage = () => {
       {phoneRestricted && (
         <div className="mt-4 bg-blue-500/10 text-blue-600 text-sm rounded-xl px-4 py-3">
           No plano gratuito, você vê nome e cidade.{" "}
-          <span className="font-semibold">Faça upgrade</span> para ver o WhatsApp
-          completo.
+          <span className="font-semibold">Faça upgrade</span> para ver o
+          WhatsApp completo.
         </div>
       )}
 
@@ -110,60 +121,111 @@ const InteressesPage = () => {
         ))}
       </div>
 
-      <div className="mt-3">
-        <div className="grid grid-cols-1 gap-2">
-          <select
-            value={jobFilter}
-            onChange={(e) => setJobFilter(e.target.value)}
-            className="h-10 w-full rounded-xl border border-border bg-white px-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
-          >
-            <option value="ALL">Todas as vagas</option>
-            {(companyJobs ?? []).map((job) => (
-              <option key={job.id} value={job.id}>
-                {job.title}
-              </option>
-            ))}
-          </select>
+      <div className="mt-4">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          <label className="text-xs font-medium text-gray-500">
+            Vaga
+            <select
+              value={jobFilter}
+              onChange={(e) => setJobFilter(e.target.value)}
+              className="h-10 w-full rounded-xl border border-border bg-white px-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
+            >
+              <option value="ALL">Todas as vagas</option>
+              {(companyJobs ?? []).map((job) => (
+                <option key={job.id} value={job.id}>
+                  {job.title}
+                </option>
+              ))}
+            </select>
+          </label>
 
-          <select
-            value={availabilityFilter}
-            onChange={(e) => setAvailabilityFilter(e.target.value as FilterAvailability)}
-            className="h-10 w-full rounded-xl border border-border bg-white px-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
-          >
-            {AVAILABILITY_FILTERS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <label className="text-xs font-medium text-gray-500">
+            Disponibilidade
+            <select
+              value={availabilityFilter}
+              onChange={(e) =>
+                setAvailabilityFilter(e.target.value as FilterAvailability)
+              }
+              className="h-10 w-full rounded-xl border border-border bg-white px-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
+            >
+              {AVAILABILITY_FILTERS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-          <select
-            value={areaFilter}
-            onChange={(e) => setAreaFilter(e.target.value)}
-            className="h-10 w-full rounded-xl border border-border bg-white px-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
-          >
-            <option value="ALL">Todas as áreas</option>
-            {CATEGORIES.map((category) => (
-              <option key={category.slug} value={category.slug}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+          <label className="text-xs font-medium text-gray-500">
+            Área
+            <select
+              value={areaFilter}
+              onChange={(e) => setAreaFilter(e.target.value)}
+              className="h-10 w-full rounded-xl border border-border bg-white px-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1"
+            >
+              <option value="ALL">Todas as áreas</option>
+              {CATEGORIES.map((category) => (
+                <option key={category.slug} value={category.slug}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
+        {(statusFilter !== "ALL" ||
+          jobFilter !== "ALL" ||
+          availabilityFilter !== "ALL" ||
+          areaFilter !== "ALL") && (
+          <button
+            className="mt-3 text-sm font-semibold text-primary underline"
+            onClick={() => {
+              setStatusFilter("ALL");
+              setJobFilter("ALL");
+              setAvailabilityFilter("ALL");
+              setAreaFilter("ALL");
+            }}
+          >
+            Limpar filtros
+          </button>
+        )}
       </div>
 
-      <div className="mt-4 space-y-3">
-        {isLoading ? (
-          <p className="text-sm text-gray-500">Carregando interesses...</p>
+      <div className="mt-5 grid gap-3 lg:grid-cols-2">
+        {isError ? (
+          <div
+            role="alert"
+            className="rounded-xl border border-error/30 p-4 text-sm text-error lg:col-span-2"
+          >
+            Não foi possível carregar os interesses.{" "}
+            <button
+              className="font-semibold underline"
+              onClick={() => refetch()}
+            >
+              Tentar novamente
+            </button>
+          </div>
+        ) : isLoading ? (
+          <p className="text-sm text-gray-500 lg:col-span-2">
+            Carregando interesses...
+          </p>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+          <div className="flex flex-col items-center justify-center gap-2 py-12 text-center lg:col-span-2">
             <SearchX size={40} className="text-gray-300" aria-hidden />
             <p className="font-semibold text-gray-500">
-              Nenhum interesse recebido
+              {statusFilter === "ALL" &&
+              jobFilter === "ALL" &&
+              availabilityFilter === "ALL" &&
+              areaFilter === "ALL"
+                ? "Nenhum interesse recebido"
+                : "Nenhum interesse com estes filtros"}
             </p>
             <p className="text-sm text-gray-400">
-              Quando candidatos demonstrarem interesse nas suas vagas, eles
-              aparecerão aqui.
+              {statusFilter === "ALL" &&
+              jobFilter === "ALL" &&
+              availabilityFilter === "ALL" &&
+              areaFilter === "ALL"
+                ? "Quando candidatos demonstrarem interesse nas suas vagas, eles aparecerão aqui."
+                : "Ajuste os filtros para ver outros candidatos."}
             </p>
           </div>
         ) : (

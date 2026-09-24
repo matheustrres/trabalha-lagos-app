@@ -35,6 +35,8 @@ export interface InternalJob {
   salaryMin?: number;
   salaryMax?: number;
   whatsappContact?: string;
+  contactEmail?: string | null;
+  contactMethod?: "WHATSAPP" | "EMAIL";
   city: string;
   distanceKm: number | null;
   featured: boolean;
@@ -47,29 +49,32 @@ export interface InternalJob {
 }
 
 export interface ExternalJob {
-	sourceType: "EXTERNAL";
-	id: string;
-	externalSource: string;
-	title: string;
-	description: string;
-	companyName: string;
-	redirectUrl: string | null;
-	categoryName: string | null;
-	contractType: string | null;
-	salaryMin: number | null;
-	salaryMax: number | null;
-	salaryPredicted: boolean;
-	locationText: string;
-	city: string;
-	distanceKm: number | null;
-	publishedAt: string;
-	expiresAt: string | null;
+  sourceType: "EXTERNAL";
+  id: string;
+  externalSource: string;
+  title: string;
+  description: string;
+  companyName: string;
+  redirectUrl: string | null;
+  categoryName: string | null;
+  contractType: string | null;
+  salaryMin: number | null;
+  salaryMax: number | null;
+  salaryPredicted: boolean;
+  locationText: string;
+  city: string;
+  distanceKm: number | null;
+  publishedAt: string;
+  expiresAt: string | null;
 }
 
 export type Job = InternalJob;
 export type SearchJob = InternalJob | ExternalJob;
 
 export interface EmployerJob extends InternalJob {
-  viewCount: number;
+  viewCount?: number;
   interestCount: number;
+  address?: string | null;
+  salaryHidden: boolean;
+  contactMethod: "WHATSAPP" | "EMAIL";
 }

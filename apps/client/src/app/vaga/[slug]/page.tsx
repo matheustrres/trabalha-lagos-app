@@ -9,7 +9,8 @@ import { JobActions } from "./components/job-actions";
 
 const getClientHeaders = async (): Promise<Record<string, string>> => {
   const headersList = await headers();
-  const forwardedFor = headersList.get("x-forwarded-for") ?? headersList.get("x-real-ip") ?? "";
+  const forwardedFor =
+    headersList.get("x-forwarded-for") ?? headersList.get("x-real-ip") ?? "";
   const userAgent = headersList.get("user-agent") ?? "";
   return {
     "x-forwarded-for": forwardedFor,
@@ -110,19 +111,25 @@ export default async function JobDetailPage({ params }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {job.status === "ACTIVE" && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
       <JobDetailContent job={job} />
-      <JobActions
-        whatsappContact={job.company.whatsapp ?? job.whatsappContact ?? ""}
-        jobTitle={job.title}
-        jobCity={job.city}
-        jobSlug={job.slug}
-        companyName={job.company.name}
-        jobId={job.id}
-      />
+      {job.status === "ACTIVE" && (
+        <JobActions
+          contactMethod={job.contactMethod ?? "WHATSAPP"}
+          whatsappContact={job.whatsappContact ?? job.company.whatsapp ?? ""}
+          contactEmail={job.contactEmail ?? ""}
+          jobTitle={job.title}
+          jobCity={job.city}
+          jobSlug={job.slug}
+          companyName={job.company.name}
+          jobId={job.id}
+        />
+      )}
     </>
   );
 }

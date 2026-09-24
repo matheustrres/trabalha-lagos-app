@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { CATEGORIES } from "@/lib/constants/categories.constants";
 import { LAGOS_CITIES } from "@/lib/constants/cities.constants";
 import { employerService } from "@/lib/services/employer.service";
+import type { EmployerJob } from "@/types/job.types";
 import {
   createJobSchema,
   type CreateJobData,
@@ -27,8 +28,7 @@ const CONTRACT_TYPES = [
 
 const CONTACT_METHODS = [
   { value: "WHATSAPP", label: "WhatsApp" },
-  { value: "PLATFORM", label: "Pela plataforma" },
-  { value: "BOTH", label: "Ambos" },
+  { value: "EMAIL", label: "Email" },
 ] as const;
 
 const formatPhone = (value: string): string => {
@@ -64,7 +64,7 @@ const SectionHeading = ({ icon, title }: SectionHeadingProps) => (
   </div>
 );
 
-export const JobForm = () => {
+export const JobForm = ({ job }: { job?: EmployerJob }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -74,6 +74,7 @@ export const JobForm = () => {
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<CreateJobData>({
     resolver: zodResolver(createJobSchema),
@@ -84,6 +85,26 @@ export const JobForm = () => {
   });
 
   const salaryHidden = watch("salaryHidden");
+  const contactMethod = watch("contactMethod");
+
+  useEffect(() => {
+    if (!job) return;
+    reset({
+      title: job.title,
+      description: job.description,
+      categoryId: job.category.slug,
+      contractType: job.contractType,
+      city: LAGOS_CITIES.find((city) => city.name === job.city)?.slug ?? "",
+      address: job.address ?? "",
+      salaryMin: job.salaryMin ?? undefined,
+      salaryMax: job.salaryMax ?? undefined,
+      salaryHidden: job.salaryHidden,
+      whatsappContact: formatPhone(job.whatsappContact ?? ""),
+      contactEmail: job.contactEmail ?? "",
+      contactMethod: job.contactMethod === "EMAIL" ? "EMAIL" : "WHATSAPP",
+      requirements: job.requirements?.join("\n") ?? "",
+    });
+  }, [job, reset]);
 
   const resolveErrorStatus = (error: unknown): number | undefined => {
     if (!error || typeof error !== "object") return undefined;
@@ -95,7 +116,9 @@ export const JobForm = () => {
   const onSubmit = async (data: CreateJobData) => {
     setSubmitError(null);
 
-    const selectedCity = LAGOS_CITIES.find((cityOption) => cityOption.slug === data.city);
+    const selectedCity = LAGOS_CITIES.find(
+      (cityOption) => cityOption.slug === data.city,
+    );
     const categoryIndex = CATEGORIES.findIndex(
       (categoryOption) => categoryOption.slug === data.categoryId,
     );
@@ -111,25 +134,43 @@ export const JobForm = () => {
       .filter(Boolean);
 
     try {
-      await employerService.createJob({
+      const payload = {
         ...data,
         categoryId: categoryIndex + 1,
         city: selectedCity.name,
         locationLat: selectedCity.lat,
         locationLng: selectedCity.lng,
-        whatsappContact: data.whatsappContact.replace(/\D/g, ""),
-        requirements: requirements?.length ? requirements : undefined,
-      });
+        whatsappContact:
+          data.contactMethod === "WHATSAPP"
+            ? data.whatsappContact?.replace(/\D/g, "")
+            : null,
+        contactEmail:
+          data.contactMethod === "EMAIL" ? data.contactEmail?.trim() : null,
+        requirements: requirements ?? [],
+        ...(job
+          ? {
+              address: data.address || null,
+              salaryMin: data.salaryMin ?? null,
+              salaryMax: data.salaryMax ?? null,
+            }
+          : {}),
+      };
+      if (job) await employerService.updateJob(job.id, payload);
+      else await employerService.createJob(payload);
 
       await queryClient.invalidateQueries({ queryKey: ["employer", "jobs"] });
-      await queryClient.invalidateQueries({ queryKey: ["employer", "dashboard"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["employer", "dashboard"],
+      });
       router.push("/painel/vagas");
     } catch (error) {
       const status = resolveErrorStatus(error);
 
       if (status === 403) {
         setSubmitError(
-          "Limite de vagas atingido. Faça upgrade para publicar mais.",
+          job
+            ? "Você não tem permissão para editar esta vaga."
+            : "Limite de vagas atingido. Faça upgrade para publicar mais.",
         );
         return;
       }
@@ -146,18 +187,16 @@ export const JobForm = () => {
         return;
       }
 
-      setSubmitError("Não foi possível publicar a vaga. Tente novamente.");
+      setSubmitError(
+        job
+          ? "Não foi possível salvar a vaga. Tente novamente."
+          : "Não foi possível publicar a vaga. Tente novamente.",
+      );
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      {submitError && (
-        <div className="bg-error/10 text-error rounded-xl px-4 py-3 text-sm font-medium mb-4">
-          {submitError}
-        </div>
-      )}
-
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="max-w-3xl">
       {/* Seção 1: Informações básicas */}
       <SectionHeading
         icon={<Briefcase size={15} aria-hidden />}
@@ -314,7 +353,7 @@ export const JobForm = () => {
               placeholder="Ex: 1800"
               error={errors.salaryMin?.message}
               {...register("salaryMin", {
-                setValueAs: (v: string) => v === "" ? undefined : Number(v),
+                setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
               })}
             />
             <Input
@@ -324,7 +363,7 @@ export const JobForm = () => {
               placeholder="Ex: 2500"
               error={errors.salaryMax?.message}
               {...register("salaryMax", {
-                setValueAs: (v: string) => v === "" ? undefined : Number(v),
+                setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
               })}
             />
           </div>
@@ -335,21 +374,6 @@ export const JobForm = () => {
       <SectionHeading icon={<Phone size={15} aria-hidden />} title="Contato" />
 
       <div className="flex flex-col gap-4">
-        <Input
-          id="whatsappContact"
-          label="WhatsApp para contato *"
-          placeholder="(22) 99999-9999"
-          inputMode="numeric"
-          error={errors.whatsappContact?.message}
-          {...register("whatsappContact", {
-            onChange: (e) => {
-              setValue("whatsappContact", formatPhone(e.target.value), {
-                shouldValidate: false,
-              });
-            },
-          })}
-        />
-
         <div className="flex flex-col gap-1">
           <label
             htmlFor="contactMethod"
@@ -369,6 +393,32 @@ export const JobForm = () => {
             ))}
           </select>
         </div>
+
+        {contactMethod === "EMAIL" ? (
+          <Input
+            id="contactEmail"
+            type="email"
+            label="Email para contato *"
+            placeholder="contato@empresa.com.br"
+            error={errors.contactEmail?.message}
+            {...register("contactEmail")}
+          />
+        ) : (
+          <Input
+            id="whatsappContact"
+            label="WhatsApp para contato *"
+            placeholder="(22) 99999-9999"
+            inputMode="numeric"
+            error={errors.whatsappContact?.message}
+            {...register("whatsappContact", {
+              onChange: (e) => {
+                setValue("whatsappContact", formatPhone(e.target.value), {
+                  shouldValidate: false,
+                });
+              },
+            })}
+          />
+        )}
       </div>
 
       {/* Seção 5: Requisitos */}
@@ -415,7 +465,11 @@ export const JobForm = () => {
           className="w-full"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Publicando..." : "Publicar vaga"}
+          {isSubmitting
+            ? "Salvando..."
+            : job
+              ? "Salvar alterações"
+              : "Publicar vaga"}
         </Button>
         <button
           type="button"

@@ -38,10 +38,18 @@ export function JobDetailContent({ job }: JobDetailContentProps) {
   const requirements = Array.isArray(job.requirements) ? job.requirements : [];
 
   return (
-    <div className="pb-24">
+    <div
+      data-job-detail
+      className={job.status === "ACTIVE" ? "pb-[calc(4rem+env(safe-area-inset-bottom,8px))]" : undefined}
+    >
       <JobDetailHeader jobSlug={job.slug} />
 
       <div className="px-4 py-5 space-y-5">
+        {job.status !== "ACTIVE" && (
+          <p role="status" className="rounded-xl bg-surface px-4 py-3 text-sm text-gray-600">
+            Esta vaga não está recebendo candidaturas.
+          </p>
+        )}
         {/* Job header */}
         <div className="flex items-start gap-3">
           <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center text-2xl shrink-0">

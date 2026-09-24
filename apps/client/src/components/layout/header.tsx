@@ -16,7 +16,9 @@ export const Header = () => {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-white px-4 py-3">
-      <div className="max-w-lg mx-auto flex items-center justify-between">
+      <div
+        className={`${pathname.startsWith("/painel") ? "max-w-7xl" : "max-w-lg"} mx-auto flex items-center justify-between`}
+      >
         <Link
           href="/"
           className="rounded-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"

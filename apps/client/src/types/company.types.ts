@@ -1,4 +1,4 @@
-export type CompanyPlan = "FREE" | "BASIC" | "PREMIUM";
+export type CompanyPlan = "FREE" | "PRO" | "SEASON";
 
 export type CompanySegment =
   | "RETAIL"

@@ -8,7 +8,9 @@ import { getSession } from "@/lib/auth";
 import { InterestForm } from "./interest-form";
 
 interface JobActionsProps {
+  contactMethod: "WHATSAPP" | "EMAIL";
   whatsappContact: string;
+  contactEmail: string;
   jobTitle: string;
   jobCity: string;
   jobSlug: string;
@@ -16,11 +18,23 @@ interface JobActionsProps {
   jobId: string;
 }
 
-export function JobActions({ whatsappContact, companyName, jobId }: JobActionsProps) {
+export function JobActions({
+  contactMethod,
+  whatsappContact,
+  contactEmail,
+  jobTitle,
+  companyName,
+  jobId,
+}: JobActionsProps) {
   const [showInterestSheet, setShowInterestSheet] = useState(false);
   const [interestSent, setInterestSent] = useState(false);
   const [showProfileCta, setShowProfileCta] = useState(false);
   const hasWhatsapp = Boolean(whatsappContact);
+  const useEmail = contactMethod === "EMAIL";
+  const hasContact = useEmail ? Boolean(contactEmail) : hasWhatsapp;
+  const contactHref = useEmail
+    ? `mailto:${contactEmail}?subject=${encodeURIComponent(`Candidatura: ${jobTitle}`)}`
+    : `https://wa.me/${whatsappContact}`;
   const interestStorageKey = `tl:interest:${jobId}`;
 
   useEffect(() => {
@@ -34,7 +48,7 @@ export function JobActions({ whatsappContact, companyName, jobId }: JobActionsPr
         <div className="fixed bottom-[92px] left-0 right-0 z-30 px-4">
           <div className="max-w-lg mx-auto rounded-xl border border-primary/20 bg-primary/10 px-4 py-3 text-sm text-primary">
             <p>
-              Complete seu perfil para se destacar entre os candidatos. {" "}
+              Complete seu perfil para se destacar entre os candidatos.{" "}
               <Link href="/perfil" className="font-semibold underline">
                 Ir para perfil
               </Link>
@@ -46,16 +60,20 @@ export function JobActions({ whatsappContact, companyName, jobId }: JobActionsPr
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border pb-[env(safe-area-inset-bottom,8px)]">
         <div className="max-w-lg mx-auto px-4 py-3 flex gap-2.5">
           <a
-            href={hasWhatsapp ? `https://wa.me/${whatsappContact}` : "#"}
-            target={hasWhatsapp ? "_blank" : undefined}
-            rel={hasWhatsapp ? "noopener noreferrer" : undefined}
+            href={hasContact ? contactHref : "#"}
+            target={hasContact && !useEmail ? "_blank" : undefined}
+            rel={hasContact && !useEmail ? "noopener noreferrer" : undefined}
             className="flex-1"
             onClick={(event) => {
-              if (!hasWhatsapp) event.preventDefault();
+              if (!hasContact) event.preventDefault();
             }}
           >
-            <Button variant="whatsapp" className="w-full" disabled={!hasWhatsapp}>
-              📱 WhatsApp
+            <Button
+              variant={useEmail ? "secondary" : "whatsapp"}
+              className="w-full"
+              disabled={!hasContact}
+            >
+              {useEmail ? "Enviar email" : "📱 WhatsApp"}
             </Button>
           </a>
           {interestSent ? (
