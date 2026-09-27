@@ -122,7 +122,7 @@ export function JobDetailContent({ job }: JobDetailContentProps) {
           <h2 className="text-base font-bold text-gray-900 mb-2">
             Sobre a vaga
           </h2>
-          <p className="text-sm text-gray-500 leading-relaxed">
+          <p className="whitespace-pre-wrap break-words text-sm text-gray-500 leading-relaxed">
             {job.description}
           </p>
         </div>
@@ -133,14 +133,9 @@ export function JobDetailContent({ job }: JobDetailContentProps) {
             <h2 className="text-base font-bold text-gray-900 mb-2">
               Requisitos
             </h2>
-            <ul className="space-y-1.5">
-              {requirements.map((req, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <span className="text-success shrink-0 mt-0.5">✓</span>
-                  <span className="text-sm text-gray-500">{req}</span>
-                </li>
-              ))}
-            </ul>
+            <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-gray-500">
+              {requirements.join("\n")}
+            </p>
           </div>
         )}
 

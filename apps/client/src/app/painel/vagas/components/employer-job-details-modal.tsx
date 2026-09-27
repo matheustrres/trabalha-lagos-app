@@ -80,7 +80,16 @@ export const EmployerJobDetailsModal = ({ jobId, onClose }: EmployerJobDetailsMo
                 {job.address && <div><dt className="text-gray-500">Endereço</dt><dd className="font-medium text-gray-900">{job.address}</dd></div>}
               </dl>
               <section><h4 className="font-semibold text-gray-900">Descrição</h4><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-700">{job.description}</p></section>
-              <section><h4 className="font-semibold text-gray-900">Requisitos</h4>{job.requirements?.length ? <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-700">{job.requirements.map((requirement, index) => <li key={`${requirement}-${index}`}>{requirement}</li>)}</ul> : <p className="mt-2 text-sm text-gray-600">Nenhum requisito informado.</p>}</section>
+              <section>
+                <h4 className="font-semibold text-gray-900">Requisitos</h4>
+                {job.requirements?.length ? (
+                  <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-gray-700">
+                    {job.requirements.join("\n")}
+                  </p>
+                ) : (
+                  <p className="mt-2 text-sm text-gray-600">Nenhum requisito informado.</p>
+                )}
+              </section>
               <section><h4 className="font-semibold text-gray-900">Contato</h4><p className="mt-2 text-sm text-gray-700">{job.contactMethod === "EMAIL" ? job.contactEmail || "E-mail não informado" : job.whatsappContact || "WhatsApp não informado"}</p></section>
               <div className="flex flex-wrap gap-2 border-t border-border pt-4">
                 <Link href={`/painel/vagas/${job.id}/editar`} onClick={onClose} className="inline-flex h-10 items-center rounded-xl bg-primary px-4 text-sm font-semibold text-white hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">Editar</Link>
