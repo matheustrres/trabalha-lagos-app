@@ -1,76 +1,135 @@
+![Página inicial da TrabalhaLagos](public/screenshots/home.png)
+
 # TrabalhaLagos
 
-![CI](https://github.com/matheustrres/trabalha-lagos-app/actions/workflows/ci.yml/badge.svg)
+**Português (Brasil)** · [English](#english)
 
-TrabalhaLagos é uma plataforma de vagas hiperlocal para a Região dos Lagos (RJ), conectando candidatos e empregadores com busca por cidade, categoria e raio geográfico. O projeto é um monorepo com API NestJS (PostgreSQL/PostGIS + Redis) e frontend Next.js focado em SEO e experiência mobile-first.
+## Português
 
-## Como rodar localmente
+O **TrabalhaLagos** conecta candidatos e empregadores da Região dos Lagos, no Rio de Janeiro. A plataforma reúne vagas locais e permite buscas por cidade, categoria e distância.
 
-### 1) Instalar dependências
+### Funcionalidades
 
-```bash
-pnpm install
-```
+- Busca de vagas por cidade, categoria e raio geográfico.
+- Cadastro e perfil para candidatos e empregadores.
+- Publicação e gerenciamento de vagas em um painel para empresas.
+- Experiência mobile-first com recursos de PWA.
 
-### 2) Configurar variáveis de ambiente
+### Capturas de tela
 
-```bash
-cp apps/api/.env.sample apps/api/.env.dev
-cp apps/client/.env.example apps/client/.env.local
-```
+As capturas da aplicação estão disponíveis na pasta [`public/screenshots`](public/screenshots/).
 
-### 3) Subir infraestrutura (PostgreSQL + Redis)
+### Tecnologias
 
-```bash
-pnpm dev:infra
-```
+- **Frontend:** Next.js 15, React 19, TypeScript e Tailwind CSS 4.
+- **API:** NestJS, TypeScript e Drizzle ORM.
+- **Dados e infraestrutura:** PostgreSQL com PostGIS, Redis e BullMQ.
+- **Gerenciador de pacotes:** pnpm.
 
-### 4) Rodar API e client
+### Executar localmente
 
-```bash
-pnpm dev
-```
+Requisitos: Node.js, pnpm e Docker com Docker Compose.
 
-Também é possível iniciar cada app separadamente:
+1. Instale as dependências:
 
-```bash
-pnpm dev:api
-pnpm dev:client
-```
+   ```bash
+   pnpm install
+   ```
 
-## Variáveis de ambiente
+2. Crie os arquivos de ambiente a partir dos exemplos:
 
-### `apps/client/.env.example`
+   ```bash
+   cp apps/api/.env.sample apps/api/.env.dev
+   cp apps/client/.env.example apps/client/.env.local
+   ```
 
-```env
-NEXT_PUBLIC_API_URL=http://localhost:3004/api/v1
-API_URL=http://localhost:3004/api/v1
-```
+3. Preencha `apps/api/.env.dev` com as configurações locais do PostgreSQL, Redis e JWT. Os valores padrão da API usam a porta `3004`; o client aponta para `http://localhost:3004/api/v1`.
 
-### `apps/api/.env.sample`
+4. Inicie PostgreSQL e Redis:
 
-```env
-DATABASE_URL=postgresql://trabalhalagos:dev_password@localhost:5432/trabalhalagos_dev
-REDIS_HOST=localhost
-REDIS_PORT=6379
-JWT_SECRET=
-JWT_EXPIRES_IN=15m
-JWT_REFRESH_SECRET=
-JWT_REFRESH_EXPIRES_IN=7d
-PORT=3004
-CORS_ORIGINS=http://localhost:3000
-```
+   ```bash
+   pnpm dev:infra
+   ```
 
-## Comandos principais
+5. Inicie API e client:
+
+   ```bash
+   pnpm dev
+   ```
+
+A aplicação web fica disponível em `http://localhost:3000` e a API em `http://localhost:3004`.
+
+Para iniciar cada app separadamente, use `pnpm dev:api` ou `pnpm dev:client`.
+
+### Validação
 
 ```bash
-# Desenvolvimento
-pnpm dev:infra
-pnpm dev
-pnpm dev:api
-pnpm dev:client
+pnpm --filter @trabalha-lagos/api test:unit
+pnpm --filter @trabalha-lagos/api build
+pnpm --filter @trabalha-lagos/client lint
+pnpm --filter @trabalha-lagos/client build
+```
 
-# Validação por app
+## English
+
+**TrabalhaLagos** connects job seekers and employers across the Região dos Lagos area in Rio de Janeiro, Brazil. The platform brings local job listings together and supports searches by city, category, and distance.
+
+### Features
+
+- Search jobs by city, category, and geographic radius.
+- Profiles and sign-up flows for job seekers and employers.
+- An employer dashboard to publish and manage job listings.
+- A mobile-first experience with PWA features.
+
+### Screenshots
+
+Application screenshots are available in the [`public/screenshots`](public/screenshots/) folder.
+
+### Tech stack
+
+- **Frontend:** Next.js 15, React 19, TypeScript, and Tailwind CSS 4.
+- **API:** NestJS, TypeScript, and Drizzle ORM.
+- **Data and infrastructure:** PostgreSQL with PostGIS, Redis, and BullMQ.
+- **Package manager:** pnpm.
+
+### Run locally
+
+Requirements: Node.js, pnpm, and Docker with Docker Compose.
+
+1. Install dependencies:
+
+   ```bash
+   pnpm install
+   ```
+
+2. Create local environment files from the examples:
+
+   ```bash
+   cp apps/api/.env.sample apps/api/.env.dev
+   cp apps/client/.env.example apps/client/.env.local
+   ```
+
+3. Set local PostgreSQL, Redis, and JWT values in `apps/api/.env.dev`. The API defaults to port `3004`; the client points to `http://localhost:3004/api/v1`.
+
+4. Start PostgreSQL and Redis:
+
+   ```bash
+   pnpm dev:infra
+   ```
+
+5. Start the API and web client:
+
+   ```bash
+   pnpm dev
+   ```
+
+The web app is available at `http://localhost:3000`, and the API at `http://localhost:3004`.
+
+To start either app separately, run `pnpm dev:api` or `pnpm dev:client`.
+
+### Validation
+
+```bash
 pnpm --filter @trabalha-lagos/api test:unit
 pnpm --filter @trabalha-lagos/api build
 pnpm --filter @trabalha-lagos/client lint
